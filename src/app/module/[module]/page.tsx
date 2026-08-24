@@ -42,7 +42,7 @@ export default async function ModulePage({ params }: { params: Promise<{ module:
         <ul className="!list-none !pl-0">
           {module.weeks.map((n) => {
             const week = getWeek(n)!
-            const unlocked = isUnlocked(n)
+            const unlocked = isUnlocked(n, member?.tier ?? 'core')
             const done = progress.completedWeeks.has(n)
             const inner = (
               <>

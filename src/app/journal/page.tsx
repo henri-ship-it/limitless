@@ -6,13 +6,17 @@ import { modules, weeks } from '@/content/programme'
 import { entriesForWeek } from '@/content/journal'
 import { JOURNAL_PAGE_HEIGHT, JOURNAL_PAGE_WIDTH, pageForEntry } from '@/content/journal-pages'
 import { isUnlocked } from '@/lib/cohort'
+import { getMember } from '@/lib/member'
 
 const TOC = modules.map((m) => ({
   id: `module-${m.number}`,
   label: `${String(m.number).padStart(2, '0')} ${m.name}`,
 }))
 
-export default function JournalPage() {
+export default async function JournalPage() {
+  const member = await getMember()
+  const tier = member?.tier ?? 'core'
+
   return (
     <Shell toc={TOC}>
       <PageHeader
@@ -54,7 +58,7 @@ export default function JournalPage() {
           {m.weeks.map((n) => {
             const week = weeks.find((w) => w.number === n)!
             const entries = entriesForWeek(n)
-            const unlocked = isUnlocked(n)
+            const unlocked = isUnlocked(n, tier)
 
             return (
               <section

@@ -7,11 +7,12 @@ import { LockIcon, NowIndicator, TickIcon } from './icons'
 
 type Props = {
   currentWeek: number
+  openThrough: number
   completedWeeks: number[]
   isPro: boolean
 }
 
-export function Sidebar({ currentWeek, completedWeeks, isPro }: Props) {
+export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro }: Props) {
   const pathname = usePathname()
   const done = new Set(completedWeeks)
 
@@ -37,7 +38,7 @@ export function Sidebar({ currentWeek, completedWeeks, isPro }: Props) {
             <ul className="border-l border-line">
               {m.weeks.map((n) => {
                 const week = weeks.find((w) => w.number === n)!
-                const locked = n > currentWeek
+                const locked = n > openThrough
                 const active = pathname === `/week/${n}`
                 const inner = (
                   <span className="flex items-center justify-between gap-2">

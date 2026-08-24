@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
 import { Quote } from '@/components/Quote'
 import { VideoEmbed } from '@/components/VideoEmbed'
+import { DigestBody } from '@/components/DigestBody'
 import { MarkWeekDone } from '@/components/MarkWeekDone'
 import { LockIcon } from '@/components/icons'
 import type { TocItem } from '@/components/OnThisPage'
@@ -31,7 +32,9 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
     ? await getProgress(member.id)
     : { completedWeeks: new Set<number>(), completedItems: new Set<string>() }
 
-  if (!isUnlocked(n)) {
+  const tier = member?.tier ?? 'core'
+
+  if (!isUnlocked(n, tier)) {
     const open = currentWeek()
     return (
       <Shell>
@@ -46,7 +49,8 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
         />
         <Section label="Not yet">
           <p>
-            This week opens on {formatWeekRelease(n)} evening, when the digest lands in your inbox.
+            This week opens on {formatWeekRelease(n)} evening, when the digest lands in your
+            inbox. Pro runs a week at a time, alongside the calls.
           </p>
           {open >= 1 && open <= weeks.length ? (
             <p>
@@ -61,13 +65,14 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
   const digest = getDigest(n)
   const entries = entriesForWeek(n)
   const recording = workshopRecordings[n]
+  const quote = digest?.quote ?? week.quote
   const prev = n > 1 ? getWeek(n - 1) : undefined
-  const next = n < weeks.length && isUnlocked(n + 1) ? getWeek(n + 1) : undefined
+  const next = n < weeks.length && isUnlocked(n + 1, tier) ? getWeek(n + 1) : undefined
 
   const toc: TocItem[] = [
     { id: 'overview', label: 'Overview' },
     ...(week.type === 'deload' && week.recap ? [{ id: 'why', label: 'Why this matters' }] : []),
-    ...(week.youtubeId ? [{ id: 'masterclass', label: 'Video masterclass' }] : []),
+    { id: 'masterclass', label: 'Video masterclass' },
     { id: 'digest', label: 'Weekly digest' },
     { id: 'journal', label: 'Your journal this week' },
     ...(week.type === 'deload' ? [{ id: 'workshop', label: 'Module workshop' }] : []),
@@ -111,100 +116,17 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
         </Section>
       ) : null}
 
-      {week.youtubeId ? (
-        <Section id="masterclass" label="Video masterclass">
-          <VideoEmbed youtubeId={week.youtubeId} title={`${week.title} masterclass`} />
-          <p className="mt-4 !text-ink-56 text-[0.8125rem]">
-            Chris walks through the chapter. Watch it before you start the week.
-          </p>
-        </Section>
-      ) : null}
+      <Section id="masterclass" label="Video masterclass">
+        <VideoEmbed youtubeId={week.youtubeId} title={`${week.title} masterclass`} />
+        <p className="mt-4 !text-ink-56 text-[0.8125rem]">
+          Chris walks through the chapter. Watch it before you start the week.
+        </p>
+      </Section>
 
       <Section id="digest" label="Weekly digest">
         {digest ? (
           <>
-            {digest.opening.map((p, i) => (
-              <p key={i}>{p}</p>
-            ))}
-
-            {digest.focus.length ? (
-              <>
-                <h3>This week&rsquo;s focus</h3>
-                <ul>
-                  {digest.focus.map((f) => (
-                    <li key={f}>{f}</li>
-                  ))}
-                </ul>
-              </>
-            ) : null}
-
-            {digest.keyInsights.map((insight) => (
-              <div key={insight.title}>
-                <h3>{insight.title}</h3>
-                <p>{insight.body}</p>
-              </div>
-            ))}
-
-            {digest.implementation ? (
-              <>
-                <h3>Daily journal practice</h3>
-                <ul>
-                  {digest.implementation.dailyPractice.map((d) => (
-                    <li key={d}>{d}</li>
-                  ))}
-                </ul>
-                <h3>Weekly challenge</h3>
-                <p>{digest.implementation.weeklyChallenge}</p>
-                <h3>Reflection questions</h3>
-                <ul>
-                  {digest.implementation.reflectionQuestions.map((q) => (
-                    <li key={q}>{q}</li>
-                  ))}
-                </ul>
-              </>
-            ) : null}
-
-            {digest.science ? (
-              <>
-                <h3>{digest.science.title}</h3>
-                {digest.science.body.map((p, i) => (
-                  <p key={i}>{p}</p>
-                ))}
-                {digest.science.link ? (
-                  <p>
-                    <a href={digest.science.link.url} target="_blank" rel="noreferrer">
-                      {digest.science.link.label}
-                    </a>
-                  </p>
-                ) : null}
-              </>
-            ) : null}
-
-            {digest.progressCheck?.length ? (
-              <>
-                <h3>Connecting the dots</h3>
-                {digest.progressCheck.map((p, i) => (
-                  <p key={i}>{p}</p>
-                ))}
-              </>
-            ) : null}
-
-            {digest.lookingAhead?.length ? (
-              <>
-                <h3>Looking ahead</h3>
-                {digest.lookingAhead.map((p, i) => (
-                  <p key={i}>{p}</p>
-                ))}
-              </>
-            ) : null}
-
-            {digest.remember ? (
-              <>
-                <h3>Remember</h3>
-                <p>{digest.remember}</p>
-              </>
-            ) : null}
-
+            <DigestBody nodes={digest.nodes} />
             <p className="label !mt-8">Chris</p>
           </>
         ) : (
@@ -250,7 +172,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
         </Section>
       ) : null}
 
-      {week.quote ? <Quote text={week.quote.text} author={week.quote.author} /> : null}
+      {quote ? <Quote text={quote.text} author={quote.author} /> : null}
 
       <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-8 sm:px-10">
         <MarkWeekDone week={n} done={progress.completedWeeks.has(n)} />

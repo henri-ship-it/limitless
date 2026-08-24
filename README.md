@@ -61,17 +61,26 @@ the digest is added the remaining sections appear.
 
 ### Seeding the digests
 
-The digest copy has not been supplied yet. Once
-`limitless-digests-export.md` is to hand:
+`src/content/digests.ts` is generated from the Notion page "Limitless Digest,
+Weeks 1-16 (sequence copy, dates removed)". To regenerate, export that page to
+markdown and run:
 
 ```bash
-npm run import:digests -- ../limitless-digests-export.md
+python scripts/import-digests.py digests-raw.md
 ```
 
-This writes `src/content/digests.generated.ts` and prints anything it could not
-classify. Review it, then move the contents into `digests.ts`. The importer
-applies house style automatically: em dashes become commas or full stops, and
-semicolons become full stops.
+Chris's headings differ from week to week, so a digest is stored as an ordered
+list of nodes rather than fixed fields, and the week page walks the list. The
+importer also:
+
+- strips every mention of the module workshops, which belong on the deload week
+  page where the recording lands
+- applies house style: em dashes become commas or full stops, semicolons become
+  full stops
+- lifts the closing quotation of each week into its own field
+
+Week 7 has no page in Notion and exists only in Kit, so it has no digest. Its
+week page shows the empty state until the copy is added.
 
 ### Regenerating the journal
 
@@ -95,13 +104,24 @@ Two things are placeholders and need the real values:
   `DepartureMono-Regular.woff2` in `public/fonts/`. Until then the stack falls
   through to SF Mono, which is close but not the same.
 
+## Access by tier
+
+The two tiers read the programme differently, and this is deliberate.
+
+- **Pro is drip fed.** A Pro member sees up to the current week and no further.
+  The point of Pro is working the programme a week at a time alongside the
+  calls.
+- **Core is open access.** Every week is readable from the start, so a Core
+  member can work through the whole thing in one sitting.
+
+A week becomes current on the Sunday evening before it begins, six hours ahead
+of the Monday, which is when the digest email sends. See `src/lib/cohort.ts`.
+
 ## What is missing
 
 Tracked so nothing ships with invented content:
 
-- Digest copy for all sixteen weeks
-- The quotation that closes each week. The printed journal sets most of them as
-  outlines, so they cannot be read out of the PDF
+- The Week 7 digest, which exists only in Kit
 - Cohort 4.0 onboarding recording, from 26 August
 - Cohort 4.0 workshop recordings and workshop dates
 - The Pro WhatsApp invite link and the weekly drop-in call time

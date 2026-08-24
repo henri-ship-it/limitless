@@ -85,15 +85,19 @@ export default async function StartGuide() {
 
       <Section id="workshops" label="Workshops">
         <p>
-          Four workshops, one at the end of each module.
-          {tier === 'pro'
-            ? ' You join all four live.'
-            : ' The recording is posted on the deload week page.'}
+          Four workshops, one at the end of each module. Each runs during that module&rsquo;s deload
+          week, and the recording is posted on the deload week page a few days later.
+          {tier === 'pro' ? ' You join all four live.' : ''}
         </p>
         <Workshops />
       </Section>
 
       <Section id="rhythm" label="The weekly rhythm">
+        <p>
+          {tier === 'pro'
+            ? 'Pro runs a week at a time. Each week opens on the Sunday evening before it begins, alongside the calls.'
+            : 'Every week is open to you from the start. Work at the pace that suits you, or follow the weekly rhythm below.'}
+        </p>
         <ul className="!list-none !pl-0 !mb-0">
           <li className="flex gap-5 border-t border-line py-3">
             <span className="label w-24 shrink-0 pt-0.5">Sunday</span>

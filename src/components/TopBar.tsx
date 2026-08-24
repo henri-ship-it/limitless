@@ -9,10 +9,11 @@ import { ChevronIcon, LockIcon, NowIndicator, TickIcon } from './icons'
 type Props = {
   tier: Tier
   currentWeek: number
+  openThrough: number
   completedWeeks: number[]
 }
 
-export function TopBar({ tier, currentWeek, completedWeeks }: Props) {
+export function TopBar({ tier, currentWeek, openThrough, completedWeeks }: Props) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
   const menu = useRef<HTMLDivElement>(null)
@@ -69,7 +70,7 @@ export function TopBar({ tier, currentWeek, completedWeeks }: Props) {
                     <ul className="space-y-0.5">
                       {m.weeks.map((n) => {
                         const week = weeks.find((w) => w.number === n)!
-                        const locked = n > currentWeek
+                        const locked = n > openThrough
                         const inner = (
                           <span className="flex items-center justify-between gap-3 py-1">
                             <span className="flex min-w-0 items-baseline gap-2.5">

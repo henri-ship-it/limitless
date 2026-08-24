@@ -1,4 +1,4 @@
-import { COHORT, weeks } from '@/content/programme'
+import { COHORT, weeks, type Tier } from '@/content/programme'
 import { previewWeek } from './env'
 
 const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000
@@ -37,9 +37,21 @@ export function currentWeek(now: Date = new Date()): number {
   return week
 }
 
-/** Weeks ahead of the cohort stay visible in the nav but locked. */
-export function isUnlocked(week: number, now: Date = new Date()): boolean {
-  return week <= currentWeek(now)
+/**
+ * How far through the programme a member can read.
+ *
+ * Pro is drip fed. The point of Pro is working the programme a week at a time
+ * alongside the calls, so a Pro member sees up to the current week and no
+ * further. Core is open access and can work through the whole thing in one
+ * sitting if they want to.
+ */
+export function unlockedThrough(tier: Tier, now: Date = new Date()): number {
+  return tier === 'pro' ? currentWeek(now) : weeks.length
+}
+
+/** Weeks ahead of a member's release stay visible in the nav but locked. */
+export function isUnlocked(week: number, tier: Tier, now: Date = new Date()): boolean {
+  return week <= unlockedThrough(tier, now)
 }
 
 /** Monday that a given week begins. */

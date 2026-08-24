@@ -1,5 +1,5 @@
 import { getMember, getProgress } from '@/lib/member'
-import { currentWeek } from '@/lib/cohort'
+import { currentWeek, unlockedThrough } from '@/lib/cohort'
 import { TopBar } from './TopBar'
 import { Sidebar } from './Sidebar'
 import { OnThisPage, type TocItem } from './OnThisPage'
@@ -15,18 +15,26 @@ export async function Shell({
   const progress = member
     ? await getProgress(member.id)
     : { completedWeeks: new Set<number>(), completedItems: new Set<string>() }
+  const tier = member?.tier ?? 'core'
   const active = currentWeek()
+  const openThrough = unlockedThrough(tier)
   const completed = [...progress.completedWeeks]
 
   return (
     <div className="min-h-screen bg-bg">
-      <TopBar tier={member?.tier ?? 'core'} currentWeek={active} completedWeeks={completed} />
+      <TopBar
+        tier={tier}
+        currentWeek={active}
+        openThrough={openThrough}
+        completedWeeks={completed}
+      />
 
       <div className="mx-auto flex max-w-[var(--container)] items-stretch">
         <Sidebar
           currentWeek={active}
+          openThrough={openThrough}
           completedWeeks={completed}
-          isPro={member?.tier === 'pro'}
+          isPro={tier === 'pro'}
         />
         <main className="guides min-w-0 flex-1 bg-surface">{children}</main>
         {toc ? <OnThisPage items={toc} /> : null}
