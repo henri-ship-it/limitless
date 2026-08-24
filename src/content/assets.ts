@@ -24,7 +24,7 @@ export const assets = {
   onboardingRecording: {
     url: null,
     minTier: 'core',
-    note: 'Recorded 26 August 2026. Add the Drive link once it is uploaded.',
+    note: 'Add the Drive link once the onboarding call is uploaded.',
   } as Asset,
   whatsappInvite: {
     url: null,
@@ -33,6 +33,19 @@ export const assets = {
   } as Asset,
 } as const
 
+/**
+ * The four module workshops. Dates for cohort 4.0 are not confirmed, so the
+ * Start Guide shows the deload week and a disabled button until they are.
+ */
+export type Workshop = { date: string | null; calendarUrl: string | null }
+
+export const workshops: Record<number, Workshop> = {
+  1: { date: null, calendarUrl: null },
+  2: { date: null, calendarUrl: null },
+  3: { date: null, calendarUrl: null },
+  4: { date: null, calendarUrl: null },
+}
+
 /** Module workshop recordings, keyed by the deload week they belong to. */
 export const workshopRecordings: Record<number, Asset> = {
   4: { url: null, minTier: 'core', note: 'Module 01 workshop, cohort 4.0.' },
@@ -40,3 +53,5 @@ export const workshopRecordings: Record<number, Asset> = {
   12: { url: null, minTier: 'core', note: 'Module 03 workshop, cohort 4.0.' },
   16: { url: null, minTier: 'core', note: 'Module 04 workshop, cohort 4.0.' },
 }
+
+export const SUPPORT_EMAIL = 'chris@lmntaryperformance.com'

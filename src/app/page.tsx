@@ -3,12 +3,20 @@ import { Shell } from '@/components/Shell'
 import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
 import { Checklist } from '@/components/Checklist'
+import { CopyEmail } from '@/components/CopyEmail'
+import { Workshops } from '@/components/Workshops'
 import { checklistFor } from '@/content/checklist'
-import { tierComparison } from '@/content/tiers'
 import { COHORT, modules, weeks } from '@/content/programme'
-import { assets } from '@/content/assets'
+import { SUPPORT_EMAIL } from '@/content/assets'
 import { getMember, getProgress } from '@/lib/member'
-import { currentWeek, formatWeekStart } from '@/lib/cohort'
+
+const TOC = [
+  { id: 'get-started', label: 'Get started' },
+  { id: 'how-it-works', label: 'How it works' },
+  { id: 'workshops', label: 'Workshops' },
+  { id: 'rhythm', label: 'The weekly rhythm' },
+  { id: 'support', label: 'Support' },
+]
 
 export default async function StartGuide() {
   const member = await getMember()
@@ -17,89 +25,55 @@ export default async function StartGuide() {
     : { completedItems: new Set<string>(), completedWeeks: new Set<number>() }
   const tier = member?.tier ?? 'core'
   const items = checklistFor(tier)
-  const week = currentWeek()
 
   return (
-    <Shell>
+    <Shell toc={TOC}>
       <PageHeader
         eyebrow={`Cohort ${COHORT.label}`}
         title={member?.firstName ? `Welcome, ${member.firstName}` : 'Start Guide'}
-        meta={
+        lede="Sixteen weeks, four modules, one journal. This page covers how the programme runs and what to do before it begins."
+        pills={
           <>
-            <span className="label">
+            <span className="pill">{tier}</span>
+            <span className="pill">
               {progress.completedItems.size}/{items.length} set up
             </span>
-            <span className="label">
+            <span className="pill">
               {progress.completedWeeks.size}/{weeks.length} weeks complete
-            </span>
-            <span className="label">
-              {week === 0 ? 'Onboarding week' : week > 16 ? 'Programme complete' : `Week ${week}`}
             </span>
           </>
         }
       />
 
-      <Section label="Get started">
-        <p className="mb-6 text-ink-muted">
-          Work through these before Monday {formatWeekStart(1).replace(' 2026', '')}. Your
-          progress is saved as you go.
-        </p>
+      <Section id="get-started" label="Get started">
         <Checklist items={items} completed={[...progress.completedItems]} />
-      </Section>
-
-      <Section label="Onboarding call">
-        {assets.onboardingRecording.url ? (
-          <p>
-            <a href={assets.onboardingRecording.url} target="_blank" rel="noreferrer">
-              Watch the recording
-            </a>
-          </p>
-        ) : (
-          <p className="text-ink-muted">
-            The call is on {new Date(COHORT.onboardingCall.date).toLocaleDateString('en-GB', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-            })}
-            , {COHORT.onboardingCall.time}. The recording is posted here afterwards.
-          </p>
-        )}
-      </Section>
-
-      <Section label="Your journal">
-        <p>
-          Your physical journal is posted to you. The PDF is the same book, with all 112 entries.
-        </p>
-        <p>
-          <a href="/journal/download">Download the PDF journal</a>
+        <p className="mt-6 !text-ink-56 text-[0.8125rem]">
+          Your progress is saved as you go.
         </p>
       </Section>
 
-      <Section label="How the sixteen weeks work">
+      <Section id="how-it-works" label="How it works">
         <p>
-          Sixteen weeks, four modules. Each module runs three chapters and then a deload week. A
-          deload week introduces no new concepts. It is there to integrate what you have covered,
-          and it closes with the module workshop.
+          Each module runs three chapters and then a deload week. A deload week introduces no new
+          concepts. It is there to integrate what you have covered, and it closes with the module
+          workshop.
         </p>
-        <div className="mt-6 space-y-6">
+        <div className="mt-8 space-y-8">
           {modules.map((m) => (
-            <div key={m.number} className="border-t border-line pt-4">
-              <p className="label mb-2">
-                Module {String(m.number).padStart(2, '0')} · {m.name}
-              </p>
-              <p className="mb-3 text-[0.9375rem] text-ink-muted">{m.summary}</p>
-              <ul className="!list-none !pl-0 text-[0.9375rem]">
+            <div key={m.number} className="border-t border-line pt-5">
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <span className="pill">Module {String(m.number).padStart(2, '0')}</span>
+                <span className="text-[1.0625rem] font-medium text-ink">{m.name}</span>
+              </div>
+              <p className="mb-4 text-[0.9375rem]">{m.summary}</p>
+              <ul className="!list-none !pl-0 !mb-0">
                 {m.weeks.map((n) => {
                   const w = weeks.find((x) => x.number === n)!
                   return (
-                    <li key={n} className="flex gap-3">
-                      <span className="label w-14 shrink-0 pt-0.5">Week {n}</span>
-                      <span>
-                        {w.title}
-                        {w.topic ? (
-                          <span className="text-ink-muted"> · {w.topic.toLowerCase()}</span>
-                        ) : null}
-                      </span>
+                    <li key={n} className="flex items-baseline gap-4 border-t border-line py-2.5">
+                      <span className="label w-14 shrink-0">Week {n}</span>
+                      <span className="text-[0.9375rem] text-ink">{w.title}</span>
+                      {w.topic ? <span className="pill ml-auto">{w.topic}</span> : null}
                     </li>
                   )
                 })}
@@ -109,73 +83,59 @@ export default async function StartGuide() {
         </div>
       </Section>
 
-      <Section label="What your membership includes">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[26rem] border-collapse text-[0.9375rem]">
-            <thead>
-              <tr className="border-b border-line">
-                <th className="label py-3 text-left font-normal">Included</th>
-                <th className="label w-20 py-3 text-left font-normal">Core</th>
-                <th className="label w-20 py-3 text-left font-normal">Pro</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tierComparison.map((row) => (
-                <tr key={row.feature} className="border-b border-line">
-                  <td className="py-3 pr-4">{row.feature}</td>
-                  <td className={row.core ? 'text-accent' : 'text-ink-muted'}>
-                    {row.core ? '✓' : '—'}
-                  </td>
-                  <td className={row.pro ? 'text-accent' : 'text-ink-muted'}>
-                    {row.pro ? '✓' : '—'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="mt-6 text-[0.8125rem] text-ink-muted">
-          You are on {tier === 'pro' ? 'Pro' : 'Core'}.
-          {tier === 'core' ? ' Interested in Pro? Reply to any email from Chris.' : null}
-        </p>
-      </Section>
-
-      <Section label="Getting support">
+      <Section id="workshops" label="Workshops">
         <p>
+          Four workshops, one at the end of each module.
           {tier === 'pro'
-            ? 'Message the WhatsApp community for anything to do with the programme. For something you would rather keep private, message Chris directly or reply to any email.'
-            : 'Reply to any email from Chris. He reads and answers every one.'}
+            ? ' You join all four live.'
+            : ' The recording is posted on the deload week page.'}
         </p>
+        <Workshops />
       </Section>
 
-      <Section label="Timeline">
-        <ul className="!list-none !pl-0">
-          <li className="flex gap-4 border-b border-line py-3">
-            <span className="label w-28 shrink-0 pt-0.5">This week</span>
-            <span>Onboarding. Work through the list above.</span>
-          </li>
-          <li className="flex gap-4 border-b border-line py-3">
-            <span className="label w-28 shrink-0 pt-0.5">{formatWeekStart(1)}</span>
-            <span>Week 1 begins. Know Thyself.</span>
-          </li>
-          <li className="flex gap-4 border-b border-line py-3">
-            <span className="label w-28 shrink-0 pt-0.5">Every Sunday</span>
+      <Section id="rhythm" label="The weekly rhythm">
+        <ul className="!list-none !pl-0 !mb-0">
+          <li className="flex gap-5 border-t border-line py-3">
+            <span className="label w-24 shrink-0 pt-0.5">Sunday</span>
             <span>The week ahead is released, by email and here.</span>
           </li>
-          <li className="flex gap-4 py-3">
-            <span className="label w-28 shrink-0 pt-0.5">{formatWeekStart(16)}</span>
-            <span>Week 16, the final deload, and your post-programme assessment.</span>
+          <li className="flex gap-5 border-t border-line py-3">
+            <span className="label w-24 shrink-0 pt-0.5">Daily</span>
+            <span>A journal entry. Preview the day, then review it.</span>
+          </li>
+          <li className="flex gap-5 border-t border-line py-3">
+            <span className="label w-24 shrink-0 pt-0.5">End of week</span>
+            <span>The huddle. What worked, what did not, what changes.</span>
+          </li>
+          <li className="flex gap-5 border-y border-line py-3">
+            <span className="label w-24 shrink-0 pt-0.5">Every fourth</span>
+            <span>A deload week and the module workshop.</span>
           </li>
         </ul>
-        <p className="mt-8">
-          <Link
-            href="/week/1"
-            className="label !text-white inline-block bg-accent px-5 py-3 no-underline"
-          >
-            Read week 1
-          </Link>
-        </p>
       </Section>
+
+      <Section id="support" label="Support">
+        <p>
+          {tier === 'pro'
+            ? 'Message the WhatsApp community for anything to do with the programme. For something you would rather keep private, message Chris directly or email him.'
+            : 'Email Chris, or reply to any email he sends. He reads and answers every one.'}
+        </p>
+        <CopyEmail address={SUPPORT_EMAIL} />
+        {tier === 'core' ? (
+          <p className="mt-8 text-[0.9375rem]">
+            Interested in Pro? Reply to any email from Chris.
+          </p>
+        ) : null}
+      </Section>
+
+      <div className="px-6 py-10 sm:px-10">
+        <Link
+          href="/week/1"
+          className="label !text-white inline-flex items-center bg-ink px-5 py-3 no-underline hover:bg-ink-72"
+        >
+          Start week 1
+        </Link>
+      </div>
     </Shell>
   )
 }

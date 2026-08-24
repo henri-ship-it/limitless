@@ -2,6 +2,7 @@
 
 import { useOptimistic, useTransition } from 'react'
 import { toggleWeek } from '@/app/actions'
+import { TickIcon } from './icons'
 
 export function MarkWeekDone({ week, done }: { week: number; done: boolean }) {
   const [, startTransition] = useTransition()
@@ -17,13 +18,19 @@ export function MarkWeekDone({ week, done }: { week: number; done: boolean }) {
         })
       }
       aria-pressed={checked}
-      className={`label border px-4 py-2.5 transition-colors ${
+      className={`label flex items-center gap-2 border px-4 py-2.5 transition-colors ${
         checked
           ? 'border-accent bg-accent-soft !text-accent'
-          : 'border-line bg-surface hover:!text-ink hover:border-ink'
+          : 'border-line bg-surface hover:border-ink hover:!text-ink'
       }`}
     >
-      {checked ? '✓ Week complete' : 'Mark week complete'}
+      {checked ? (
+        <>
+          <TickIcon /> Week complete
+        </>
+      ) : (
+        'Mark week complete'
+      )}
     </button>
   )
 }

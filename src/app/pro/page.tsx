@@ -13,7 +13,12 @@ export default async function ProPage() {
 
   return (
     <Shell>
-      <PageHeader eyebrow="Pro" title="Your community" />
+      <PageHeader
+        eyebrow="Pro"
+        title="Your community"
+        lede="What Pro adds on top of the journal, the digests and the masterclasses."
+        pills={<span className="pill">Pro</span>}
+      />
 
       <Section label="WhatsApp community">
         {assets.whatsappInvite.url ? (
@@ -23,14 +28,14 @@ export default async function ProPage() {
             </a>
           </p>
         ) : (
-          <p className="text-ink-muted">
+          <p className="text-ink-56">
             The invite link is added here before week 1 begins.
           </p>
         )}
       </Section>
 
       <Section label="Weekly drop-in call">
-        <p className="text-ink-muted">
+        <p className="text-ink-56">
           A standing group call every week of the programme. The time is confirmed on the onboarding
           call.
         </p>

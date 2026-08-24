@@ -1,105 +1,215 @@
 @import 'tailwindcss';
 
 /*
-  Design tokens. Everything visual is defined here so the palette and type
-  scale can be restyled from Figma without touching a component.
+  Design tokens.
 
-  Reference: the Visualize Value course interface. System sans for headings and
-  body, a mono for every label and piece of metadata, hairline rules instead of
-  borders and shadows, and generous line lengths.
+  The interface follows the Firecrawl house style: a near-white ground, a
+  single near-black ink, hairline rules and vertical guides marking the
+  container, and every tint derived from black at low alpha rather than from a
+  separate grey ramp. No colour except the accent, which appears only on the
+  live-week indicator and completed ticks.
+
+  Type is Geist and Geist Mono, bundled locally. Suisse, which Firecrawl
+  licenses, is not free to redistribute. Geist is the closest open neo-grotesque
+  and it pairs with the mono the same way.
 */
 
-@font-face {
-  font-family: 'Departure Mono';
-  /* Drop DepartureMono-Regular.woff2 into public/fonts/ to enable this.
-     Until it is there the stack falls through to SF Mono. */
-  src: url('/fonts/DepartureMono-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-display: swap;
-}
-
 @theme {
-  --color-bg: #f5f5f7;
+  --color-bg: #f9f9f9;
   --color-surface: #ffffff;
-  --color-band: #f0f0f1;
-  --color-ink: #1d1d1f;
-  --color-ink-muted: #86868b;
-  --color-line: #e3e3e5;
+  --color-ink: #262626;
 
-  /* Brand green. Placeholder until Dan confirms the hex. Used only for
-     progress ticks, the current week marker and one primary button. */
-  --color-accent: #17795e;
-  --color-accent-soft: #e8f2ee;
+  /* Tints of black. Everything grey in the interface comes from these. */
+  --color-ink-3: #00000008;
+  --color-ink-5: #0000000d;
+  --color-ink-8: #00000014;
+  --color-ink-12: #0000001f;
+  --color-ink-20: #00000033;
+  --color-ink-40: #26262666;
+  --color-ink-56: #2626268f;
+  --color-ink-72: #262626b8;
 
-  --font-sans: -apple-system, system-ui, 'SF Pro Display', 'SF Pro Text',
-    'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-mono: 'Departure Mono', ui-monospace, 'SF Mono', SFMono-Regular, Menlo,
-    monospace;
+  --color-line: #ededed;
+  --color-line-strong: #e0e0e0;
+
+  /* The only colour in the system. Live week indicator and completed ticks. */
+  --color-accent: #1f9d55;
+  --color-accent-soft: #1f9d5514;
+
+  --font-sans: var(--font-geist-sans), -apple-system, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', Menlo, monospace;
 
   --text-label: 0.6875rem;
   --text-meta: 0.8125rem;
-  --text-body: 1rem;
-  --text-title: 1.875rem;
+  --text-body: 1.0625rem;
 
-  --spacing-rail: 15rem;
-  --spacing-list: 20rem;
+  --container: 1360px;
 }
 
 html {
   background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
 }
 
 body {
   font-family: var(--font-sans);
   color: var(--color-ink);
   font-size: var(--text-body);
-  line-height: 1.5;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
 }
 
 /* Mono label. Column headers, counters, week numbers, section eyebrows. */
 .label {
   font-family: var(--font-mono);
   font-size: var(--text-label);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--color-ink-muted);
+  color: var(--color-ink-56);
 }
 
+/* Small mono tag. Topics, tiers, entry counts. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink-72);
+  background: var(--color-ink-3);
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  padding: 0.25rem 0.625rem;
+  white-space: nowrap;
+}
+
+/*
+  Vertical guides. Two hairlines mark the edges of the reading column and run
+  the full height of the page, the way the reference site frames its sections.
+*/
+.guides {
+  position: relative;
+}
+
+.guides::before,
+.guides::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-line);
+  pointer-events: none;
+}
+
+.guides::before {
+  left: 0;
+}
+
+.guides::after {
+  right: 0;
+}
+
+/* Typography inside long-form content. */
 .prose-limitless {
-  max-width: 42rem;
+  max-width: 44rem;
 }
 
 .prose-limitless p {
   margin-bottom: 1.25rem;
-  line-height: 1.6;
+  line-height: 1.65;
+  color: var(--color-ink-72);
+}
+
+.prose-limitless > p:first-child {
+  color: var(--color-ink);
 }
 
 .prose-limitless h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  margin: 2.5rem 0 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  margin: 3rem 0 1rem;
 }
 
 .prose-limitless h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 1.75rem 0 0.5rem;
+  font-size: 1.0625rem;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  margin: 2rem 0 0.5rem;
 }
 
 .prose-limitless ul {
   margin-bottom: 1.25rem;
   padding-left: 1.125rem;
   list-style: disc;
+  color: var(--color-ink-72);
 }
 
 .prose-limitless li {
   margin-bottom: 0.5rem;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 .prose-limitless a {
+  color: var(--color-ink);
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--color-ink-20);
+}
+
+.prose-limitless a:hover {
+  text-decoration-color: var(--color-ink);
+}
+
+/* Live week indicator: a slow radar pulse behind a solid dot. */
+@keyframes radar {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.radar {
+  position: relative;
+  display: inline-flex;
+  height: 0.5rem;
+  width: 0.5rem;
+  flex: none;
+}
+
+.radar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--color-accent);
+  animation: radar 2s ease-out infinite;
+}
+
+.radar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--color-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radar::before {
+    animation: none;
+    opacity: 0.25;
+  }
+  html {
+    scroll-behavior: auto;
+  }
 }

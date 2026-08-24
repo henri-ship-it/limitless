@@ -1,6 +1,6 @@
 export function VideoEmbed({ youtubeId, title }: { youtubeId: string; title: string }) {
   return (
-    <div className="aspect-video w-full overflow-hidden border border-line bg-ink">
+    <div className="aspect-video w-full overflow-hidden border border-line bg-ink-5">
       <iframe
         className="h-full w-full"
         src={`https://www.youtube-nocookie.com/embed/${youtubeId}`}

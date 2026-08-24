@@ -51,12 +51,12 @@ export function SignInForm() {
       <button
         type="submit"
         disabled={state === 'sending'}
-        className="label !text-white mt-4 w-full bg-accent px-4 py-3 disabled:opacity-60"
+        className="label !text-white mt-4 w-full bg-ink px-4 py-3 hover:bg-ink-72 disabled:opacity-60"
       >
         {state === 'sending' ? 'Sending' : 'Send my link'}
       </button>
       {state === 'error' ? (
-        <p className="mt-4 text-[0.8125rem] leading-relaxed text-ink-muted">
+        <p className="mt-4 text-[0.8125rem] leading-relaxed text-ink-56">
           We could not send a link to that address. Check the spelling, or reply to any email from
           Chris and he will sort it out.
         </p>

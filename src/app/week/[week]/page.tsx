@@ -6,12 +6,14 @@ import { Section } from '@/components/Section'
 import { Quote } from '@/components/Quote'
 import { VideoEmbed } from '@/components/VideoEmbed'
 import { MarkWeekDone } from '@/components/MarkWeekDone'
+import { LockIcon } from '@/components/icons'
+import type { TocItem } from '@/components/OnThisPage'
 import { getWeek, moduleForWeek, weeks, COHORT } from '@/content/programme'
 import { getDigest } from '@/content/digests'
 import { entriesForWeek } from '@/content/journal'
 import { workshopRecordings } from '@/content/assets'
 import { getMember, getProgress } from '@/lib/member'
-import { currentWeek, formatWeekStart, isUnlocked } from '@/lib/cohort'
+import { currentWeek, formatWeekRelease, formatWeekStart, isUnlocked } from '@/lib/cohort'
 
 export function generateStaticParams() {
   return weeks.map((w) => ({ week: String(w.number) }))
@@ -30,20 +32,27 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
     : { completedWeeks: new Set<number>(), completedItems: new Set<string>() }
 
   if (!isUnlocked(n)) {
+    const open = currentWeek()
     return (
       <Shell>
         <PageHeader
           eyebrow={`Module ${String(module.number).padStart(2, '0')} · ${module.name}`}
           title={week.title}
+          pills={
+            <span className="pill">
+              <LockIcon /> Locked
+            </span>
+          }
         />
         <Section label="Not yet">
           <p>
-            Week {n} opens on {formatWeekStart(n)}, the same morning the digest lands in your inbox.
-            The cohort is on week {currentWeek()}.
+            This week opens on {formatWeekRelease(n)} evening, when the digest lands in your inbox.
           </p>
-          <p>
-            <Link href={`/week/${currentWeek()}`}>Go to this week</Link>
-          </p>
+          {open >= 1 && open <= weeks.length ? (
+            <p>
+              <Link href={`/week/${open}`}>Go to the current week</Link>
+            </p>
+          ) : null}
         </Section>
       </Shell>
     )
@@ -55,32 +64,41 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
   const prev = n > 1 ? getWeek(n - 1) : undefined
   const next = n < weeks.length && isUnlocked(n + 1) ? getWeek(n + 1) : undefined
 
+  const toc: TocItem[] = [
+    { id: 'overview', label: 'Overview' },
+    ...(week.type === 'deload' && week.recap ? [{ id: 'why', label: 'Why this matters' }] : []),
+    ...(week.youtubeId ? [{ id: 'masterclass', label: 'Video masterclass' }] : []),
+    { id: 'digest', label: 'Weekly digest' },
+    { id: 'journal', label: 'Your journal this week' },
+    ...(week.type === 'deload' ? [{ id: 'workshop', label: 'Module workshop' }] : []),
+  ]
+
   return (
-    <Shell>
+    <Shell toc={toc}>
       <PageHeader
         eyebrow={`Module ${String(module.number).padStart(2, '0')} · ${module.name}`}
         title={week.title}
-        meta={
+        pills={
           <>
-            <span className="label">Week {String(n).padStart(2, '0')} of 16</span>
-            {week.topic ? <span className="label">{week.topic}</span> : null}
-            <span className="label">
-              Entries {week.firstEntry} to {week.firstEntry + 6}
+            <span className="pill">Week {String(n).padStart(2, '0')} of 16</span>
+            {week.topic ? <span className="pill">{week.topic}</span> : null}
+            <span className="pill">
+              {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
             </span>
-            <span className="label">{formatWeekStart(n)}</span>
+            <span className="pill">{formatWeekStart(n)}</span>
           </>
         }
       />
 
-      <Section>
-        {(digest?.opening ?? week.opening).map((p, i) => (
+      <Section id="overview">
+        {week.opening.map((p, i) => (
           <p key={i}>{p}</p>
         ))}
       </Section>
 
       {week.type === 'deload' && week.recap ? (
-        <Section label="Why this matters">
-          <p>You have covered three chapters in this module:</p>
+        <Section id="why" label="Why this matters">
+          <p>This module covered three chapters:</p>
           <ul>
             {week.recap.map((r) => (
               <li key={r}>{r}</li>
@@ -93,102 +111,122 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
         </Section>
       ) : null}
 
-      {digest?.focus?.length ? (
-        <Section label="This week's focus">
-          <ul>
-            {digest.focus.map((f) => (
-              <li key={f}>{f}</li>
-            ))}
-          </ul>
-        </Section>
-      ) : null}
-
       {week.youtubeId ? (
-        <Section label="Video masterclass">
+        <Section id="masterclass" label="Video masterclass">
           <VideoEmbed youtubeId={week.youtubeId} title={`${week.title} masterclass`} />
-          <p className="mt-4 text-[0.8125rem] text-ink-muted">
-            Chris walks through the chapter. Watch before you start the week.
+          <p className="mt-4 !text-ink-56 text-[0.8125rem]">
+            Chris walks through the chapter. Watch it before you start the week.
           </p>
         </Section>
       ) : null}
 
-      {digest?.keyInsights?.length ? (
-        <Section label="Key insights">
-          {digest.keyInsights.map((insight) => (
-            <div key={insight.title}>
-              <h3>{insight.title}</h3>
-              <p>{insight.body}</p>
-            </div>
-          ))}
-        </Section>
-      ) : null}
-
-      {digest?.implementation ? (
-        <Section label="Implementation guide">
-          <h3>Daily journal practice</h3>
-          <ul>
-            {digest.implementation.dailyPractice.map((d) => (
-              <li key={d}>{d}</li>
+      <Section id="digest" label="Weekly digest">
+        {digest ? (
+          <>
+            {digest.opening.map((p, i) => (
+              <p key={i}>{p}</p>
             ))}
-          </ul>
-          <h3>Weekly challenge</h3>
-          <p>{digest.implementation.weeklyChallenge}</p>
-          <h3>Reflection questions</h3>
-          <ul>
-            {digest.implementation.reflectionQuestions.map((q) => (
-              <li key={q}>{q}</li>
-            ))}
-          </ul>
-        </Section>
-      ) : null}
 
-      {digest?.science ? (
-        <Section label="The science behind it">
-          <h3>{digest.science.title}</h3>
-          {digest.science.body.map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
-          {digest.science.link ? (
-            <p>
-              <a href={digest.science.link.url} target="_blank" rel="noreferrer">
-                {digest.science.link.label}
-              </a>
-            </p>
-          ) : null}
-        </Section>
-      ) : null}
-
-      {entries.length ? (
-        <Section label="Your journal this week">
-          <p className="text-ink-muted">
-            Entries {week.firstEntry} to {week.firstEntry + entries.length - 1}. Write them in the
-            journal, not here.
-          </p>
-          <ul className="!list-none !pl-0 mt-4">
-            {entries.map((e) => (
-              <li key={e.n} className="flex gap-4 border-t border-line py-3">
-                <span className="label w-16 shrink-0 pt-1">
-                  {String(e.n).padStart(3, '0')}
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-[0.9375rem]">{e.title ?? 'Daily entry'}</span>
-                  {e.prompts.slice(0, 1).map((p) => (
-                    <span key={p} className="mt-1 block text-[0.8125rem] text-ink-muted">
-                      {p}
-                    </span>
+            {digest.focus.length ? (
+              <>
+                <h3>This week&rsquo;s focus</h3>
+                <ul>
+                  {digest.focus.map((f) => (
+                    <li key={f}>{f}</li>
                   ))}
-                </span>
-              </li>
+                </ul>
+              </>
+            ) : null}
+
+            {digest.keyInsights.map((insight) => (
+              <div key={insight.title}>
+                <h3>{insight.title}</h3>
+                <p>{insight.body}</p>
+              </div>
             ))}
-          </ul>
-          <p className="mt-6">
-            <a href="/journal/download">Download the PDF journal</a>
+
+            {digest.implementation ? (
+              <>
+                <h3>Daily journal practice</h3>
+                <ul>
+                  {digest.implementation.dailyPractice.map((d) => (
+                    <li key={d}>{d}</li>
+                  ))}
+                </ul>
+                <h3>Weekly challenge</h3>
+                <p>{digest.implementation.weeklyChallenge}</p>
+                <h3>Reflection questions</h3>
+                <ul>
+                  {digest.implementation.reflectionQuestions.map((q) => (
+                    <li key={q}>{q}</li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
+
+            {digest.science ? (
+              <>
+                <h3>{digest.science.title}</h3>
+                {digest.science.body.map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
+                {digest.science.link ? (
+                  <p>
+                    <a href={digest.science.link.url} target="_blank" rel="noreferrer">
+                      {digest.science.link.label}
+                    </a>
+                  </p>
+                ) : null}
+              </>
+            ) : null}
+
+            {digest.progressCheck?.length ? (
+              <>
+                <h3>Connecting the dots</h3>
+                {digest.progressCheck.map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
+              </>
+            ) : null}
+
+            {digest.lookingAhead?.length ? (
+              <>
+                <h3>Looking ahead</h3>
+                {digest.lookingAhead.map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
+              </>
+            ) : null}
+
+            {digest.remember ? (
+              <>
+                <h3>Remember</h3>
+                <p>{digest.remember}</p>
+              </>
+            ) : null}
+
+            <p className="label !mt-8">Chris</p>
+          </>
+        ) : (
+          <p className="!text-ink-56">
+            The digest for this week is not loaded yet. It arrives by email on the Sunday evening
+            and appears here at the same time.
           </p>
-        </Section>
-      ) : null}
+        )}
+      </Section>
+
+      <Section id="journal" label="Your journal this week">
+        <p>
+          {entries.length} entries, {week.firstEntry} to {week.firstEntry + entries.length - 1}.
+          Six days of practice and a huddle to close the week. Write them in the journal.
+        </p>
+        <p>
+          <Link href={`/journal#week-${n}`}>See this week&rsquo;s entries</Link>
+        </p>
+      </Section>
 
       {week.type === 'deload' ? (
-        <Section label="Module workshop">
+        <Section id="workshop" label="Module workshop">
           {recording?.url ? (
             <p>
               <a href={recording.url} target="_blank" rel="noreferrer">
@@ -196,10 +234,10 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
               </a>
             </p>
           ) : (
-            <p className="text-ink-muted">
+            <p className="!text-ink-56">
               {member?.tier === 'pro'
                 ? 'The live workshop runs this week. The recording is posted here afterwards.'
-                : 'The recording is posted here on Thursday of this week.'}
+                : 'The recording is posted here on the Thursday of this week.'}
             </p>
           )}
           {n === 16 ? (
@@ -209,29 +247,6 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
               </a>
             </p>
           ) : null}
-        </Section>
-      ) : null}
-
-      {digest?.progressCheck?.length ? (
-        <Section label="Connecting the dots">
-          {digest.progressCheck.map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
-        </Section>
-      ) : null}
-
-      {digest?.lookingAhead?.length ? (
-        <Section label="Looking ahead">
-          {digest.lookingAhead.map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
-        </Section>
-      ) : null}
-
-      {digest?.remember ? (
-        <Section label="Remember">
-          <p>{digest.remember}</p>
-          <p className="label mt-6">Chris</p>
         </Section>
       ) : null}
 

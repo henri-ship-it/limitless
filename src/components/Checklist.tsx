@@ -2,6 +2,7 @@
 
 import { useOptimistic, useTransition } from 'react'
 import { toggleChecklistItem } from '@/app/actions'
+import { TickIcon } from './icons'
 import type { ChecklistItem } from '@/content/checklist'
 
 export function Checklist({
@@ -37,28 +38,28 @@ export function Checklist({
                 })
               }
               aria-pressed={checked}
-              className="flex w-full items-start gap-4 px-1 py-4 text-left hover:bg-bg/60"
+              className="flex w-full items-start gap-4 px-1 py-4 text-left hover:bg-ink-3"
             >
               <span
                 aria-hidden
-                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border text-[0.75rem] ${
+                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
                   checked
                     ? 'border-accent bg-accent text-white'
-                    : 'border-line bg-surface text-transparent'
+                    : 'border-line-strong bg-surface text-transparent'
                 }`}
               >
-                ✓
+                <TickIcon />
               </span>
               <span className="min-w-0">
                 <span
                   className={`block text-[0.9375rem] ${
-                    checked ? 'text-ink-muted line-through' : 'text-ink'
+                    checked ? 'text-ink-56 line-through' : 'text-ink'
                   }`}
                 >
                   {item.label}
                 </span>
                 {item.detail ? (
-                  <span className="mt-1 block text-[0.8125rem] leading-relaxed text-ink-muted">
+                  <span className="mt-1 block text-[0.8125rem] leading-relaxed text-ink-56">
                     {item.detail}
                   </span>
                 ) : null}
