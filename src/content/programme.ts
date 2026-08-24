@@ -87,7 +87,7 @@ export const weeks: Week[] = [
     module: 1,
     title: 'Know Thyself',
     type: 'chapter',
-    topic: 'Behavioural style',
+    topic: 'Personality',
     opening: [
       'It’s easy to believe we have a full picture of our own personalities. After all, who could know you better than yourself?',
       'The truth is, our self-awareness is often flawed and not what we think. Your blindspots hold potential. Reveal them, and you uncover new possibilities.',

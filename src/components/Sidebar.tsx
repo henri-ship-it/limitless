@@ -44,7 +44,7 @@ export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro }: Pro
                   <span className="flex items-center justify-between gap-2">
                     <span className="truncate">{week.title}</span>
                     {done.has(n) ? (
-                      <TickIcon className="shrink-0 text-accent" />
+                      <TickIcon className="shrink-0 text-accent-ink" />
                     ) : n === currentWeek ? (
                       <span className="radar shrink-0" aria-hidden />
                     ) : locked ? (

@@ -7,13 +7,15 @@ import { modules, weeks, type Tier } from '@/content/programme'
 import { ChevronIcon, LockIcon, NowIndicator, TickIcon } from './icons'
 
 type Props = {
+  /** The wordmark returns a member to whatever they were last working on. */
+  resumeHref: string
   tier: Tier
   currentWeek: number
   openThrough: number
   completedWeeks: number[]
 }
 
-export function TopBar({ tier, currentWeek, openThrough, completedWeeks }: Props) {
+export function TopBar({ resumeHref, tier, currentWeek, openThrough, completedWeeks }: Props) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
   const menu = useRef<HTMLDivElement>(null)
@@ -41,7 +43,7 @@ export function TopBar({ tier, currentWeek, openThrough, completedWeeks }: Props
     <header className="sticky top-0 z-40 border-b border-line bg-surface/85 backdrop-blur">
       <div className="flex h-14 items-center gap-6 px-5">
         <Link
-          href="/"
+          href={resumeHref}
           className="font-mono text-[0.8125rem] font-medium tracking-[0.16em] uppercase"
         >
           Limitless
@@ -78,7 +80,7 @@ export function TopBar({ tier, currentWeek, openThrough, completedWeeks }: Props
                               <span className="truncate text-[0.875rem]">{week.title}</span>
                             </span>
                             {done.has(n) ? (
-                              <TickIcon className="shrink-0 text-accent" />
+                              <TickIcon className="shrink-0 text-accent-ink" />
                             ) : n === currentWeek ? (
                               <span className="radar shrink-0" aria-hidden />
                             ) : locked ? (

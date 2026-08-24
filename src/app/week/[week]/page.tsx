@@ -65,7 +65,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
   const digest = getDigest(n)
   const entries = entriesForWeek(n)
   const recording = workshopRecordings[n]
-  const quote = digest?.quote ?? week.quote
+  const quote = digest?.quote
   const prev = n > 1 ? getWeek(n - 1) : undefined
   const next = n < weeks.length && isUnlocked(n + 1, tier) ? getWeek(n + 1) : undefined
 
@@ -74,7 +74,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
     ...(week.type === 'deload' && week.recap ? [{ id: 'why', label: 'Why this matters' }] : []),
     { id: 'masterclass', label: 'Video masterclass' },
     { id: 'digest', label: 'Weekly digest' },
-    { id: 'journal', label: 'Your journal this week' },
+    { id: 'journal', label: 'To close' },
     ...(week.type === 'deload' ? [{ id: 'workshop', label: 'Module workshop' }] : []),
   ]
 
@@ -126,7 +126,13 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
       <Section id="digest" label="Weekly digest">
         {digest ? (
           <>
-            <DigestBody nodes={digest.nodes} />
+            <DigestBody
+              nodes={digest.nodes}
+              week={n}
+              firstEntry={week.firstEntry}
+              entriesInWeek={entries.length}
+              completedItems={[...progress.completedItems]}
+            />
             <p className="label !mt-8">Chris</p>
           </>
         ) : (
@@ -137,12 +143,9 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
         )}
       </Section>
 
-      <Section id="journal" label="Your journal this week">
-        <p>
-          {entries.length} entries, {week.firstEntry} to {week.firstEntry + entries.length - 1}.
-          Six days of practice and a huddle to close the week. Write them in the journal.
-        </p>
-        <p>
+      <Section id="journal" label="To close">
+        {quote ? <Quote lines={quote.lines} author={quote.author} /> : null}
+        <p className={quote ? 'mt-10' : ''}>
           <Link href={`/journal#week-${n}`}>See this week&rsquo;s entries</Link>
         </p>
       </Section>
@@ -171,8 +174,6 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
           ) : null}
         </Section>
       ) : null}
-
-      {quote ? <Quote text={quote.text} author={quote.author} /> : null}
 
       <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-8 sm:px-10">
         <MarkWeekDone week={n} done={progress.completedWeeks.has(n)} />

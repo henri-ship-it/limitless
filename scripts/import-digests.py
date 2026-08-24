@@ -24,7 +24,47 @@ from pathlib import Path
 
 WORKSHOP = re.compile(r"workshop", re.I)
 SIGN_OFF = re.compile(r"^(best|warmly|all the best|onwards|speak soon)[,.]?$|^chris[,.]?$", re.I)
-QUOTE = re.compile(r'^[“"](.+?)[”"]\s*[—-]\s*(.+?)\.?$')
+DELOAD_WEEKS = {4, 8, 12, 16}
+
+
+def split_quote(block: str):
+    """
+    The closing quotation is whatever follows the last rule in a week. It can
+    run to several lines, as the Alice in Wonderland exchange in Week 2 does, so
+    the lines are kept separate rather than joined.
+    """
+    parts = block.rsplit("\n\t---\n", 1)
+    if len(parts) != 2:
+        return block, None
+
+    body, tail = parts
+    lines = [l.strip() for l in tail.split("\n") if l.strip() and l.strip() != "</details>"]
+    if not lines:
+        return body, None
+
+    last = lines[-1]
+    author = None
+    text_lines = lines
+
+    if last.startswith(("—", "–")):
+        author = last.lstrip("—–").strip()
+        text_lines = lines[:-1]
+    else:
+        # Attribution follows the closing quote mark, sometimes on an em dash
+        # and sometimes on a plain hyphen.
+        m = re.match(r'^(.*[”"\.\?!])\s+[—–-]\s+(.+)$', last)
+        if m:
+            author = m.group(2).strip()
+            text_lines = lines[:-1] + [m.group(1)]
+
+    kept = [l.strip() for l in text_lines if l.strip()]
+    # A single line quotation reads better without its wrapping marks. Dialogue
+    # across several lines needs them, so they stay.
+    cleaned = [kept[0].strip('“”"')] if len(kept) == 1 else kept
+    if not cleaned:
+        return body, None
+
+    return body, {"lines": cleaned, "author": author.strip().rstrip(".") if author else None}
 
 
 def style(text: str) -> str:
@@ -33,6 +73,7 @@ def style(text: str) -> str:
     # A semicolon becomes a full stop, so the next word takes a capital.
     text = re.sub(r"\s*;\s*(\w)", lambda m: ". " + m.group(1).upper(), text)
     text = re.sub(r",\s*,", ",", text)
+    text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)
     text = re.sub(r"\s+", " ", text).strip()
     # A comma standing in for a dash before a capitalised clause reads better
     # as a full stop.
@@ -42,7 +83,6 @@ def style(text: str) -> str:
 
 def parse_week(block: str):
     nodes = []
-    quote = None
     lines = [re.sub(r"^\t", "", line.rstrip()) for line in block.split("\n")]
 
     pending_list: list[str] = []
@@ -59,12 +99,6 @@ def parse_week(block: str):
 
         if line == "---":
             flush()
-            continue
-
-        m = QUOTE.match(line)
-        if m:
-            flush()
-            quote = {"text": style(m.group(1)), "author": m.group(2).strip().rstrip(".")}
             continue
 
         if SIGN_OFF.match(line):
@@ -98,7 +132,7 @@ def parse_week(block: str):
         nodes.append({"type": "p", "text": style(re.sub(r"\*\*(.+?)\*\*", r"\1", line))})
 
     flush()
-    return nodes, quote
+    return nodes
 
 
 def strip_workshops(nodes):
@@ -159,8 +193,11 @@ def main() -> None:
             print(f"Week {week}: no copy in Notion, skipped")
             continue
 
-        nodes, quote = parse_week(block[summary.end() :])
-        nodes = strip_workshops(nodes)
+        body, quote = split_quote(block[summary.end() :])
+        # A deload week closes on its own recap, not a quotation.
+        if week in DELOAD_WEEKS:
+            quote = None
+        nodes = strip_workshops(parse_week(body))
         digests.append({"week": week, "nodes": nodes, "quote": quote})
 
     digests.sort(key=lambda d: d["week"])
@@ -181,7 +218,11 @@ export type DigestNode =
 export type Digest = {
   week: number
   nodes: DigestNode[]
-  quote?: { text: string; author: string }
+  /**
+   * The closing quotation. Kept line by line so dialogue holds its shape.
+   * Some weeks close on a line of Chris's own, which carries no attribution.
+   */
+  quote?: { lines: string[]; author?: string }
 }
 
 export const digests: Digest[] = [''']
@@ -198,10 +239,10 @@ export const digests: Digest[] = [''']
                 out.append(f"      {{ type: '{node['type']}', text: {ts_string(node['text'])} }},")
         out.append("    ],")
         if d["quote"]:
-            out.append(
-                "    quote: { text: %s, author: %s },"
-                % (ts_string(d["quote"]["text"]), ts_string(d["quote"]["author"]))
-            )
+            lines = ", ".join(ts_string(style(l)) for l in d["quote"]["lines"])
+            author = d["quote"]["author"]
+            attribution = f", author: {ts_string(author)}" if author else ""
+            out.append("    quote: { lines: [%s]%s }," % (lines, attribution))
         out.append("  },")
 
     out.append("]")

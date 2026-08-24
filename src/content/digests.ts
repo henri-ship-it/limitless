@@ -14,7 +14,11 @@ export type DigestNode =
 export type Digest = {
   week: number
   nodes: DigestNode[]
-  quote?: { text: string; author: string }
+  /**
+   * The closing quotation. Kept line by line so dialogue holds its shape.
+   * Some weeks close on a line of Chris's own, which carries no attribution.
+   */
+  quote?: { lines: string[]; author?: string }
 }
 
 export const digests: Digest[] = [
@@ -55,7 +59,7 @@ export const digests: Digest[] = [
       { type: 'p', text: 'Excellence isn\'t about becoming someone else, it\'s about becoming the best version of yourself. This week\'s work lays the foundation for that journey.' },
       { type: 'p', text: 'Your first journal entry awaits. Let\'s begin.' },
     ],
-    quote: { text: 'The real voyage of discovery consists not in seeking new landscapes, but in having new eyes.', author: 'Marcel Proust' },
+    quote: { lines: ['The real voyage of discovery consists not in seeking new landscapes, but in having new eyes.'], author: 'Marcel Proust' },
   },
   {
     week: 2,
@@ -82,7 +86,7 @@ export const digests: Digest[] = [
       { type: 'ul', items: ['What values define you at your best?', 'When do you feel most aligned with your principles?', 'What situations trigger behaviours that contradict your values?', 'How might clearer values improve your decision-making?'] },
       { type: 'h', text: 'Deep Dive: The Science of Values-Based Living' },
       { type: 'p', text: 'Values influence your performance through multiple pathways:' },
-      { type: 'ul', items: ['**Decision Quality**: Clear values reduce decision fatigue by providing consistent criteria', '**Emotional Regulation**: Value alignment builds emotional resilience during challenges', '**Motivated Action**: Actions aligned with values access deeper sources of motivation', '**Identity Strength**: Living your values reinforces your sense of self and purpose'] },
+      { type: 'ul', items: ['Decision Quality: Clear values reduce decision fatigue by providing consistent criteria', 'Emotional Regulation: Value alignment builds emotional resilience during challenges', 'Motivated Action: Actions aligned with values access deeper sources of motivation', 'Identity Strength: Living your values reinforces your sense of self and purpose'] },
       { type: 'p', text: 'These elements combine to create a performance foundation that remains stable even when external conditions change.' },
       { type: 'h', text: 'Progress Check' },
       { type: 'p', text: 'Take a moment to reflect on your journey so far:' },
@@ -98,12 +102,8 @@ export const digests: Digest[] = [
       { type: 'h', text: 'Remember' },
       { type: 'p', text: 'Values aren\'t aspirational fantasies, they\'re practical guides for daily decisions. The more clearly you define them, the more effectively they\'ll serve your performance and wellbeing.' },
       { type: 'p', text: 'It\'s time to decode your moral compass,' },
-      { type: 'p', text: '"Would you tell me, please, which way I ought to go from here?"' },
-      { type: 'p', text: '"That depends a good deal on where you want to get to," said the Cat.' },
-      { type: 'p', text: '"I don\'t much care where…" said Alice.' },
-      { type: 'p', text: '"Then it doesn\'t matter which way you go," said the Cat.' },
-      { type: 'p', text: ', Lewis Carroll, Alice in Wonderland' },
     ],
+    quote: { lines: ['"Would you tell me, please, which way I ought to go from here?"', '"That depends a good deal on where you want to get to," said the Cat.', '"I don\'t much care where…" said Alice.', '"Then it doesn\'t matter which way you go," said the Cat.'], author: 'Lewis Carroll, Alice in Wonderland' },
   },
   {
     week: 3,
@@ -130,7 +130,7 @@ export const digests: Digest[] = [
       { type: 'ul', items: ['When do you feel most in flow with your work?', 'What capabilities do others consistently recognise in you?', 'Where have your strengths possibly become limitations?', 'How might you redesign your role to better leverage your strengths?'] },
       { type: 'h', text: 'Deep Dive: The Science of Strength-Based Performance' },
       { type: 'p', text: 'Research consistently shows that strength-focused development yields significantly better results than weakness-focused approaches:' },
-      { type: 'ul', items: ['**Engagement**: People who use their strengths daily are 6x more likely to be engaged in their work', '**Achievement**: Strength-focused individuals are 3x more likely to report excellent quality of life', '**Innovation**: Our most creative solutions emerge when we operate from strength rather than compensating for weakness', '**Resilience**: Leveraging strengths builds psychological capital that sustains performance during challenges'] },
+      { type: 'ul', items: ['Engagement: People who use their strengths daily are 6x more likely to be engaged in their work', 'Achievement: Strength-focused individuals are 3x more likely to report excellent quality of life', 'Innovation: Our most creative solutions emerge when we operate from strength rather than compensating for weakness', 'Resilience: Leveraging strengths builds psychological capital that sustains performance during challenges'] },
       { type: 'p', text: 'This isn\'t just positive psychology, it\'s practical performance strategy.' },
       { type: 'h', text: 'Progress Check' },
       { type: 'p', text: 'As we near the completion of Module 1, consider how these three elements connect:' },
@@ -145,8 +145,8 @@ export const digests: Digest[] = [
       { type: 'p', text: 'True excellence comes from a thoughtful balance. Having sufficient capability across necessary areas while becoming deliberately exceptional in your areas of natural strength.' },
       { type: 'p', text: 'The most effective performers address critical gaps while investing deeply in their distinctive capabilities. Your path to extraordinary performance involves both addressing important limitations and optimising what you do best.' },
       { type: 'p', text: 'Time to discover and deploy your edge.' },
-      { type: 'p', text: 'Know your strengths, recognise their weaknesses, and play to their advantage.' },
     ],
+    quote: { lines: ['Know your strengths, recognise their weaknesses, and play to their advantage.'] },
   },
   {
     week: 4,
@@ -169,7 +169,6 @@ export const digests: Digest[] = [
       { type: 'sub', text: 'Quick Reminder' },
       { type: 'ul', items: ['Review your journal entries from Weeks 1-3', 'Come with questions and insights to share', 'No new exercises this week - just integration', 'Prepare for Module 2 beginning next week'] },
     ],
-    quote: { text: 'Reflection is the lamp of the heart. If it departs, the heart will have no light.', author: 'Al-Ghazali' },
   },
   {
     week: 5,
@@ -217,7 +216,7 @@ export const digests: Digest[] = [
       { type: 'p', text: 'The goal isn\'t to eliminate difficult thoughts or emotions. It\'s to change your relationship with them. The aim is to build the capacity to act effectively even when internal experience is challenging.' },
       { type: 'p', text: 'Let\'s develop your mental agility,' },
     ],
-    quote: { text: 'Between stimulus and response, there is a space. In that space is our power to choose our response. In our response lies our growth and our freedom.', author: 'Viktor Frankl' },
+    quote: { lines: ['Between stimulus and response, there is a space. In that space is our power to choose our response. In our response lies our growth and our freedom.'], author: 'Viktor Frankl' },
   },
   {
     week: 6,
@@ -233,7 +232,7 @@ export const digests: Digest[] = [
       { type: 'h', text: 'Key Concepts' },
       { type: 'sub', text: 'The Three Pillars of Motivation' },
       { type: 'p', text: 'Research shows that sustainable motivation comes from three fundamental psychological needs. When these needs are met, motivation flows naturally. When they\'re missing, even the most disciplined person struggles to find momentum.' },
-      { type: 'ul', items: ['**Control**: Autonomy and agency over your actions', '**Competence**: The sense of progress and mastery', '**Connectedness**: Meaningful relationships and belonging'] },
+      { type: 'ul', items: ['Control: Autonomy and agency over your actions', 'Competence: The sense of progress and mastery', 'Connectedness: Meaningful relationships and belonging'] },
       { type: 'sub', text: 'Motivation as a Practice' },
       { type: 'p', text: 'Contrary to popular belief, motivation isn\'t something you wait for. It\'s something you create through deliberate practice. This week\'s exercises focus on designing environments and routines that naturally support your motivational needs.' },
       { type: 'sub', text: 'The Small Wins Strategy' },
@@ -265,8 +264,8 @@ export const digests: Digest[] = [
       { type: 'h', text: 'Remember' },
       { type: 'p', text: 'Motivation isn\'t about forcing yourself to feel inspired or pushing through resistance. It\'s about creating conditions where engagement naturally emerges.' },
       { type: 'p', text: 'Time to light your fire.' },
-      { type: 'p', text: 'The paradox of motivation is that it most readily appears not when we seek it directly, but when we create an environment where we feel in control, experience progress, and connect with others.' },
     ],
+    quote: { lines: ['The paradox of motivation is that it most readily appears not when we seek it directly, but when we create an environment where we feel in control, experience progress, and connect with others.'] },
   },
   {
     week: 8,
@@ -297,7 +296,6 @@ export const digests: Digest[] = [
       { type: 'sub', text: 'Quick Reminder' },
       { type: 'ul', items: ['Review your journal entries from Weeks 5-7', 'Connect the three mental mastery frameworks', 'Come with questions and insights to share', 'Prepare for Module 3 beginning next week'] },
     ],
-    quote: { text: 'The real voyage of discovery consists not in seeking new landscapes, but in having new eyes.', author: 'Marcel Proust' },
   },
   {
     week: 9,
@@ -316,7 +314,7 @@ export const digests: Digest[] = [
       { type: 'h', text: 'Key Concepts' },
       { type: 'sub', text: 'The Four Types of Support' },
       { type: 'p', text: 'Research shows that comprehensive support networks provide four distinct types of assistance:' },
-      { type: 'ul', items: ['**Emotional Support**: Connection, understanding and empathy', '**Tangible Support**: Practical assistance and resources', '**Informational Support**: Guidance, advice and expertise', '**Esteem Support**: Affirmation, feedback and recognition'] },
+      { type: 'ul', items: ['Emotional Support: Connection, understanding and empathy', 'Tangible Support: Practical assistance and resources', 'Informational Support: Guidance, advice and expertise', 'Esteem Support: Affirmation, feedback and recognition'] },
       { type: 'p', text: 'Most performance breakdowns occur when we have imbalances across these four domains.' },
       { type: 'sub', text: 'Strategic Support Design' },
       { type: 'p', text: 'Elite performers don\'t leave their support to chance. They deliberately construct networks that address specific needs and challenges.' },
@@ -335,7 +333,7 @@ export const digests: Digest[] = [
       { type: 'p', text: 'The myth of the self-made success story is just that - a myth. Excellence is always a collective achievement. Forget lone wolf. Build the pack that keeps you grounded, growing, and going, so you\'re never doing it alone.' },
       { type: 'p', text: 'Let\'s build your Solidarity Squad.' },
     ],
-    quote: { text: 'If you want to go fast, go alone. If you want to go far, go together.', author: 'African Proverb' },
+    quote: { lines: ['If you want to go fast, go alone. If you want to go far, go together.'], author: 'African Proverb' },
   },
   {
     week: 10,
@@ -352,7 +350,7 @@ export const digests: Digest[] = [
       { type: 'h', text: 'Key Concepts' },
       { type: 'sub', text: 'The Four Elements of Flow' },
       { type: 'p', text: 'Research reveals that flow states typically emerge when these conditions converge:' },
-      { type: 'ul', items: ['**Clear Goals**: Precisely understanding what you aim to accomplish', '**Immediate Feedback**: Recognising your progress as you work', '**Challenge/Skill Balance**: Operating at the edge of your capabilities', '**Deep Concentration**: Giving undivided attention to the task'] },
+      { type: 'ul', items: ['Clear Goals: Precisely understanding what you aim to accomplish', 'Immediate Feedback: Recognising your progress as you work', 'Challenge/Skill Balance: Operating at the edge of your capabilities', 'Deep Concentration: Giving undivided attention to the task'] },
       { type: 'sub', text: 'Flow Triggers' },
       { type: 'p', text: 'Specific environmental factors and conditions significantly increase the likelihood of flow. These serve as neurological signals that prepare your brain for deep engagement.' },
       { type: 'sub', text: 'The Focus Funnel' },
@@ -370,7 +368,7 @@ export const digests: Digest[] = [
       { type: 'p', text: 'Flow represents a natural state that emerges under specific conditions rather than something mystical or random. Your task involves creating circumstances where flow occurs naturally rather than forcing it.' },
       { type: 'p', text: 'Time to learn the art of riding the wave.' },
     ],
-    quote: { text: 'The best moments in our lives typically occur when a person\'s body or mind is stretched to its limits in a voluntary effort to accomplish something difficult and worthwhile.', author: 'Mihaly Csikszentmihalyi' },
+    quote: { lines: ['The best moments in our lives typically occur when a person\'s body or mind is stretched to its limits in a voluntary effort to accomplish something difficult and worthwhile.'], author: 'Mihaly Csikszentmihalyi' },
   },
   {
     week: 11,
@@ -391,7 +389,7 @@ export const digests: Digest[] = [
       { type: 'p', text: 'Research reveals a fascinating pattern among those who excel through change: they maintain a rock-solid sense of identity while employing remarkably flexible approaches. They possess absolute clarity about who they are and what truly matters, yet remain entirely open to different pathways toward their objectives.' },
       { type: 'sub', text: 'Adaptation Patterns' },
       { type: 'p', text: 'Effective adaptation follows distinct patterns, with three primary approaches:' },
-      { type: 'ul', items: ['**Reactive Adaptation**: Responding effectively to unexpected change', '**Proactive Adaptation**: Anticipating and preparing for potential shifts', '**Innovative Adaptation**: Deliberately creating change to gain advantage'] },
+      { type: 'ul', items: ['Reactive Adaptation: Responding effectively to unexpected change', 'Proactive Adaptation: Anticipating and preparing for potential shifts', 'Innovative Adaptation: Deliberately creating change to gain advantage'] },
       { type: 'sub', text: 'The Change Response Cycle' },
       { type: 'p', text: 'Our responses to change typically follow predictable phases. By understanding this cycle, you can navigate transitions more efficiently and with less psychological friction.' },
       { type: 'h', text: 'Implementation Guide' },
@@ -411,7 +409,7 @@ export const digests: Digest[] = [
       { type: 'p', text: 'In a world where change accelerates daily, adaptability isn\'t just another skill, it\'s the meta-skill that enables all others to remain relevant. Your capacity to learn, unlearn, and relearn may be the most valuable capability you can develop.' },
       { type: 'p', text: 'Let\'s escape extinction together.' },
     ],
-    quote: { text: 'It is not the strongest of the species that survives, nor the most intelligent. It is the one most adaptable to change.', author: 'Charles Darwin' },
+    quote: { lines: ['It is not the strongest of the species that survives, nor the most intelligent. It is the one most adaptable to change.'], author: 'Charles Darwin' },
   },
   {
     week: 12,
@@ -435,7 +433,6 @@ export const digests: Digest[] = [
       { type: 'p', text: 'Next week begins Module 4: Thrive, where we transition from building capabilities to applying them strategically. We\'ll explore how reflection drives performance, how to build unstoppable momentum, and how to manage your energy across different life domains for sustainable wellbeing.' },
       { type: 'p', text: 'For now, focus on connections. The insights you develop this week create the coherent foundation for everything that follows.' },
     ],
-    quote: { text: 'We must always change, renew, rejuvenate ourselves. Otherwise, we harden.', author: 'Johann Wolfgang von Goethe' },
   },
   {
     week: 13,
@@ -452,7 +449,7 @@ export const digests: Digest[] = [
       { type: 'h', text: 'Key Concepts' },
       { type: 'sub', text: 'Levels of Reflection' },
       { type: 'p', text: 'True reflection operates on multiple levels, each revealing different insights:' },
-      { type: 'ul', items: ['**Descriptive**: What actually happened?', '**Analytical**: Why did it happen that way?', '**Evaluative**: What worked well and what didn\'t?', '**Future-Focused**: What will you do differently?'] },
+      { type: 'ul', items: ['Descriptive: What actually happened?', 'Analytical: Why did it happen that way?', 'Evaluative: What worked well and what didn\'t?', 'Future-Focused: What will you do differently?'] },
       { type: 'sub', text: 'The Learning Loop' },
       { type: 'p', text: 'Effective reflection creates a continuous cycle: experience, reflection, insight, application, and new experience. Each cycle builds on the last, creating exponential rather than linear growth.' },
       { type: 'sub', text: 'Honest Assessment' },
@@ -462,7 +459,7 @@ export const digests: Digest[] = [
       { type: 'ul', items: ['Structured reflection on significant recent experiences', 'Identifying behavioural patterns that influence your results', 'Extracting actionable insights from both wins and challenges', 'Creating systems for ongoing reflection in your daily practice', 'Building your personal learning framework'] },
       { type: 'h', text: 'The Science Behind Reflection' },
       { type: 'p', text: 'Research consistently shows that structured reflection dramatically improves performance:' },
-      { type: 'ul', items: ['In a workplace training context, participants who engaged in reflection improved their performance on final training tests by **22.8%** compared to those who did not reflect ([source](https://www.library.hbs.edu/working-knowledge/reflecting-on-work-improves-job-performance))', 'Reflection activates different neural pathways than the original experience, creating multiple routes to the same learning'] },
+      { type: 'ul', items: ['In a workplace training context, participants who engaged in reflection improved their performance on final training tests by 22.8% compared to those who did not reflect ([source](https://www.library.hbs.edu/working-knowledge/reflecting-on-work-improves-job-performance))', 'Reflection activates different neural pathways than the original experience, creating multiple routes to the same learning'] },
       { type: 'p', text: 'What\'s fascinating is that reflection doesn\'t just help you learn, it literally changes how your brain processes future experiences, priming you to notice opportunities and patterns others miss.' },
       { type: 'h', text: 'Connecting Everything' },
       { type: 'p', text: 'This is where all your work comes together. Your self-awareness gives you the foundation for honest reflection. Your mental mastery provides the psychological safety to examine difficult truths. Your environmental design creates the conditions where reflection can happen effectively.' },
@@ -473,7 +470,7 @@ export const digests: Digest[] = [
       { type: 'p', text: 'Reflection isn\'t about dwelling on the past. It\'s about mining it for the wisdom that shapes your future. Every experience contains lessons. Every outcome offers insights. Your job is to extract them.' },
       { type: 'p', text: 'The mirrors are ready. What do you see?' },
     ],
-    quote: { text: 'We do not learn from experience... we learn from reflecting on experience.', author: 'John Dewey' },
+    quote: { lines: ['We do not learn from experience... we learn from reflecting on experience.'], author: 'John Dewey' },
   },
   {
     week: 14,
@@ -492,7 +489,7 @@ export const digests: Digest[] = [
       { type: 'p', text: 'We begin with clarity about your direction of travel, not just specific endpoints. When you\'re moving in the right direction, opportunities appear that you couldn\'t have planned for.' },
       { type: 'sub', text: 'The Three Levels of Goals' },
       { type: 'p', text: 'Effective goal-setting operates on multiple time horizons:' },
-      { type: 'ul', items: ['**Destination**: Your long-term goal', '**Milestones**: Specific outcomes in service of your goal', '**Systems**: Daily practices that move you forward'] },
+      { type: 'ul', items: ['Destination: Your long-term goal', 'Milestones: Specific outcomes in service of your goal', 'Systems: Daily practices that move you forward'] },
       { type: 'sub', text: 'Identity-Based Achievement' },
       { type: 'p', text: 'The most sustainable goals emerge from who you\'re becoming, not just what you want to have. When your goals align with your evolving identity, they feel less like work and more like natural expression.' },
       { type: 'h', text: 'Implementation Guide' },
@@ -509,7 +506,7 @@ export const digests: Digest[] = [
       { type: 'p', text: 'The horizon is calling. You\'ve built the capabilities. You\'ve developed the systems. Now it\'s time to point them toward something that truly matters.' },
       { type: 'p', text: 'What new horizon will you navigate toward?' },
     ],
-    quote: { text: 'A goal is not always meant to be reached, it often serves simply as something to aim toward.', author: 'Bruce Lee' },
+    quote: { lines: ['A goal is not always meant to be reached, it often serves simply as something to aim toward.'], author: 'Bruce Lee' },
   },
   {
     week: 15,
@@ -528,7 +525,7 @@ export const digests: Digest[] = [
       { type: 'h', text: 'This Week\'s Focus' },
       { type: 'p', text: 'We\'re exploring sustainable excellence through work-life seasons rather than the impossible goal of daily balance. True excellence requires periods of intense focus followed by deliberate restoration.' },
       { type: 'p', text: 'The approach covers three critical domains:' },
-      { type: 'ul', items: ['**Energy Architecture**: Designing how you spend, recover, and renew your physical and mental resources', '**Rhythmic Living**: Creating patterns that honour both high performance and deep restoration', '**Integration Practices**: Weaving wellbeing into your performance system rather than treating it as separate'] },
+      { type: 'ul', items: ['Energy Architecture: Designing how you spend, recover, and renew your physical and mental resources', 'Rhythmic Living: Creating patterns that honour both high performance and deep restoration', 'Integration Practices: Weaving wellbeing into your performance system rather than treating it as separate'] },
       { type: 'h', text: 'Why This Matters Now' },
       { type: 'p', text: 'The foundation is solid. Your self-awareness cuts through confusion. You have the mental tools to lean on when pressure mounts. Your environment is designed for success. You have goals that pull you toward meaningful achievement.' },
       { type: 'p', text: 'All of this becomes worthless if you can\'t sustain it.' },
@@ -546,7 +543,7 @@ export const digests: Digest[] = [
       { type: 'p', text: 'The choice shapes everything that follows.' },
       { type: 'p', text: 'Which path will you choose?' },
     ],
-    quote: { text: 'Take care of your body. It\'s the only place you have to live.', author: 'Jim Rohn' },
+    quote: { lines: ['Take care of your body. It\'s the only place you have to live.'], author: 'Jim Rohn' },
   },
   {
     week: 16,
@@ -571,7 +568,6 @@ export const digests: Digest[] = [
       { type: 'p', text: 'The frameworks will be better with use. The insights will evolve with experience. Your capabilities will strengthen with application.' },
       { type: 'p', text: 'This ending is your beginning.' },
     ],
-    quote: { text: 'What we plant in the soil of contemplation, we shall reap in the harvest of action.', author: 'Meister Eckhart' },
   },
 ]
 

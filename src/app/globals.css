@@ -33,8 +33,10 @@
   --color-line-strong: #e0e0e0;
 
   /* The only colour in the system. Live week indicator and completed ticks. */
-  --color-accent: #1f9d55;
-  --color-accent-soft: #1f9d5514;
+  --color-accent: #04dfbf;
+  --color-accent-soft: #04dfbf1f;
+  /* Ticks need to hold up on white, where the accent alone is too light. */
+  --color-accent-ink: #04a68e;
 
   --font-sans: var(--font-geist-sans), -apple-system, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', Menlo, monospace;

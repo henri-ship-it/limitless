@@ -64,3 +64,18 @@ export const getProgress = cache(async (memberId: string) => {
     completedItems: new Set((checklist ?? []).map((c) => c.item_key as string)),
   }
 })
+
+/** What a member has written in one journal entry. */
+export const getJournalEntry = cache(async (memberId: string, entry: number) => {
+  if (!supabaseConfigured) return null
+
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('member_journal')
+    .select('data')
+    .eq('member_id', memberId)
+    .eq('entry_number', entry)
+    .maybeSingle()
+
+  return (data?.data ?? null) as Record<string, unknown> | null
+})

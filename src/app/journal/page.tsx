@@ -4,7 +4,8 @@ import { Section } from '@/components/Section'
 import { LockIcon } from '@/components/icons'
 import { modules, weeks } from '@/content/programme'
 import { entriesForWeek } from '@/content/journal'
-import { JOURNAL_PAGE_HEIGHT, JOURNAL_PAGE_WIDTH, pageForEntry } from '@/content/journal-pages'
+import { JournalVisual } from '@/components/JournalVisual'
+import Link from 'next/link'
 import { isUnlocked } from '@/lib/cohort'
 import { getMember } from '@/lib/member'
 
@@ -79,7 +80,6 @@ export default async function JournalPage() {
                 {unlocked ? (
                   <ol className="space-y-8">
                     {entries.map((entry, i) => {
-                      const image = pageForEntry(entry.n)
                       const day = i + 1
                       const isHuddle = entry.title === 'Huddle'
                       return (
@@ -88,15 +88,16 @@ export default async function JournalPage() {
                           className="grid gap-5 border-t border-line pt-6 sm:grid-cols-[7rem_1fr]"
                         >
                           <div>
-                            <p className="label">{isHuddle ? 'Huddle' : `Day ${String(day).padStart(2, '0')}`}</p>
-                            <p className="label !text-ink-20 mt-1">
-                              Entry {String(entry.n).padStart(3, '0')}
-                            </p>
+                            <p className="label">{isHuddle ? 'Huddle' : `Day ${day}`}</p>
+                            <p className="label !text-ink-20 mt-1">Entry {entry.n}</p>
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[1rem] font-medium">
+                            <Link
+                              href={`/journal/${entry.n}`}
+                              className="text-[1rem] font-medium hover:underline"
+                            >
                               {entry.title ?? 'Daily entry'}
-                            </p>
+                            </Link>
                             {entry.prompts.length ? (
                               <ul className="mt-2 space-y-1.5">
                                 {entry.prompts.map((p) => (
@@ -106,17 +107,12 @@ export default async function JournalPage() {
                                 ))}
                               </ul>
                             ) : null}
-                            {image ? (
-                              <img
-                                src={image}
-                                alt={`Journal spread for entry ${entry.n}`}
-                                width={JOURNAL_PAGE_WIDTH}
-                                height={JOURNAL_PAGE_HEIGHT}
-                                loading="lazy"
-                                decoding="async"
-                                className="mt-4 w-full max-w-2xl border border-line"
-                              />
-                            ) : null}
+                            <JournalVisual entry={entry.n} className="mt-4 max-w-sm border border-line" />
+                            <p className="mt-4">
+                              <Link href={`/journal/${entry.n}`} className="label hover:!text-ink">
+                                Open entry →
+                              </Link>
+                            </p>
                           </div>
                         </li>
                       )

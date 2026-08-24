@@ -82,3 +82,23 @@ export function formatWeekRelease(week: number): string {
     timeZone: 'UTC',
   })
 }
+
+/**
+ * Where the wordmark takes a member: back to whatever they were last working
+ * on. During onboarding, before week 1 is released, that is the Start Guide.
+ * After that it is the first week they have not marked complete, which for a
+ * Pro member is capped at the week they have been released.
+ */
+export function resumeHref(
+  completedWeeks: Set<number> | number[],
+  openThrough: number,
+  now: Date = new Date(),
+): string {
+  if (currentWeek(now) === 0) return '/'
+
+  const done = completedWeeks instanceof Set ? completedWeeks : new Set(completedWeeks)
+  for (let week = 1; week <= openThrough; week += 1) {
+    if (!done.has(week)) return `/week/${week}`
+  }
+  return `/week/${Math.max(1, openThrough)}`
+}

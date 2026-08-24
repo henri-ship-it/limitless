@@ -46,3 +46,17 @@ export async function toggleChecklistItem(key: string, done: boolean) {
 
   revalidatePath('/', 'layout')
 }
+
+/** Saves one journal entry. Called on a debounce as the member types. */
+export async function saveJournalEntry(entry: number, data: unknown) {
+  const session = await requireMember()
+  if (!session) return
+  const { supabase, userId } = session
+
+  await supabase
+    .from('member_journal')
+    .upsert(
+      { member_id: userId, entry_number: entry, data, updated_at: new Date().toISOString() },
+      { onConflict: 'member_id,entry_number' },
+    )
+}
