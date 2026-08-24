@@ -4,8 +4,9 @@ import { Shell } from '@/components/Shell'
 import { PageHeader } from '@/components/PageHeader'
 import { DailyJournal } from '@/components/DailyJournal'
 import { JournalVisual } from '@/components/JournalVisual'
+import { customExercise } from '@/content/entry-extras'
 import { LockIcon } from '@/components/icons'
-import { journalEntries, entriesForWeek } from '@/content/journal'
+import { journalEntries, entriesForWeek, isHuddle } from '@/content/journal'
 import { getWeek, moduleForWeek } from '@/content/programme'
 import type { EntryData } from '@/content/journal-fields'
 import { getJournalEntry, getMember } from '@/lib/member'
@@ -29,7 +30,7 @@ export default async function EntryPage({ params }: { params: Promise<{ entry: s
 
   const weekEntries = entriesForWeek(entry.week)
   const day = weekEntries.findIndex((e) => e.n === n) + 1
-  const isHuddle = entry.title === 'Huddle'
+  const huddle = isHuddle(n)
 
   if (!isUnlocked(entry.week, tier)) {
     return (
@@ -55,20 +56,23 @@ export default async function EntryPage({ params }: { params: Promise<{ entry: s
     <Shell>
       <PageHeader
         eyebrow={`Module ${String(module.number).padStart(2, '0')} · Week ${entry.week} · ${week.title}`}
-        title={entry.title ?? (isHuddle ? 'Huddle' : `Day ${day}`)}
+        title={entry.title ?? (huddle ? 'Huddle' : `Day ${day}`)}
         pills={
           <>
-            <span className="pill">{isHuddle ? 'Huddle' : `Day ${day}`}</span>
+            <span className="pill">{huddle ? 'Huddle' : `Day ${day}`}</span>
             <span className="pill">Entry {n} of 112</span>
           </>
         }
       />
 
-      <JournalVisual entry={n} className="border-b border-line" />
+      {customExercise(n) ? null : <JournalVisual entry={n} className="border-b border-line" />}
 
       <DailyJournal
         entry={n}
+        intro={entry.intro}
         prompts={entry.prompts}
+        outro={entry.outro}
+        hasQr={entry.qr}
         initial={(saved ?? {}) as EntryData}
         persist={supabaseConfigured ? 'db' : 'local'}
       />

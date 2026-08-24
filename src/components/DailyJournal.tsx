@@ -3,11 +3,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { saveJournalEntry } from '@/app/actions'
 import { REVIEW_FIELDS, SCHEDULE_HOURS, type EntryData } from '@/content/journal-fields'
+import { VALUES, customExercise, linkForEntry } from '@/content/entry-extras'
 import { TickIcon } from './icons'
 
 type Props = {
   entry: number
+  intro: string[]
   prompts: string[]
+  outro: string[]
+  /** The page prints a QR code here, so the entry offers the link instead. */
+  hasQr: boolean
   initial: EntryData
   /** With no Supabase project the entry is kept on the device instead. */
   persist: 'db' | 'local'
@@ -15,8 +20,9 @@ type Props = {
 
 const SAVE_DELAY = 800
 
-export function DailyJournal({ entry, prompts, initial, persist }: Props) {
+export function DailyJournal({ entry, intro, prompts, outro, hasQr, initial, persist }: Props) {
   const storageKey = `limitless:entry:${entry}`
+  const custom = customExercise(entry)
   const [data, setData] = useState<EntryData>(initial)
   const [state, setState] = useState<'idle' | 'saving' | 'saved'>('idle')
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -91,13 +97,21 @@ export function DailyJournal({ entry, prompts, initial, persist }: Props) {
       <div className="grid lg:grid-cols-2">
         <div className="border-b border-line lg:border-r">
           <Panel label="Preview" meta="The day ahead">
-            <FieldGroup label="Intentions">
+            <FieldGroup label="Intentions" meta="Tick them off as you go">
               {[0, 1, 2].map((i) => (
                 <Line
                   key={i}
                   index={i + 1}
                   value={data.intentions?.[i] ?? ''}
                   onChange={(v) => updateList('intentions', i, v)}
+                  tick={{
+                    checked: Boolean(data.intentionsDone?.[i]),
+                    onToggle: () => {
+                      const done = [...(data.intentionsDone ?? [])]
+                      done[i] = !done[i]
+                      update({ intentionsDone: done })
+                    },
+                  }}
                 />
               ))}
             </FieldGroup>
@@ -130,6 +144,8 @@ export function DailyJournal({ entry, prompts, initial, persist }: Props) {
                   index={i + 1}
                   value={data.achievements?.[i] ?? ''}
                   onChange={(v) => updateList('achievements', i, v)}
+                  /* Writing one down is the achievement. It ticks itself. */
+                  tick={{ checked: Boolean(data.achievements?.[i]?.trim()), readOnly: true }}
                 />
               ))}
             </FieldGroup>
@@ -148,18 +164,67 @@ export function DailyJournal({ entry, prompts, initial, persist }: Props) {
         </div>
       </div>
 
-      {prompts.length ? (
+      {prompts.length || intro.length || custom ? (
         <div className="border-t border-line">
           <Panel label="The exercise">
-            {prompts.map((prompt, i) => (
-              <FieldGroup key={prompt} label={prompt} plain>
-                <textarea
-                  rows={4}
-                  value={data.prompts?.[i] ?? ''}
-                  onChange={(e) => updateList('prompts', i, e.target.value)}
-                  className="w-full resize-y border border-line bg-surface px-3 py-2.5 text-[0.9375rem] leading-relaxed outline-none focus:border-ink"
+            {intro.map((line) => (
+              <p key={line} className="text-[0.9375rem] leading-relaxed text-ink-72">
+                {line}
+              </p>
+            ))}
+
+            {hasQr ? <EntryLink entry={entry} /> : null}
+
+            {custom ? (
+              <>
+                {custom.guidance.map((line) => (
+                  <p key={line} className="text-[0.9375rem] leading-relaxed text-ink-72">
+                    {line}
+                  </p>
+                ))}
+                <ValuePicker
+                  selected={data.values ?? []}
+                  onToggle={(value) => {
+                    const current = new Set(data.values ?? [])
+                    if (current.has(value)) current.delete(value)
+                    else current.add(value)
+                    update({ values: [...current] })
+                  }}
                 />
-              </FieldGroup>
+                {custom.fieldsIntro ? (
+                  <p className="text-[0.9375rem] leading-relaxed text-ink-72">
+                    {custom.fieldsIntro}
+                  </p>
+                ) : null}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {custom.fields.map((field, i) => (
+                    <FieldGroup key={field} label={field}>
+                      <input
+                        value={data.prompts?.[i] ?? ''}
+                        onChange={(e) => updateList('prompts', i, e.target.value)}
+                        className="w-full border border-line bg-surface px-3 py-2.5 text-[0.9375rem] outline-none focus:border-ink"
+                      />
+                    </FieldGroup>
+                  ))}
+                </div>
+              </>
+            ) : (
+              prompts.map((prompt, i) => (
+                <FieldGroup key={prompt} label={prompt} plain>
+                  <textarea
+                    rows={4}
+                    value={data.prompts?.[i] ?? ''}
+                    onChange={(e) => updateList('prompts', i, e.target.value)}
+                    className="w-full resize-y border border-line bg-surface px-3 py-2.5 text-[0.9375rem] leading-relaxed outline-none focus:border-ink"
+                  />
+                </FieldGroup>
+              ))
+            )}
+
+            {(custom ? [] : outro).map((line) => (
+              <p key={line} className="text-[0.8125rem] leading-relaxed text-ink-56">
+                {line}
+              </p>
             ))}
           </Panel>
         </div>
@@ -214,19 +279,109 @@ function Line({
   index,
   value,
   onChange,
+  tick,
 }: {
   index: number
   value: string
   onChange: (value: string) => void
+  tick?: { checked: boolean; onToggle?: () => void; readOnly?: boolean }
 }) {
+  const box = tick ? (
+    <span
+      aria-hidden
+      className={`flex h-[1.125rem] w-[1.125rem] shrink-0 items-center justify-center rounded-[3px] border ${
+        tick.checked
+          ? 'border-accent-ink bg-accent-ink text-white'
+          : 'border-line-strong bg-surface text-transparent'
+      }`}
+    >
+      <TickIcon />
+    </span>
+  ) : null
+
   return (
-    <div className="flex items-center border-b border-line">
-      <span className="label w-6 shrink-0">{index}</span>
+    <div className="flex items-center gap-3 border-b border-line">
+      <span className="label w-4 shrink-0">{index}</span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="w-full bg-transparent py-2 text-[0.9375rem] outline-none"
       />
+      {tick && !tick.readOnly ? (
+        <button
+          type="button"
+          onClick={tick.onToggle}
+          aria-pressed={tick.checked}
+          aria-label={`Mark intention ${index} done`}
+          className="shrink-0 py-2"
+        >
+          {box}
+        </button>
+      ) : (
+        box
+      )}
+    </div>
+  )
+}
+
+function EntryLink({ entry }: { entry: number }) {
+  const link = linkForEntry(entry)
+
+  if (!link) {
+    return (
+      <p className="label border border-line bg-ink-3 px-4 py-3">
+        Assessment link to follow
+      </p>
+    )
+  }
+
+  return (
+    <a
+      href={link.url}
+      target="_blank"
+      rel="noreferrer"
+      className="label !text-white inline-flex bg-ink px-4 py-3 no-underline hover:bg-ink-72"
+    >
+      {link.label} →
+    </a>
+  )
+}
+
+function ValuePicker({
+  selected,
+  onToggle,
+}: {
+  selected: string[]
+  onToggle: (value: string) => void
+}) {
+  const chosen = new Set(selected)
+
+  return (
+    <div>
+      <div className="mb-3 flex items-baseline justify-between">
+        <p className="label">Select as many as you like</p>
+        <p className="label">{chosen.size} selected</p>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {VALUES.map((value) => {
+          const on = chosen.has(value)
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() => onToggle(value)}
+              aria-pressed={on}
+              className={`pill !normal-case transition-colors ${
+                on
+                  ? '!border-accent-ink !bg-accent-soft !text-ink'
+                  : 'hover:!border-line-strong hover:!text-ink'
+              }`}
+            >
+              {value}
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }

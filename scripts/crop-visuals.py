@@ -1,5 +1,6 @@
 """Finds the artwork on a journal entry page by looking at the pixels."""
 import io
+import re
 import sys
 
 import pymupdf
@@ -71,15 +72,16 @@ def visual_rect(page):
         if x1 > right.x0 and "ENTRY" not in text.upper()[:20]
     ]
 
-    for _ in range(4):
-        grown = rect
-        for x0, y0, x1, y1, text in blocks:
-            mid = (y0 + y1) / 2
-            if rect.y0 - 20 <= mid <= rect.y1 + 20:
-                grown = grown | pymupdf.Rect(x0, y0, x1, y1)
-        if grown == rect:
-            break
-        rect = grown
+    # Only short labels, and only once. Iterating lets the box creep down the
+    # page and swallow the prompt underneath.
+    grown = rect
+    for x0, y0, x1, y1, text in blocks:
+        if len(text.split()) > 6:
+            continue
+        mid = (y0 + y1) / 2
+        if rect.y0 - 26 <= mid <= rect.y1 + 26:
+            grown = grown | pymupdf.Rect(x0, y0, x1, y1)
+    rect = grown
 
     rect = rect & right
     # If the detection swallowed most of the page it has found the exercise
@@ -103,10 +105,20 @@ def main():
         m = re.search(r"ENTRY (\d+) / 112", page.get_text())
         if not m:
             continue
+        entry = int(m.group(1))
+
+        # Every seventh entry closes the week. Those pages carry no artwork.
+        if entry % 7 == 0:
+            continue
+
         rect = visual_rect(page)
         if not rect:
             continue
-        entry = int(m.group(1))
+
+        # Some pages set their prompts as labelled boxes. Those are prompts, not
+        # artwork, and the entry renders them as fields instead.
+        if overlaps_prompts(page, rect):
+            continue
         pad = 8
         clip = pymupdf.Rect(rect.x0 - pad, rect.y0 - pad, rect.x1 + pad, rect.y1 + pad) & page.rect
         img = render(page, clip, 3)
@@ -116,6 +128,40 @@ def main():
 
     json.dump(found, open(os.path.join(out_dir, "index.json"), "w"), indent=2)
     print(f"{len(found)} visuals of 112 entries")
+
+
+def overlaps_prompts(page, rect) -> bool:
+    """
+    True when the detected artwork is really the entry's prompt boxes.
+
+    A prompt is a line of text with ruled writing space under it. If most of
+    what was found sits on top of those, there is no graphic here.
+    """
+    W, H = page.rect.width, page.rect.height
+    blocks = []
+    for x0, y0, x1, y1, text, *_ in page.get_text("blocks"):
+        text = " ".join(text.split())
+        if x1 <= W / 2 or not text or re.match(r"^ENTRY \d+ / 112$", text):
+            continue
+        blocks.append((pymupdf.Rect(max(x0, W / 2), y0, x1, y1), text))
+    blocks.sort(key=lambda b: b[0].y0)
+
+    touched = 0
+    for i, (r, text) in enumerate(blocks):
+        gap = (blocks[i + 1][0].y0 if i + 1 < len(blocks) else H) - r.y1
+        if gap < 42:
+            continue
+        # A prompt asks something. A short line with no question or colon is a
+        # label inside the artwork, not a field to write in.
+        if len(text.split()) <= 6 and text[-1] not in "?:":
+            continue
+        if not (r & rect).is_empty:
+            touched += 1
+
+    # Artwork belongs to a single prompt at most. A region spanning several is
+    # the labelled boxes the member writes in, which the entry renders as
+    # fields instead.
+    return touched >= 2
 
 
 if __name__ == "__main__":

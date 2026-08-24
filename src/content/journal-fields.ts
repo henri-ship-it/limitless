@@ -18,12 +18,16 @@ export const REVIEW_FIELDS = [
 
 export type EntryData = {
   intentions?: string[]
+  /** Whether each intention has been ticked off during the day. */
+  intentionsDone?: boolean[]
   achievements?: string[]
   schedule?: Record<string, string>
   win?: string
   mind?: string
   grateful?: string
   prompts?: string[]
+  /** Entry 8 only: the values picked from the list. */
+  values?: string[]
 }
 
 export const EMPTY_ENTRY: EntryData = {}

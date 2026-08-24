@@ -3,7 +3,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
 import { LockIcon } from '@/components/icons'
 import { modules, weeks } from '@/content/programme'
-import { entriesForWeek } from '@/content/journal'
+import { entriesForWeek, isHuddle } from '@/content/journal'
 import { JournalVisual } from '@/components/JournalVisual'
 import Link from 'next/link'
 import { isUnlocked } from '@/lib/cohort'
@@ -81,14 +81,14 @@ export default async function JournalPage() {
                   <ol className="space-y-8">
                     {entries.map((entry, i) => {
                       const day = i + 1
-                      const isHuddle = entry.title === 'Huddle'
+                      const huddle = isHuddle(entry.n)
                       return (
                         <li
                           key={entry.n}
                           className="grid gap-5 border-t border-line pt-6 sm:grid-cols-[7rem_1fr]"
                         >
                           <div>
-                            <p className="label">{isHuddle ? 'Huddle' : `Day ${day}`}</p>
+                            <p className="label">{huddle ? 'Huddle' : `Day ${day}`}</p>
                             <p className="label !text-ink-20 mt-1">Entry {entry.n}</p>
                           </div>
                           <div className="min-w-0">
@@ -98,6 +98,11 @@ export default async function JournalPage() {
                             >
                               {entry.title ?? 'Daily entry'}
                             </Link>
+                            {entry.intro.map((line) => (
+                              <p key={line} className="mt-2 text-[0.875rem] leading-relaxed text-ink-56">
+                                {line}
+                              </p>
+                            ))}
                             {entry.prompts.length ? (
                               <ul className="mt-2 space-y-1.5">
                                 {entry.prompts.map((p) => (

@@ -52,7 +52,14 @@ export function DigestBody({ nodes, week, firstEntry, entriesInWeek, completedIt
           )
         }
 
-        if (node.type === 'p') return <p key={i}>{node.text}</p>
+        if (node.type === 'p') {
+          const afterList = nodes[i - 1]?.type === 'ul'
+          return (
+            <p key={i} className={afterList ? '!mt-8' : undefined}>
+              {node.text}
+            </p>
+          )
+        }
 
         const context = `${sub} ${heading}`
 
@@ -114,16 +121,16 @@ function PracticeList({
   return (
     <ol className="!list-none !pl-0 !mb-0 border-t border-line">
       {items.map((item, i) => (
-        <li key={item} className="!mb-0 flex items-start gap-4 border-b border-line py-3.5">
+        <li key={item} className="!mb-0 flex items-center gap-4 border-b border-line py-3">
           {stepped ? (
             <Link
               href={`/journal/${firstEntry + i}`}
-              className="pill !no-underline mt-0.5 shrink-0 hover:!text-ink hover:border-line-strong"
+              className="pill !no-underline shrink-0 hover:border-line-strong hover:!text-ink"
             >
               Day {i + 1}
             </Link>
           ) : (
-            <span className="label mt-1 w-5 shrink-0">{i + 1}</span>
+            <span className="label w-5 shrink-0 text-center">{i + 1}</span>
           )}
           <span className="text-[0.9375rem] leading-relaxed text-ink-72">{item}</span>
         </li>
