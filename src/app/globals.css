@@ -1,0 +1,105 @@
+@import 'tailwindcss';
+
+/*
+  Design tokens. Everything visual is defined here so the palette and type
+  scale can be restyled from Figma without touching a component.
+
+  Reference: the Visualize Value course interface. System sans for headings and
+  body, a mono for every label and piece of metadata, hairline rules instead of
+  borders and shadows, and generous line lengths.
+*/
+
+@font-face {
+  font-family: 'Departure Mono';
+  /* Drop DepartureMono-Regular.woff2 into public/fonts/ to enable this.
+     Until it is there the stack falls through to SF Mono. */
+  src: url('/fonts/DepartureMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@theme {
+  --color-bg: #f5f5f7;
+  --color-surface: #ffffff;
+  --color-band: #f0f0f1;
+  --color-ink: #1d1d1f;
+  --color-ink-muted: #86868b;
+  --color-line: #e3e3e5;
+
+  /* Brand green. Placeholder until Dan confirms the hex. Used only for
+     progress ticks, the current week marker and one primary button. */
+  --color-accent: #17795e;
+  --color-accent-soft: #e8f2ee;
+
+  --font-sans: -apple-system, system-ui, 'SF Pro Display', 'SF Pro Text',
+    'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: 'Departure Mono', ui-monospace, 'SF Mono', SFMono-Regular, Menlo,
+    monospace;
+
+  --text-label: 0.6875rem;
+  --text-meta: 0.8125rem;
+  --text-body: 1rem;
+  --text-title: 1.875rem;
+
+  --spacing-rail: 15rem;
+  --spacing-list: 20rem;
+}
+
+html {
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  font-size: var(--text-body);
+  line-height: 1.5;
+}
+
+/* Mono label. Column headers, counters, week numbers, section eyebrows. */
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+.prose-limitless {
+  max-width: 42rem;
+}
+
+.prose-limitless p {
+  margin-bottom: 1.25rem;
+  line-height: 1.6;
+}
+
+.prose-limitless h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 2.5rem 0 0.75rem;
+}
+
+.prose-limitless h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 1.75rem 0 0.5rem;
+}
+
+.prose-limitless ul {
+  margin-bottom: 1.25rem;
+  padding-left: 1.125rem;
+  list-style: disc;
+}
+
+.prose-limitless li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.prose-limitless a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
