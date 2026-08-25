@@ -25,7 +25,10 @@ export type EntryData = {
   win?: string
   mind?: string
   grateful?: string
-  prompts?: string[]
+  /** Answers to the exercise, keyed by the field's position. */
+  fields?: Record<string, string | string[]>
+  /** The three closing questions on a huddle entry. */
+  huddle?: string[]
   /** Entry 8 only: the values picked from the list. */
   values?: string[]
 }

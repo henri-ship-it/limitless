@@ -105,8 +105,8 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
         <Section id="why" label="Why this matters">
           <p>This module covered three chapters:</p>
           <ul>
-            {week.recap.map((r) => (
-              <li key={r}>{r}</li>
+            {week.recap.map((r, i) => (
+              <li key={i}>{r}</li>
             ))}
           </ul>
           <p>

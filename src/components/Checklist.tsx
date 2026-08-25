@@ -1,10 +1,18 @@
 'use client'
 
+import Link from 'next/link'
 import { useOptimistic, useTransition } from 'react'
 import { toggleChecklistItem } from '@/app/actions'
-import { TickIcon } from './icons'
 import type { ChecklistItem } from '@/content/checklist'
+import { assets } from '@/content/assets'
+import { TickIcon } from './icons'
 
+/**
+ * The set up list on the Start Guide. Ticks are saved per member.
+ *
+ * The tick is its own control rather than the whole row, so an item can carry a
+ * link beside it without nesting one control inside another.
+ */
 export function Checklist({
   items,
   completed,
@@ -13,22 +21,22 @@ export function Checklist({
   completed: string[]
 }) {
   const [, startTransition] = useTransition()
-  const [done, setDone] = useOptimistic(
-    new Set(completed),
-    (state: Set<string>, key: string) => {
-      const next = new Set(state)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
-      return next
-    },
-  )
+  const [done, setDone] = useOptimistic(new Set(completed), (state: Set<string>, key: string) => {
+    const next = new Set(state)
+    if (next.has(key)) next.delete(key)
+    else next.add(key)
+    return next
+  })
 
   return (
-    <ul className="!list-none !pl-0 divide-y divide-line border-y border-line">
+    <ul className="!list-none !pl-0 !mb-0 border-t border-line">
       {items.map((item) => {
         const checked = done.has(item.key)
+        const asset = item.asset ? assets[item.asset] : null
+        const link = item.link ?? (asset?.url ? { label: 'Watch the recording', href: asset.url } : null)
+
         return (
-          <li key={item.key}>
+          <li key={item.key} className="!mb-0 flex items-start gap-4 border-b border-line py-4">
             <button
               type="button"
               onClick={() =>
@@ -38,33 +46,45 @@ export function Checklist({
                 })
               }
               aria-pressed={checked}
-              className="flex w-full items-start gap-4 px-1 py-4 text-left hover:bg-ink-3"
+              aria-label={item.label}
+              className="mt-0.5 shrink-0"
             >
               <span
                 aria-hidden
-                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                className={`flex h-5 w-5 items-center justify-center rounded-full border ${
                   checked
-                    ? 'border-accent bg-accent text-white'
-                    : 'border-line-strong bg-surface text-transparent'
+                    ? 'border-accent-ink bg-accent-ink text-white'
+                    : 'border-line-strong bg-surface text-transparent hover:border-ink'
                 }`}
               >
                 <TickIcon />
               </span>
-              <span className="min-w-0">
-                <span
-                  className={`block text-[0.9375rem] ${
-                    checked ? 'text-ink-56 line-through' : 'text-ink'
-                  }`}
-                >
-                  {item.label}
-                </span>
-                {item.detail ? (
-                  <span className="mt-1 block text-[0.8125rem] leading-relaxed text-ink-56">
-                    {item.detail}
-                  </span>
-                ) : null}
-              </span>
             </button>
+
+            <div className="min-w-0">
+              <p
+                className={`!mb-0 text-[0.9375rem] ${
+                  checked ? 'text-ink-56 line-through' : 'text-ink'
+                }`}
+              >
+                {item.label}
+              </p>
+              {item.detail ? (
+                <p className="!mb-0 mt-1 text-[0.8125rem] leading-relaxed text-ink-56">
+                  {item.detail}
+                </p>
+              ) : null}
+              {link ? (
+                <Link
+                  href={link.href}
+                  className="label mt-2 inline-flex !no-underline border border-line px-3 py-1.5 hover:border-ink hover:!text-ink"
+                >
+                  {link.label}
+                </Link>
+              ) : asset ? (
+                <p className="label mt-2 !text-ink-40">Recording to follow</p>
+              ) : null}
+            </div>
           </li>
         )
       })}

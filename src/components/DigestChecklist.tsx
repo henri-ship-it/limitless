@@ -32,7 +32,7 @@ export function DigestChecklist({
         const key = `${keyPrefix}:${i}`
         const checked = done.has(key)
         return (
-          <li key={item} className="!mb-0 border-b border-line">
+          <li key={i} className="!mb-0 border-b border-line">
             <button
               type="button"
               onClick={() =>

@@ -4,11 +4,11 @@ import { Shell } from '@/components/Shell'
 import { PageHeader } from '@/components/PageHeader'
 import { DailyJournal } from '@/components/DailyJournal'
 import { JournalVisual } from '@/components/JournalVisual'
-import { customExercise } from '@/content/entry-extras'
 import { LockIcon } from '@/components/icons'
-import { journalEntries, entriesForWeek, isHuddle } from '@/content/journal'
+import { journalEntries } from '@/content/journal'
 import { getWeek, moduleForWeek } from '@/content/programme'
 import type { EntryData } from '@/content/journal-fields'
+import { resolveEntry } from '@/lib/entry'
 import { getJournalEntry, getMember } from '@/lib/member'
 import { isUnlocked } from '@/lib/cohort'
 import { supabaseConfigured } from '@/lib/env'
@@ -20,7 +20,7 @@ export function generateStaticParams() {
 export default async function EntryPage({ params }: { params: Promise<{ entry: string }> }) {
   const { entry: entryParam } = await params
   const n = Number(entryParam)
-  const entry = journalEntries.find((e) => e.n === n)
+  const entry = resolveEntry(n)
   if (!entry) notFound()
 
   const week = getWeek(entry.week)!
@@ -28,16 +28,12 @@ export default async function EntryPage({ params }: { params: Promise<{ entry: s
   const member = await getMember()
   const tier = member?.tier ?? 'core'
 
-  const weekEntries = entriesForWeek(entry.week)
-  const day = weekEntries.findIndex((e) => e.n === n) + 1
-  const huddle = isHuddle(n)
-
   if (!isUnlocked(entry.week, tier)) {
     return (
       <Shell>
         <PageHeader
           eyebrow={`Week ${entry.week} · ${week.title}`}
-          title={entry.title ?? `Entry ${n}`}
+          title={entry.title}
           pills={
             <span className="pill">
               <LockIcon /> Locked
@@ -56,23 +52,29 @@ export default async function EntryPage({ params }: { params: Promise<{ entry: s
     <Shell>
       <PageHeader
         eyebrow={`Module ${String(module.number).padStart(2, '0')} · Week ${entry.week} · ${week.title}`}
-        title={entry.title ?? (huddle ? 'Huddle' : `Day ${day}`)}
+        title={entry.title}
         pills={
           <>
-            <span className="pill">{huddle ? 'Huddle' : `Day ${day}`}</span>
+            <span className="pill">{entry.huddle ? 'Huddle' : `Day ${entry.day}`}</span>
             <span className="pill">Entry {n} of 112</span>
           </>
         }
       />
 
-      {customExercise(n) ? null : <JournalVisual entry={n} className="border-b border-line" />}
+      <JournalVisual
+        visual={entry.visual}
+        caption={entry.caption}
+        className="border-b border-line"
+      />
 
       <DailyJournal
         entry={n}
+        huddle={entry.huddle}
         intro={entry.intro}
-        prompts={entry.prompts}
+        fields={entry.fields}
         outro={entry.outro}
-        hasQr={entry.qr}
+        link={entry.link}
+        awaitingLink={entry.awaitingLink}
         initial={(saved ?? {}) as EntryData}
         persist={supabaseConfigured ? 'db' : 'local'}
       />

@@ -8,8 +8,8 @@ export function Quote({ lines, author }: { lines: string[]; author?: string }) {
   return (
     <figure className="!mb-0 border-l-2 border-line-strong bg-ink-3 px-6 py-6 sm:px-8">
       <blockquote className="max-w-xl space-y-2">
-        {lines.map((line) => (
-          <p key={line} className="!mb-0 text-[1.0625rem] leading-[1.6] !text-ink">
+        {lines.map((line, i) => (
+          <p key={i} className="!mb-0 text-[1.0625rem] leading-[1.6] !text-ink">
             {line}
           </p>
         ))}

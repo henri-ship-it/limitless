@@ -121,7 +121,7 @@ function PracticeList({
   return (
     <ol className="!list-none !pl-0 !mb-0 border-t border-line">
       {items.map((item, i) => (
-        <li key={item} className="!mb-0 flex items-center gap-4 border-b border-line py-3">
+        <li key={i} className="!mb-0 flex items-center gap-4 border-b border-line py-3">
           {stepped ? (
             <Link
               href={`/journal/${firstEntry + i}`}
@@ -142,8 +142,8 @@ function PracticeList({
 function QuestionList({ items }: { items: string[] }) {
   return (
     <ul className="!list-none !pl-0 !mb-0 grid gap-px bg-line sm:grid-cols-2">
-      {items.map((item) => (
-        <li key={item} className="!mb-0 bg-surface p-4">
+      {items.map((item, i) => (
+        <li key={i} className="!mb-0 bg-surface p-4">
           <p className="!mb-0 text-[0.9375rem] leading-relaxed !text-ink">{item}</p>
         </li>
       ))}
@@ -155,11 +155,11 @@ function QuestionList({ items }: { items: string[] }) {
 function TermList({ items }: { items: string[] }) {
   return (
     <dl className="!mb-0 border-t border-line">
-      {items.map((item) => {
+      {items.map((item, i) => {
         const [term, ...rest] = item.split(':')
         return (
           <div
-            key={item}
+            key={i}
             className="grid gap-1 border-b border-line py-3.5 sm:grid-cols-[11rem_1fr] sm:gap-5"
           >
             <dt className="label !text-ink pt-0.5">{term.trim()}</dt>
@@ -177,9 +177,9 @@ function TermList({ items }: { items: string[] }) {
 function PlainRows({ items }: { items: string[] }) {
   return (
     <ul className="!list-none !pl-0 !mb-0 border-t border-line">
-      {items.map((item) => (
+      {items.map((item, i) => (
         <li
-          key={item}
+          key={i}
           className="!mb-0 border-b border-line py-3 text-[0.9375rem] leading-relaxed text-ink-72"
         >
           {item}

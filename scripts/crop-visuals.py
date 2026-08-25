@@ -9,6 +9,25 @@ from PIL import Image, ImageChops, ImageDraw
 PDF = "/Users/henriballs/Henriballs Dropbox/Henri Team Folder/2025/08_LMNTARY/18_Journal/Export/PRINT/Digital/LP_Limitless_Journal_Combined_01.pdf"
 SCALE = 2
 
+# Entries whose diagram sits inside the exercise rather than above it. The
+# prompt overlap test would throw these away, so it is skipped for them.
+FORCE = {29, 32, 33, 43, 45, 47, 49, 57}
+
+# Where the automatic bounds pull in text that belongs to the exercise, the
+# region is given directly, in points on the right hand page.
+CLIPS = {
+    # Only the four support headings, not the instruction above them.
+    58: (0, 96, 420, 200),
+    # Only the four circles, not the question printed beside them.
+    61: (0, 96, 420, 200),
+    # The stairway to optimism, which sits beside the heading on each of the
+    # four steps rather than above the exercise.
+    43: (150, 48, 280, 196),
+    45: (150, 48, 280, 196),
+    47: (150, 48, 280, 196),
+    49: (150, 48, 280, 196),
+}
+
 
 def render(page, clip, scale):
     pix = page.get_pixmap(matrix=pymupdf.Matrix(scale, scale), clip=clip, alpha=False)
@@ -107,18 +126,24 @@ def main():
             continue
         entry = int(m.group(1))
 
-        # Every seventh entry closes the week. Those pages carry no artwork.
-        if entry % 7 == 0:
+        # Every seventh entry closes the week. Those pages carry no artwork,
+        # unless one has been named explicitly.
+        if entry % 7 == 0 and entry not in CLIPS:
             continue
 
-        rect = visual_rect(page)
-        if not rect:
-            continue
+        W = page.rect.width
+        if entry in CLIPS:
+            x0, y0, x1, y1 = CLIPS[entry]
+            rect = pymupdf.Rect(W / 2 + x0, y0, W / 2 + x1, y1) & page.rect
+        else:
+            rect = visual_rect(page)
+            if not rect:
+                continue
 
-        # Some pages set their prompts as labelled boxes. Those are prompts, not
-        # artwork, and the entry renders them as fields instead.
-        if overlaps_prompts(page, rect):
-            continue
+            # Some pages set their prompts as labelled boxes. Those are prompts,
+            # not artwork, and the entry renders them as fields instead.
+            if entry not in FORCE and overlaps_prompts(page, rect):
+                continue
         pad = 8
         clip = pymupdf.Rect(rect.x0 - pad, rect.y0 - pad, rect.x1 + pad, rect.y1 + pad) & page.rect
         img = render(page, clip, 3)

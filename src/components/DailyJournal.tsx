@@ -3,16 +3,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { saveJournalEntry } from '@/app/actions'
 import { REVIEW_FIELDS, SCHEDULE_HOURS, type EntryData } from '@/content/journal-fields'
-import { VALUES, customExercise, linkForEntry } from '@/content/entry-extras'
+import { HUDDLE_QUESTIONS, type Field } from '@/content/entry-fields'
+import { VALUES, customExercise } from '@/content/entry-extras'
+import { EntryField } from './EntryField'
 import { TickIcon } from './icons'
 
 type Props = {
   entry: number
+  /** A huddle closes the week, so it reflects instead of planning a day. */
+  huddle: boolean
   intro: string[]
-  prompts: string[]
+  fields: Field[]
   outro: string[]
-  /** The page prints a QR code here, so the entry offers the link instead. */
-  hasQr: boolean
+  link: { label: string; url: string } | null
+  awaitingLink: boolean
   initial: EntryData
   /** With no Supabase project the entry is kept on the device instead. */
   persist: 'db' | 'local'
@@ -20,7 +24,17 @@ type Props = {
 
 const SAVE_DELAY = 800
 
-export function DailyJournal({ entry, intro, prompts, outro, hasQr, initial, persist }: Props) {
+export function DailyJournal({
+  entry,
+  huddle,
+  intro,
+  fields,
+  outro,
+  link,
+  awaitingLink,
+  initial,
+  persist,
+}: Props) {
   const storageKey = `limitless:entry:${entry}`
   const custom = customExercise(entry)
   const [data, setData] = useState<EntryData>(initial)
@@ -28,7 +42,6 @@ export function DailyJournal({ entry, intro, prompts, outro, hasQr, initial, per
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const loaded = useRef(false)
 
-  // On a device with no project behind it, pick up whatever was typed before.
   useEffect(() => {
     if (persist === 'local' && !loaded.current) {
       loaded.current = true
@@ -69,10 +82,14 @@ export function DailyJournal({ entry, intro, prompts, outro, hasQr, initial, per
     })
   }
 
-  function updateList(key: 'intentions' | 'achievements' | 'prompts', i: number, value: string) {
+  function updateList(key: 'intentions' | 'achievements', i: number, value: string) {
     const list = [...(data[key] ?? [])]
     list[i] = value
     update({ [key]: list } as Partial<EntryData>)
+  }
+
+  function setField(path: string, value: string | string[]) {
+    update({ fields: { ...(data.fields ?? {}), [path]: value } })
   }
 
   return (
@@ -96,43 +113,62 @@ export function DailyJournal({ entry, intro, prompts, outro, hasQr, initial, per
 
       <div className="grid lg:grid-cols-2">
         <div className="border-b border-line lg:border-r">
-          <Panel label="Preview" meta="The day ahead">
-            <FieldGroup label="Intentions" meta="Tick them off as you go">
-              {[0, 1, 2].map((i) => (
-                <Line
-                  key={i}
-                  index={i + 1}
-                  value={data.intentions?.[i] ?? ''}
-                  onChange={(v) => updateList('intentions', i, v)}
-                  tick={{
-                    checked: Boolean(data.intentionsDone?.[i]),
-                    onToggle: () => {
-                      const done = [...(data.intentionsDone ?? [])]
-                      done[i] = !done[i]
-                      update({ intentionsDone: done })
-                    },
-                  }}
-                />
+          {huddle ? (
+            <Panel label="Huddle" meta="The week behind">
+              {HUDDLE_QUESTIONS.map((question, i) => (
+                <FieldGroup key={i} label={question} plain>
+                  <textarea
+                    rows={3}
+                    value={data.huddle?.[i] ?? ''}
+                    onChange={(e) => {
+                      const list = [...(data.huddle ?? [])]
+                      list[i] = e.target.value
+                      update({ huddle: list })
+                    }}
+                    className="w-full resize-y border border-line bg-surface px-3 py-2.5 text-[0.9375rem] leading-relaxed outline-none focus:border-ink"
+                  />
+                </FieldGroup>
               ))}
-            </FieldGroup>
-
-            <FieldGroup label="Schedule" meta="5am to 10pm">
-              <div className="border border-line">
-                {SCHEDULE_HOURS.map((hour) => (
-                  <div key={hour} className="flex items-center border-b border-line last:border-b-0">
-                    <span className="label w-14 shrink-0 py-2 pl-3">{hour}</span>
-                    <input
-                      value={data.schedule?.[hour] ?? ''}
-                      onChange={(e) =>
-                        update({ schedule: { ...(data.schedule ?? {}), [hour]: e.target.value } })
-                      }
-                      className="w-full bg-transparent px-3 py-2 text-[0.875rem] outline-none focus:bg-ink-3"
-                    />
-                  </div>
+            </Panel>
+          ) : (
+            <Panel label="Preview" meta="The day ahead">
+              <FieldGroup label="Intentions" meta="Tick them off as you go">
+                {[0, 1, 2].map((i) => (
+                  <Line
+                    key={i}
+                    index={i + 1}
+                    value={data.intentions?.[i] ?? ''}
+                    onChange={(v) => updateList('intentions', i, v)}
+                    tick={{
+                      checked: Boolean(data.intentionsDone?.[i]),
+                      onToggle: () => {
+                        const done = [...(data.intentionsDone ?? [])]
+                        done[i] = !done[i]
+                        update({ intentionsDone: done })
+                      },
+                    }}
+                  />
                 ))}
-              </div>
-            </FieldGroup>
-          </Panel>
+              </FieldGroup>
+
+              <FieldGroup label="Schedule" meta="5am to 10pm">
+                <div className="border border-line">
+                  {SCHEDULE_HOURS.map((hour) => (
+                    <div key={hour} className="flex items-center border-b border-line last:border-b-0">
+                      <span className="label w-14 shrink-0 py-2 pl-3">{hour}</span>
+                      <input
+                        value={data.schedule?.[hour] ?? ''}
+                        onChange={(e) =>
+                          update({ schedule: { ...(data.schedule ?? {}), [hour]: e.target.value } })
+                        }
+                        className="w-full bg-transparent px-3 py-2 text-[0.875rem] outline-none focus:bg-ink-3"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </FieldGroup>
+            </Panel>
+          )}
         </div>
 
         <div>
@@ -164,21 +200,32 @@ export function DailyJournal({ entry, intro, prompts, outro, hasQr, initial, per
         </div>
       </div>
 
-      {prompts.length || intro.length || custom ? (
+      {fields.length || intro.length || custom ? (
         <div className="border-t border-line">
           <Panel label="The exercise">
-            {intro.map((line) => (
-              <p key={line} className="text-[0.9375rem] leading-relaxed text-ink-72">
+            {intro.map((line, i) => (
+              <p key={i} className="text-[0.9375rem] leading-relaxed text-ink-72">
                 {line}
               </p>
             ))}
 
-            {hasQr ? <EntryLink entry={entry} /> : null}
+            {link ? (
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noreferrer"
+                className="label !text-white inline-flex bg-ink px-4 py-3 no-underline hover:bg-ink-72"
+              >
+                {link.label} →
+              </a>
+            ) : awaitingLink ? (
+              <p className="label border border-line bg-ink-3 px-4 py-3">Assessment link to follow</p>
+            ) : null}
 
             {custom ? (
               <>
-                {custom.guidance.map((line) => (
-                  <p key={line} className="text-[0.9375rem] leading-relaxed text-ink-72">
+                {custom.guidance.map((line, i) => (
+                  <p key={i} className="text-[0.9375rem] leading-relaxed text-ink-72">
                     {line}
                   </p>
                 ))}
@@ -192,16 +239,14 @@ export function DailyJournal({ entry, intro, prompts, outro, hasQr, initial, per
                   }}
                 />
                 {custom.fieldsIntro ? (
-                  <p className="text-[0.9375rem] leading-relaxed text-ink-72">
-                    {custom.fieldsIntro}
-                  </p>
+                  <p className="text-[0.9375rem] leading-relaxed text-ink-72">{custom.fieldsIntro}</p>
                 ) : null}
                 <div className="grid gap-4 sm:grid-cols-2">
                   {custom.fields.map((field, i) => (
-                    <FieldGroup key={field} label={field}>
+                    <FieldGroup key={i} label={field}>
                       <input
-                        value={data.prompts?.[i] ?? ''}
-                        onChange={(e) => updateList('prompts', i, e.target.value)}
+                        value={(data.fields?.[`custom.${i}`] as string) ?? ''}
+                        onChange={(e) => setField(`custom.${i}`, e.target.value)}
                         className="w-full border border-line bg-surface px-3 py-2.5 text-[0.9375rem] outline-none focus:border-ink"
                       />
                     </FieldGroup>
@@ -209,20 +254,19 @@ export function DailyJournal({ entry, intro, prompts, outro, hasQr, initial, per
                 </div>
               </>
             ) : (
-              prompts.map((prompt, i) => (
-                <FieldGroup key={prompt} label={prompt} plain>
-                  <textarea
-                    rows={4}
-                    value={data.prompts?.[i] ?? ''}
-                    onChange={(e) => updateList('prompts', i, e.target.value)}
-                    className="w-full resize-y border border-line bg-surface px-3 py-2.5 text-[0.9375rem] leading-relaxed outline-none focus:border-ink"
-                  />
-                </FieldGroup>
+              fields.map((field, i) => (
+                <EntryField
+                  key={i}
+                  field={field}
+                  path={String(i)}
+                  value={data.fields?.[String(i)]}
+                  onChange={setField}
+                />
               ))
             )}
 
-            {(custom ? [] : outro).map((line) => (
-              <p key={line} className="text-[0.8125rem] leading-relaxed text-ink-56">
+            {outro.map((line, i) => (
+              <p key={i} className="text-[0.8125rem] leading-relaxed text-ink-56">
                 {line}
               </p>
             ))}
@@ -321,29 +365,6 @@ function Line({
         box
       )}
     </div>
-  )
-}
-
-function EntryLink({ entry }: { entry: number }) {
-  const link = linkForEntry(entry)
-
-  if (!link) {
-    return (
-      <p className="label border border-line bg-ink-3 px-4 py-3">
-        Assessment link to follow
-      </p>
-    )
-  }
-
-  return (
-    <a
-      href={link.url}
-      target="_blank"
-      rel="noreferrer"
-      className="label !text-white inline-flex bg-ink px-4 py-3 no-underline hover:bg-ink-72"
-    >
-      {link.label} →
-    </a>
   )
 }
 

@@ -3,7 +3,8 @@ import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
 import { LockIcon } from '@/components/icons'
 import { modules, weeks } from '@/content/programme'
-import { entriesForWeek, isHuddle } from '@/content/journal'
+import { entriesForWeek } from '@/content/journal'
+import { resolveEntry } from '@/lib/entry'
 import { JournalVisual } from '@/components/JournalVisual'
 import Link from 'next/link'
 import { isUnlocked } from '@/lib/cohort'
@@ -79,16 +80,15 @@ export default async function JournalPage() {
 
                 {unlocked ? (
                   <ol className="space-y-8">
-                    {entries.map((entry, i) => {
-                      const day = i + 1
-                      const huddle = isHuddle(entry.n)
+                    {entries.map((raw) => {
+                      const entry = resolveEntry(raw.n)!
                       return (
                         <li
                           key={entry.n}
                           className="grid gap-5 border-t border-line pt-6 sm:grid-cols-[7rem_1fr]"
                         >
                           <div>
-                            <p className="label">{huddle ? 'Huddle' : `Day ${day}`}</p>
+                            <p className="label">{entry.huddle ? 'Huddle' : `Day ${entry.day}`}</p>
                             <p className="label !text-ink-20 mt-1">Entry {entry.n}</p>
                           </div>
                           <div className="min-w-0">
@@ -96,23 +96,27 @@ export default async function JournalPage() {
                               href={`/journal/${entry.n}`}
                               className="text-[1rem] font-medium hover:underline"
                             >
-                              {entry.title ?? 'Daily entry'}
+                              {entry.title}
                             </Link>
-                            {entry.intro.map((line) => (
-                              <p key={line} className="mt-2 text-[0.875rem] leading-relaxed text-ink-56">
+                            {entry.intro.map((line, i) => (
+                              <p key={i} className="mt-2 text-[0.875rem] leading-relaxed text-ink-56">
                                 {line}
                               </p>
                             ))}
-                            {entry.prompts.length ? (
+                            {entry.fields.length ? (
                               <ul className="mt-2 space-y-1.5">
-                                {entry.prompts.map((p) => (
-                                  <li key={p} className="text-[0.875rem] leading-relaxed text-ink-72">
-                                    {p}
+                                {entry.fields.map((field, i) => (
+                                  <li key={i} className="text-[0.875rem] leading-relaxed text-ink-72">
+                                    {field.kind === 'note' ? field.text : field.label}
                                   </li>
                                 ))}
                               </ul>
                             ) : null}
-                            <JournalVisual entry={entry.n} className="mt-4 max-w-sm border border-line" />
+                            <JournalVisual
+                              visual={entry.visual}
+                              caption={entry.caption}
+                              className="mt-4 max-w-sm border border-line"
+                            />
                             <p className="mt-4">
                               <Link href={`/journal/${entry.n}`} className="label hover:!text-ink">
                                 Open entry →

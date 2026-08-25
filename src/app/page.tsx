@@ -3,14 +3,17 @@ import { Shell } from '@/components/Shell'
 import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
 import { Checklist } from '@/components/Checklist'
+import { Timeline } from '@/components/Timeline'
 import { CopyEmail } from '@/components/CopyEmail'
 import { Workshops } from '@/components/Workshops'
 import { checklistFor } from '@/content/checklist'
 import { COHORT, modules, weeks } from '@/content/programme'
 import { SUPPORT_EMAIL } from '@/content/assets'
 import { getMember, getProgress } from '@/lib/member'
+import { currentWeek, unlockedThrough } from '@/lib/cohort'
 
 const TOC = [
+  { id: 'progress', label: 'Your progress' },
   { id: 'get-started', label: 'Get started' },
   { id: 'how-it-works', label: 'How it works' },
   { id: 'workshops', label: 'Workshops' },
@@ -25,6 +28,8 @@ export default async function StartGuide() {
     : { completedItems: new Set<string>(), completedWeeks: new Set<number>() }
   const tier = member?.tier ?? 'core'
   const items = checklistFor(tier)
+  const active = currentWeek()
+  const openThrough = unlockedThrough(tier)
 
   return (
     <Shell toc={TOC}>
@@ -44,6 +49,14 @@ export default async function StartGuide() {
           </>
         }
       />
+
+      <Section id="progress" label="Your progress">
+        <Timeline
+          currentWeek={active}
+          openThrough={openThrough}
+          completedWeeks={[...progress.completedWeeks]}
+        />
+      </Section>
 
       <Section id="get-started" label="Get started">
         <Checklist items={items} completed={[...progress.completedItems]} />
