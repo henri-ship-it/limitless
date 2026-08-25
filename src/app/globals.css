@@ -40,6 +40,7 @@
 
   --font-sans: var(--font-geist-sans), -apple-system, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-caption: var(--font-blender), var(--font-geist-sans), sans-serif;
 
   --text-label: 0.6875rem;
   --text-meta: 0.8125rem;

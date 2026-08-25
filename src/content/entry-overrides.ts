@@ -88,8 +88,8 @@ export const entryOverrides: Record<number, EntryOverride> = {
   },
   11: {
     title: 'The Unconscious',
-    caption: { lines: [], author: 'Carl Jung' },
     hideExercise: true,
+    caption: { lines: [], author: 'Carl Jung' },
   },
 
   // Week 3
@@ -150,7 +150,6 @@ export const entryOverrides: Record<number, EntryOverride> = {
   // Week 5
   29: {
     title: 'The Agile Mind',
-    caption: { lines: ['How to ‘win’ at self-talk'] },
     exercise: {
       intro: ['Rate yourself on a scale of 1 to 10 for each question, 1 being low and 10 being high.'],
       fields: [
@@ -170,9 +169,6 @@ export const entryOverrides: Record<number, EntryOverride> = {
   31: { title: 'The Mind is Like Water', hideExercise: true },
   32: {
     title: 'Hooked and Reacting Automatically',
-    caption: {
-      lines: ['Reacting', 'Acting ineffectively and unlike the sort of person you want to be.'],
-    },
     exercise: {
       intro: ['Identify a current challenging situation. Reflect on:'],
       fields: [
@@ -188,9 +184,6 @@ export const entryOverrides: Record<number, EntryOverride> = {
   },
   33: {
     title: 'Unhooked and Responding Deliberately',
-    caption: {
-      lines: ['Responding', 'Acting effectively and like the sort of person you want to be.'],
-    },
     exercise: {
       intro: ['Identify a current challenging situation. Reflect on:'],
       fields: [
@@ -236,7 +229,7 @@ export const entryOverrides: Record<number, EntryOverride> = {
   37: { hideVisual: true },
   40: {
     title: 'Motivation Comes from Within',
-    caption: { lines: ['The best motivation always comes from within.'], author: 'Michael Johnson' },
+    caption: { lines: [], author: 'Michael Johnson' },
   },
   41: {
     exercise: {
@@ -266,11 +259,8 @@ export const entryOverrides: Record<number, EntryOverride> = {
   },
   44: {
     title: 'Change the Way you Look at Things',
-    caption: {
-      lines: ['If you change the way you look at things,', 'the things you look at change.'],
-      author: 'Wayne Dyer',
-    },
     hideExercise: true,
+    caption: { lines: [], author: 'Wayne Dyer' },
   },
   45: {
     title: 'List your Resources',
@@ -337,8 +327,8 @@ export const entryOverrides: Record<number, EntryOverride> = {
   },
   53: {
     title: 'Control your own Destiny',
-    caption: { lines: ['Control your own destiny', 'or someone else will.'], author: 'Jack Welch' },
     hideExercise: true,
+    caption: { lines: [], author: 'Jack Welch' },
   },
   54: {
     title: 'Realistic Optimists',
@@ -368,8 +358,8 @@ export const entryOverrides: Record<number, EntryOverride> = {
   },
   55: {
     title: 'The Odds Increase',
-    caption: { lines: ['The odds increase, the more you try.'], author: 'James Clear' },
     hideExercise: true,
+    caption: { lines: [], author: 'James Clear' },
   },
 
   // Week 9
@@ -524,25 +514,17 @@ export const entryOverrides: Record<number, EntryOverride> = {
         { kind: 'text', label: 'What future reminder can you give yourself to remain adaptable?' },
       ],
     },
+    caption: { lines: [], author: 'Carl Jung' },
   },
   74: {
     title: 'Unlearn to Learn',
-    caption: {
-      lines: [
-        'When any real progress is made, we unlearn',
-        'and learn anew what we thought we knew before.',
-      ],
-      author: 'Henry David Thoreau',
-    },
     hideExercise: true,
+    caption: { lines: [], author: 'Henry David Thoreau' },
   },
   75: { hideVisual: true },
   79: {
     title: 'On the Shoulders of Giants',
-    caption: {
-      lines: ['If I have seen further it is by standing', 'on the shoulders of giants.'],
-      author: 'Isaac Newton',
-    },
+    caption: { lines: [], author: 'Isaac Newton' },
   },
 
   // Titles read off the printed page, where the heading is set as outlines.
@@ -552,34 +534,19 @@ export const entryOverrides: Record<number, EntryOverride> = {
   81: { title: 'Challenge and Ability' },
   83: {
     title: 'Building the New',
-    caption: {
-      lines: [
-        'The secret of change is to focus all of your energy,',
-        'not on fighting the old, but on building the new.',
-      ],
-      author: 'Socrates',
-    },
+    caption: { lines: [], author: 'Socrates' },
   },
   86: { title: 'Mind Full or Mindful' },
   88: { title: 'Growth Follows Awareness' },
   90: {
     title: 'Effective Action, Quiet Reflection',
-    caption: {
-      lines: [
-        'Follow effective action with quiet reflection. From the quiet',
-        'reflection will come even more effective action.',
-      ],
-      author: 'Peter Drucker',
-    },
+    caption: { lines: [], author: 'Peter Drucker' },
   },
   96: { title: 'Systems, Milestones, Destination' },
   97: { title: 'Think Big, Progress Small' },
   101: {
     title: 'Wellbeing is Energy',
-    caption: {
-      lines: ['Wellbeing is energy.', 'It should be the centrepiece of our performance.'],
-      author: 'Owen Eastwood',
-    },
+    caption: { lines: [], author: 'Owen Eastwood' },
   },
   103: { title: 'The Finish Line Keeps Moving' },
   107: { title: 'Direction Over Speed' },

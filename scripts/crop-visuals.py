@@ -20,6 +20,13 @@ CLIPS = {
     58: (0, 96, 420, 200),
     # Only the four circles, not the question printed beside them.
     61: (0, 96, 420, 200),
+    # The self-talk triangle, above the rating scale.
+    29: (0, 92, 420, 338),
+    # The hooked and unhooked diagrams, with their labels beside them.
+    32: (0, 96, 420, 350),
+    33: (0, 96, 420, 350),
+    # The four kinds of support, one shaded on each entry of the chapter.
+    57: (0, 96, 420, 200),
     # The stairway to optimism, which sits beside the heading on each of the
     # four steps rather than above the exercise.
     43: (150, 48, 280, 196),
