@@ -2,10 +2,16 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { saveJournalEntry } from '@/app/actions'
-import { REVIEW_FIELDS, SCHEDULE_HOURS, type EntryData } from '@/content/journal-fields'
+import {
+  REVIEW_FIELDS,
+  SCHEDULE_HOURS,
+  type EntryData,
+  type ScheduleBlock,
+} from '@/content/journal-fields'
 import { HUDDLE_QUESTIONS, type Field } from '@/content/entry-fields'
 import { VALUES, customExercise } from '@/content/entry-extras'
 import { EntryField } from './EntryField'
+import { ScheduleGrid } from './ScheduleGrid'
 import { TickIcon } from './icons'
 
 type Props = {
@@ -92,6 +98,20 @@ export function DailyJournal({
     update({ fields: { ...(data.fields ?? {}), [path]: value } })
   }
 
+  /**
+   * The schedule used to be one line per hour. Anything written back then is
+   * read as a run of single hour blocks so nothing is lost.
+   */
+  const blocks: ScheduleBlock[] =
+    data.blocks ??
+    Object.entries(data.schedule ?? {})
+      .filter(([, label]) => label.trim())
+      .map(([hour, label]) => {
+        const i = SCHEDULE_HOURS.indexOf(hour as (typeof SCHEDULE_HOURS)[number])
+        return { start: i, end: i, label }
+      })
+      .filter((b) => b.start >= 0)
+
   return (
     <div className="space-y-px">
       <div className="flex items-center justify-between border-b border-line px-6 py-3 sm:px-10">
@@ -151,21 +171,8 @@ export function DailyJournal({
                 ))}
               </FieldGroup>
 
-              <FieldGroup label="Schedule" meta="5am to 10pm">
-                <div className="border border-line">
-                  {SCHEDULE_HOURS.map((hour) => (
-                    <div key={hour} className="flex items-center border-b border-line last:border-b-0">
-                      <span className="label w-14 shrink-0 py-2 pl-3">{hour}</span>
-                      <input
-                        value={data.schedule?.[hour] ?? ''}
-                        onChange={(e) =>
-                          update({ schedule: { ...(data.schedule ?? {}), [hour]: e.target.value } })
-                        }
-                        className="w-full bg-transparent px-3 py-2 text-[0.875rem] outline-none focus:bg-ink-3"
-                      />
-                    </div>
-                  ))}
-                </div>
+              <FieldGroup label="Schedule" meta="Drag to block out time">
+                <ScheduleGrid blocks={blocks} onChange={(next) => update({ blocks: next })} />
               </FieldGroup>
             </Panel>
           )}
@@ -330,6 +337,9 @@ function Line({
   onChange: (value: string) => void
   tick?: { checked: boolean; onToggle?: () => void; readOnly?: boolean }
 }) {
+  // Only something you tick off yourself reads as crossed out. An achievement
+  // ticks itself as you write it, which is not the same gesture.
+  const struck = Boolean(tick?.checked && !tick.readOnly)
   const box = tick ? (
     <span
       aria-hidden
@@ -349,7 +359,9 @@ function Line({
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-transparent py-2 text-[0.9375rem] outline-none"
+        className={`w-full bg-transparent py-2 text-[0.9375rem] outline-none ${
+          struck ? 'text-ink-40 line-through' : ''
+        }`}
       />
       {tick && !tick.readOnly ? (
         <button

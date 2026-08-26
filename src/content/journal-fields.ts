@@ -16,11 +16,21 @@ export const REVIEW_FIELDS = [
   { key: 'grateful', label: 'One thing you are grateful for' },
 ] as const
 
+/**
+ * A block of time on the schedule. Start and end are indices into
+ * SCHEDULE_HOURS, and a block covers both ends, so start 1 end 3 is three
+ * hours long.
+ */
+export type ScheduleBlock = { start: number; end: number; label: string }
+
 export type EntryData = {
   intentions?: string[]
   /** Whether each intention has been ticked off during the day. */
   intentionsDone?: boolean[]
   achievements?: string[]
+  /** Blocks of time on the schedule. */
+  blocks?: ScheduleBlock[]
+  /** The original hour by hour schedule, read once and converted to blocks. */
   schedule?: Record<string, string>
   win?: string
   mind?: string
