@@ -1,15 +1,26 @@
-import { COHORT, weeks, type Tier } from '@/content/programme'
+import { COHORT, weeks } from '@/content/programme'
 import { previewWeek } from './env'
 
 const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000
 const MS_PER_HOUR = 60 * 60 * 1000
 
 /**
- * A week opens on the Sunday evening before it begins, not on the Monday. The
- * digest email lands then, so the platform has to be open when a member follows
- * it. Six hours before midnight puts that at 18:00 on the Sunday.
+ * A week opens at 16:00 UK time on the day before it begins, so the chapter is
+ * there when the digest lands rather than at midnight on the Monday. Week 1
+ * opens at 16:00 on Sunday 30 August.
  */
-const RELEASE_LEAD_HOURS = 6
+const RELEASE_HOUR_UK = 16
+
+/**
+ * How far Europe/London sits from UTC at a given moment, in milliseconds.
+ * The programme runs across the October clock change, so weeks either side of
+ * it release at different UTC times.
+ */
+function londonOffset(date: Date): number {
+  const utc = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }))
+  const london = new Date(date.toLocaleString('en-US', { timeZone: 'Europe/London' }))
+  return london.getTime() - utc.getTime()
+}
 
 /** Monday 00:00 UTC of the week containing `date`. */
 function startOfWeek(date: Date): Date {
@@ -28,30 +39,26 @@ function startOfWeek(date: Date): Date {
 export function currentWeek(now: Date = new Date()): number {
   if (previewWeek !== null) return previewWeek
 
-  const released = new Date(now.getTime() + RELEASE_LEAD_HOURS * MS_PER_HOUR)
-  const start = startOfWeek(new Date(`${COHORT.startDate}T00:00:00Z`))
-  const week = Math.floor((startOfWeek(released).getTime() - start.getTime()) / MS_PER_WEEK) + 1
+  let week = 0
+  for (let n = 1; n <= weeks.length; n += 1) {
+    if (now.getTime() >= weekReleaseDate(n).getTime()) week = n
+  }
 
   if (week < 1) return 0
-  if (week > weeks.length) return weeks.length + 1
   return week
 }
 
 /**
- * How far through the programme a member can read.
- *
- * Pro is drip fed. The point of Pro is working the programme a week at a time
- * alongside the calls, so a Pro member sees up to the current week and no
- * further. Core is open access and can work through the whole thing in one
- * sitting if they want to.
+ * How far through the programme a member can read. The same for both tiers:
+ * the programme is released a week at a time, in step with the digests.
  */
-export function unlockedThrough(tier: Tier, now: Date = new Date()): number {
-  return tier === 'pro' ? currentWeek(now) : weeks.length
+export function unlockedThrough(now: Date = new Date()): number {
+  return currentWeek(now)
 }
 
-/** Weeks ahead of a member's release stay visible in the nav but locked. */
-export function isUnlocked(week: number, tier: Tier, now: Date = new Date()): boolean {
-  return week <= unlockedThrough(tier, now)
+/** Weeks ahead of release stay visible in the nav but locked. */
+export function isUnlocked(week: number, now: Date = new Date()): boolean {
+  return week <= unlockedThrough(now)
 }
 
 /** Monday that a given week begins. */
@@ -60,9 +67,12 @@ export function weekStartDate(week: number): Date {
   return new Date(start.getTime() + (week - 1) * MS_PER_WEEK)
 }
 
-/** The Sunday evening a week is released, which is when it opens here. */
+/** The moment a week opens: 16:00 UK on the day before it begins. */
 export function weekReleaseDate(week: number): Date {
-  return new Date(weekStartDate(week).getTime() - RELEASE_LEAD_HOURS * MS_PER_HOUR)
+  const monday = weekStartDate(week)
+  // Midnight UK on the Monday, then back to 16:00 the day before.
+  const midnightUk = new Date(monday.getTime() - londonOffset(monday))
+  return new Date(midnightUk.getTime() - (24 - RELEASE_HOUR_UK) * MS_PER_HOUR)
 }
 
 export function formatWeekStart(week: number): string {
@@ -74,13 +84,23 @@ export function formatWeekStart(week: number): string {
   })
 }
 
+/** Reads as "Sunday 30 August at 4pm". */
 export function formatWeekRelease(week: number): string {
-  return weekReleaseDate(week).toLocaleDateString('en-GB', {
+  const date = weekReleaseDate(week)
+  const day = date.toLocaleDateString('en-GB', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
-    timeZone: 'UTC',
+    timeZone: 'Europe/London',
   })
+  const time = date
+    .toLocaleTimeString('en-GB', {
+      hour: 'numeric',
+      hour12: true,
+      timeZone: 'Europe/London',
+    })
+    .replace(/\s/g, '')
+  return `${day} at ${time}`
 }
 
 /**

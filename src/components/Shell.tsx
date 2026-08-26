@@ -17,7 +17,7 @@ export async function Shell({
     : { completedWeeks: new Set<number>(), completedItems: new Set<string>() }
   const tier = member?.tier ?? 'core'
   const active = currentWeek()
-  const openThrough = unlockedThrough(tier)
+  const openThrough = unlockedThrough()
   const completed = [...progress.completedWeeks]
   const resume = resumeHref(progress.completedWeeks, openThrough)
 

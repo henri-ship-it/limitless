@@ -104,18 +104,16 @@ Two things are placeholders and need the real values:
   `DepartureMono-Regular.woff2` in `public/fonts/`. Until then the stack falls
   through to SF Mono, which is close but not the same.
 
-## Access by tier
+## Release
 
-The two tiers read the programme differently, and this is deliberate.
+The programme is released a week at a time, the same for both tiers. A chapter
+opens at **16:00 UK on the day before it begins**, so it is there when the
+digest lands rather than at midnight on the Monday. Week 1 opens at 16:00 on
+Sunday 30 August.
 
-- **Pro is drip fed.** A Pro member sees up to the current week and no further.
-  The point of Pro is working the programme a week at a time alongside the
-  calls.
-- **Core is open access.** Every week is readable from the start, so a Core
-  member can work through the whole thing in one sitting.
-
-A week becomes current on the Sunday evening before it begins, six hours ahead
-of the Monday, which is when the digest email sends. See `src/lib/cohort.ts`.
+Weeks ahead of release stay visible in the nav, under a padlock. The clock
+change in October falls mid-programme, so release times are worked out in
+Europe/London rather than UTC. See `src/lib/cohort.ts`.
 
 ## What is missing
 

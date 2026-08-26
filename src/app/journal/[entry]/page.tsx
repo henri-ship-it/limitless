@@ -26,9 +26,8 @@ export default async function EntryPage({ params }: { params: Promise<{ entry: s
   const week = getWeek(entry.week)!
   const module = moduleForWeek(entry.week)!
   const member = await getMember()
-  const tier = member?.tier ?? 'core'
 
-  if (!isUnlocked(entry.week, tier)) {
+  if (!isUnlocked(entry.week)) {
     return (
       <Shell>
         <PageHeader
@@ -84,12 +83,12 @@ export default async function EntryPage({ params }: { params: Promise<{ entry: s
           All entries
         </Link>
         <div className="flex gap-6">
-          {prev && isUnlocked(prev.week, tier) ? (
+          {prev && isUnlocked(prev.week) ? (
             <Link href={`/journal/${prev.n}`} className="label hover:!text-ink">
               ← Entry {prev.n}
             </Link>
           ) : null}
-          {next && isUnlocked(next.week, tier) ? (
+          {next && isUnlocked(next.week) ? (
             <Link href={`/journal/${next.n}`} className="label hover:!text-ink">
               Entry {next.n} →
             </Link>

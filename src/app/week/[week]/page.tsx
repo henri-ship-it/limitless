@@ -34,7 +34,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
 
   const tier = member?.tier ?? 'core'
 
-  if (!isUnlocked(n, tier)) {
+  if (!isUnlocked(n)) {
     const open = currentWeek()
     return (
       <Shell>
@@ -49,8 +49,8 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
         />
         <Section label="Not yet">
           <p>
-            This week opens on {formatWeekRelease(n)} evening, when the digest lands in your
-            inbox. Pro runs a week at a time, alongside the calls.
+            This week opens on {formatWeekRelease(n)}, when the digest lands in your inbox. The
+            programme is released a week at a time.
           </p>
           {open >= 1 && open <= weeks.length ? (
             <p>
@@ -67,7 +67,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
   const recording = workshopRecordings[n]
   const quote = digest?.quote
   const prev = n > 1 ? getWeek(n - 1) : undefined
-  const next = n < weeks.length && isUnlocked(n + 1, tier) ? getWeek(n + 1) : undefined
+  const next = n < weeks.length && isUnlocked(n + 1) ? getWeek(n + 1) : undefined
 
   const toc: TocItem[] = [
     { id: 'overview', label: 'Overview' },

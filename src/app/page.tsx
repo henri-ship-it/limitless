@@ -29,7 +29,7 @@ export default async function StartGuide() {
   const tier = member?.tier ?? 'core'
   const items = checklistFor(tier)
   const active = currentWeek()
-  const openThrough = unlockedThrough(tier)
+  const openThrough = unlockedThrough()
 
   return (
     <Shell toc={TOC}>
@@ -107,14 +107,13 @@ export default async function StartGuide() {
 
       <Section id="rhythm" label="The weekly rhythm">
         <p>
-          {tier === 'pro'
-            ? 'Pro runs a week at a time. Each week opens on the Sunday evening before it begins, alongside the calls.'
-            : 'Every week is open to you from the start. Work at the pace that suits you, or follow the weekly rhythm below.'}
+          Each week opens at 4pm on the day before it begins, so the chapter is there when the
+          digest reaches you.
         </p>
         <ul className="!list-none !pl-0 !mb-0">
           <li className="flex gap-5 border-t border-line py-3">
             <span className="label w-24 shrink-0 pt-0.5">Sunday</span>
-            <span>The week ahead is released, by email and here.</span>
+            <span>The week ahead opens at 4pm, by email and here.</span>
           </li>
           <li className="flex gap-5 border-t border-line py-3">
             <span className="label w-24 shrink-0 pt-0.5">Daily</span>
