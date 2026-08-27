@@ -22,12 +22,11 @@ export const assets = {
     filename: 'Limitless-Journal.pdf',
   },
   onboardingRecording: {
-    url: null,
+    url: 'https://drive.google.com/file/d/1pVH2wmndL2m6g4WjsQte35yBjdexYaBD/view',
     minTier: 'core',
-    note: 'Add the Drive link once the onboarding call is uploaded.',
   } as Asset,
   whatsappInvite: {
-    url: null,
+    url: 'https://chat.whatsapp.com/GmMXYLcSNPLHgHE3ytI348?s=sh&p=i&mlu=0',
     minTier: 'pro',
     note: 'Pro community invite. Never render this for Core members.',
   } as Asset,

@@ -104,7 +104,6 @@ None of these stop launch, but members will see the gaps.
 
 | Where | What |
 |---|---|
-| `src/content/assets.ts` | Onboarding call recording URL, Pro WhatsApp invite |
 | `src/content/assets.ts` | The four workshop dates, so the buttons stop saying "to be confirmed" |
 | `src/content/digests.ts` | Week 7, which exists only in Kit |
 | `src/content/entry-extras.ts` | Nothing outstanding |

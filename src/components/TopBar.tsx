@@ -61,7 +61,7 @@ export function TopBar({ resumeHref, tier, currentWeek, openThrough, completedWe
           </button>
 
           {open ? (
-            <div className="absolute left-0 top-[calc(100%+0.5rem)] z-50 w-[min(92vw,42rem)] border border-line bg-surface shadow-[0_12px_40px_-12px_rgba(0,0,0,0.18)]">
+            <div className="absolute left-0 top-[calc(100%+0.5rem)] z-50 max-h-[calc(100vh-5rem)] w-[min(92vw,42rem)] overflow-y-auto overscroll-contain border border-line bg-surface shadow-[0_12px_40px_-12px_rgba(0,0,0,0.18)]">
               <div className="grid sm:grid-cols-2">
                 {modules.map((m) => (
                   <div key={m.number} className="border-b border-line p-4 sm:[&:nth-child(2n)]:border-l">
@@ -104,7 +104,7 @@ export function TopBar({ resumeHref, tier, currentWeek, openThrough, completedWe
                   </div>
                 ))}
               </div>
-              <div className="flex items-center justify-between border-t border-line px-4 py-3">
+              <div className="sticky bottom-0 flex items-center justify-between border-t border-line bg-surface px-4 py-3">
                 <Link href="/" className="label hover:!text-ink">
                   Start Guide
                 </Link>
