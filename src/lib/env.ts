@@ -17,3 +17,12 @@ export const previewWeek =
     : Number(process.env.PREVIEW_WEEK)
 
 export const previewTier = process.env.PREVIEW_TIER === 'pro' ? 'pro' : 'core'
+
+/**
+ * Opens every week regardless of the release schedule.
+ *
+ * This is for reviewing the programme before it runs, and it applies to
+ * everyone who signs in, not just you. Take it back out before the cohort is
+ * imported, or members will see all sixteen weeks on day one.
+ */
+export const unlockAllWeeks = process.env.UNLOCK_ALL_WEEKS === 'true'

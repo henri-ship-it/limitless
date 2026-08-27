@@ -1,5 +1,5 @@
 import { COHORT, weeks } from '@/content/programme'
-import { previewWeek } from './env'
+import { previewWeek, unlockAllWeeks } from './env'
 
 const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000
 const MS_PER_HOUR = 60 * 60 * 1000
@@ -53,6 +53,7 @@ export function currentWeek(now: Date = new Date()): number {
  * the programme is released a week at a time, in step with the digests.
  */
 export function unlockedThrough(now: Date = new Date()): number {
+  if (unlockAllWeeks) return weeks.length
   return currentWeek(now)
 }
 

@@ -63,6 +63,10 @@ that requested it. So this is not optional. Use Resend.
 
    Do **not** set `PREVIEW_WEEK` or `PREVIEW_TIER` in production. They override
    the release schedule and exist for local work only.
+
+   `UNLOCK_ALL_WEEKS=true` opens every week regardless of the schedule, for
+   reviewing the programme before it runs. It applies to everyone who signs in,
+   so take it out before the cohort is imported.
 4. Point the domain at it.
 
 ## 4. Journal PDF

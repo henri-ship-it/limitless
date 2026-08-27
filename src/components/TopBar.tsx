@@ -62,6 +62,20 @@ export function TopBar({ resumeHref, tier, currentWeek, openThrough, completedWe
 
           {open ? (
             <div className="absolute left-0 top-[calc(100%+0.5rem)] z-50 max-h-[calc(100vh-5rem)] w-[min(92vw,42rem)] overflow-y-auto overscroll-contain border border-line bg-surface shadow-[0_12px_40px_-12px_rgba(0,0,0,0.18)]">
+              <div className="sticky top-0 z-10 flex flex-wrap gap-x-6 gap-y-2 border-b border-line bg-surface px-4 py-3">
+                <Link href="/" onClick={() => setOpen(false)} className="label hover:!text-ink">
+                  Start Guide
+                </Link>
+                <Link href="/journal" onClick={() => setOpen(false)} className="label hover:!text-ink">
+                  Journal
+                </Link>
+                {tier === 'pro' ? (
+                  <Link href="/pro" onClick={() => setOpen(false)} className="label hover:!text-ink">
+                    Pro
+                  </Link>
+                ) : null}
+              </div>
+
               <div className="grid sm:grid-cols-2">
                 {modules.map((m) => (
                   <div key={m.number} className="border-b border-line p-4 sm:[&:nth-child(2n)]:border-l">
@@ -93,7 +107,11 @@ export function TopBar({ resumeHref, tier, currentWeek, openThrough, completedWe
                             {locked ? (
                               <span className="block cursor-default text-ink-40">{inner}</span>
                             ) : (
-                              <Link href={`/week/${n}`} className="block hover:text-ink text-ink-72">
+                              <Link
+                                href={`/week/${n}`}
+                                onClick={() => setOpen(false)}
+                                className="block text-ink-72 hover:text-ink"
+                              >
                                 {inner}
                               </Link>
                             )}
@@ -103,14 +121,6 @@ export function TopBar({ resumeHref, tier, currentWeek, openThrough, completedWe
                     </ul>
                   </div>
                 ))}
-              </div>
-              <div className="sticky bottom-0 flex items-center justify-between border-t border-line bg-surface px-4 py-3">
-                <Link href="/" className="label hover:!text-ink">
-                  Start Guide
-                </Link>
-                <Link href="/journal" className="label hover:!text-ink">
-                  Journal
-                </Link>
               </div>
             </div>
           ) : null}
