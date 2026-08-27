@@ -22,7 +22,10 @@ and in Vercel's environment variables, never in the browser.
 
 ## 2. Magic link email — **you, start this first**
 
-Supabase's built-in SMTP is rate limited and lands in spam. Use Resend.
+Supabase's built-in SMTP is rate limited and lands in spam. It also locks the
+email templates: the subject and body cannot be edited until custom SMTP is
+enabled, and the default template uses a link that only works in the browser
+that requested it. So this is not optional. Use Resend.
 
 1. Sign up at resend.com, add `lmntaryperformance.com`, and add the SPF and
    DKIM records it gives you to your DNS. **Verification can take a few hours,
