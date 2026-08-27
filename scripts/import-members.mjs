@@ -1,13 +1,20 @@
 /**
  * Creates the cohort 4.0 members from a Kit export.
  *
- *   node scripts/import-members.mjs members.csv           # dry run
+ *   node scripts/import-members.mjs members.csv                  # dry run
  *   node scripts/import-members.mjs members.csv --commit
+ *   node scripts/import-members.mjs pro.csv --tier=pro --commit
  *
- * The CSV needs an email column and a tier column. Kit's export calls them
- * "Email Address" and whatever you name the tag column, so the reader is
- * lenient: any header containing "email" is the address, and the tier is read
- * from a column containing "tier", or from a tags column mentioning Pro.
+ * The CSV needs an email column. Any header containing "email" is taken as the
+ * address, so Kit's "Email Address" works as is.
+ *
+ * The tier is worked out in this order:
+ *
+ *   1. --tier=pro or --tier=core, if given. Use this when exporting one tag at
+ *      a time, which is the simplest way out of Kit: one file per tier.
+ *   2. A column containing "tier".
+ *   3. A tags column mentioning Pro.
+ *   4. Core, which is the safe default.
  *
  * Enrolment for 4.0 is closed, so this runs once rather than being wired to
  * Stripe. A member who signs in without a profile gets Core by default, which
@@ -21,6 +28,12 @@ import { createClient } from '@supabase/supabase-js'
 
 const [file, ...flags] = process.argv.slice(2)
 const commit = flags.includes('--commit')
+const forcedTier = flags.find((f) => f.startsWith('--tier='))?.split('=')[1]
+
+if (forcedTier && forcedTier !== 'pro' && forcedTier !== 'core') {
+  console.error(`--tier must be pro or core, not "${forcedTier}"`)
+  process.exit(1)
+}
 
 if (!file) {
   console.error('Usage: node scripts/import-members.mjs <members.csv> [--commit]')
@@ -85,13 +98,18 @@ const members = rows.slice(1).map((row) => {
   return {
     email: row[emailAt].trim().toLowerCase(),
     first_name: nameAt >= 0 ? row[nameAt].trim() || null : null,
-    tier: /pro/i.test(source) ? 'pro' : 'core',
+    tier: forcedTier ?? (/pro/i.test(source) ? 'pro' : 'core'),
     kit_subscriber_id: kitAt >= 0 ? row[kitAt].trim() || null : null,
   }
 }).filter((m) => m.email.includes('@'))
 
 const pro = members.filter((m) => m.tier === 'pro').length
 console.log(`${members.length} members: ${pro} Pro, ${members.length - pro} Core`)
+if (forcedTier) console.log(`(tier forced to ${forcedTier} for every row in this file)`)
+else if (tierAt === -1 && tagsAt === -1) {
+  console.log('\nNo tier or tags column found, so everyone above is Core.')
+  console.log('If this file is one tag\'s export, re-run with --tier=pro or --tier=core.')
+}
 console.log(members.slice(0, 3).map((m) => `  ${m.tier.padEnd(4)} ${m.email}`).join('\n'))
 
 if (!commit) {

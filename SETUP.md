@@ -76,16 +76,23 @@ a ten minute signed URL, so the PDF is never publicly addressable.
 
 ## 5. Members
 
-Export the cohort from Kit: tag **Limitless Member 4.0** (21915932), including
-the tag column so Pro can be told from Core. Then:
+Simplest route out of Kit is one export per tier, since Kit's subscriber export
+does not always carry a tags column.
+
+Export **Limitless Pro 4.0** (22298774) and **Limitless Core 4.0** (21915934)
+separately, then run the import once per file:
 
 ```bash
-node scripts/import-members.mjs members.csv           # check the counts
-node scripts/import-members.mjs members.csv --commit  # create them
+node scripts/import-members.mjs pro.csv --tier=pro --commit
 ```
 
-Check the Pro and Core split against Kit's tag counts before committing:
-**Limitless Pro 4.0** is 22298774 and **Limitless Core 4.0** is 21915934.
+```bash
+node scripts/import-members.mjs core.csv --tier=core --commit
+```
+
+Drop `--commit` first to check the counts against Kit's tag numbers. If your
+export does happen to include a tags column, one file works too and the tier is
+read from it.
 
 Members are created ahead of time and confirmed, so their first magic link
 signs them straight in. Anyone who signs in without a profile gets Core, which
