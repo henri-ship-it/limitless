@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { supabaseConfigured } from '../env'
 
-const PUBLIC_PATHS = ['/sign-in', '/auth/callback', '/auth/sign-out']
+const PUBLIC_PATHS = ['/sign-in', '/auth/confirm', '/auth/callback', '/auth/sign-out']
 
 export async function updateSession(request: NextRequest) {
   if (!supabaseConfigured) return NextResponse.next({ request })
