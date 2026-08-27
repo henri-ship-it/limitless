@@ -12,15 +12,10 @@ Work top to bottom. Step 2 has a queue on it, so start that first.
 1. Create a project at supabase.com. Region: London.
 2. Project settings → API. Copy the project URL, the `anon` key and the
    `service_role` key.
-3. SQL editor → run the three migrations in order:
-   - `supabase/migrations/0001_init.sql`
-   - `supabase/migrations/0002_storage.sql`
-   - `supabase/migrations/0003_journal.sql`
-4. Table editor → `cohorts` → insert one row:
-
-   | label | start_date | onboarding_call_at |
-   |---|---|---|
-   | 4.0 | 2026-08-31 | 2026-08-26 12:00+01 |
+3. SQL editor → new query → paste the **contents** of `docs/setup.sql` and run
+   it. That file is the three migrations end to end, so it is one paste rather
+   than three. Pasting the file path will not work.
+4. The cohort row is created by the migration. Nothing to add by hand.
 
 The service role key bypasses row level security. It belongs in `.env.local`
 and in Vercel's environment variables, never in the browser.
