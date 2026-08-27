@@ -115,6 +115,10 @@ Weeks ahead of release stay visible in the nav, under a padlock. The clock
 change in October falls mid-programme, so release times are worked out in
 Europe/London rather than UTC. See `src/lib/cohort.ts`.
 
+## Going live
+
+See [SETUP.md](SETUP.md). Week 1 opens Sunday 30 August at 16:00 UK.
+
 ## What is missing
 
 Tracked so nothing ships with invented content:

@@ -4,6 +4,7 @@ import { Shell } from '@/components/Shell'
 import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
 import { Quote } from '@/components/Quote'
+import { ChapterVisual } from '@/components/ChapterVisual'
 import { VideoEmbed } from '@/components/VideoEmbed'
 import { DigestBody } from '@/components/DigestBody'
 import { MarkWeekDone } from '@/components/MarkWeekDone'
@@ -99,6 +100,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
         {week.opening.map((p, i) => (
           <p key={i}>{p}</p>
         ))}
+        <ChapterVisual week={n} />
       </Section>
 
       {week.type === 'deload' && week.recap ? (
