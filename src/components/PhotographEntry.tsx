@@ -163,7 +163,10 @@ export function PhotographEntry({
 
   return (
     <div className="fixed inset-0 z-[60] flex flex-col bg-black">
-      <div className="flex items-center justify-between px-4 py-3">
+      <div
+        className="flex items-center justify-between px-4 py-3"
+        style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}
+      >
         <p className="label !text-white/60">Entry {entry}</p>
         <button type="button" onClick={close} className="label !text-white/60 hover:!text-white">
           Cancel
@@ -218,7 +221,12 @@ export function PhotographEntry({
         ) : null}
       </div>
 
-      <div className="px-6 pb-8 pt-5">
+      {/* The home indicator on a modern phone sits over anything flush to the
+          bottom, and the shutter is the one control that must never be under it. */}
+      <div
+        className="px-6 pt-5"
+        style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom))' }}
+      >
         {stage === 'problem' ? (
           <p className="mx-auto !mb-5 max-w-sm text-center text-[0.9375rem] leading-relaxed text-white/80">
             {problem}
@@ -229,8 +237,10 @@ export function PhotographEntry({
           </p>
         )}
 
-        <div className="flex items-center justify-center gap-8">
-          <label className="label cursor-pointer !text-white/60 hover:!text-white">
+        {/* Three columns so the shutter stays dead centre whatever sits either
+            side of it, and nothing wraps onto a second line on a narrow phone. */}
+        <div className="grid grid-cols-3 items-center">
+          <label className="label cursor-pointer whitespace-nowrap !text-white/60 hover:!text-white">
             Choose a photo
             <input
               type="file"
@@ -245,10 +255,10 @@ export function PhotographEntry({
             onClick={shoot}
             disabled={stage !== 'framing'}
             aria-label="Take the photo"
-            className="h-16 w-16 rounded-full border-4 border-white/90 bg-white/20 transition-colors hover:bg-white/40 disabled:opacity-30"
+            className="h-16 w-16 justify-self-center rounded-full border-4 border-white/90 bg-white/20 transition-colors hover:bg-white/40 disabled:opacity-30"
           />
 
-          <span className="label w-[6.5rem] text-right !text-white/30">
+          <span className="label justify-self-end whitespace-nowrap !text-white/30">
             {stage === 'reading' ? 'Working' : ''}
           </span>
         </div>
