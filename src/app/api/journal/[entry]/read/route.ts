@@ -105,7 +105,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ ent
   }
 
   const prompt = [
-    `This is a photograph of page ${n} of a printed performance journal, titled "${entry.title}".`,
+    `This is a photograph of the open spread for entry ${n} of a printed performance journal, titled "${entry.title}".`,
+    isHuddleEntry(n)
+      ? 'The left page closes the week with three questions. The right page carries the exercise.'
+      : 'The left page previews and reviews the day. The right page carries the exercise.',
     'Transcribe the handwriting into the fields below. It is the writer of the page asking.',
     '',
     'Fields:',
@@ -115,6 +118,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ ent
     '- Transcribe what is written, word for word. Do not tidy it up, complete a half finished sentence, or improve the grammar.',
     '- Leave a field out entirely if it is blank, or if you cannot read it with confidence. An empty field is right; a guess is not.',
     '- Ignore the hour by hour schedule grid and any ticks or boxes. Those are not being asked for.',
+    '- Only one page of the spread may be in shot, or one page may be blank. Fill in what you can see and leave the rest out.',
     '- Ignore the printed prompts and quotations. Only the handwriting is wanted.',
     '- If the page is not a journal page at all, return {}.',
     '',

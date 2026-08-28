@@ -220,11 +220,25 @@ export async function receiveScorecard(request: Request, asked: string) {
     { auth: { persistSession: false } },
   )
 
-  const { data: profile } = await supabase
+  /*
+   * People answer from whichever address is in front of them, which is often
+   * not the one they enrolled with. An admin can record the other one on the
+   * member's profile, and it is checked here before giving up.
+   */
+  let { data: profile } = await supabase
     .from('profiles')
     .select('id, assessment')
     .eq('email', email)
     .maybeSingle()
+
+  if (!profile) {
+    const { data: byAlt } = await supabase
+      .from('profiles')
+      .select('id, assessment')
+      .ilike('alt_email', email)
+      .maybeSingle()
+    profile = byAlt
+  }
 
   if (!profile) {
     // Answered with a different address than they enrolled with, or a lead who

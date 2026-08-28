@@ -103,3 +103,38 @@ export async function recordArrival(source: string, path: string) {
 
   await session.supabase.rpc('record_arrival', { source, page: path })
 }
+
+/**
+ * Records the other address a member answers scorecards from.
+ *
+ * Admins only, and deliberately not something a member can set for themselves:
+ * it decides whose profile an incoming scorecard attaches to, so a member
+ * setting their own could attach one to somebody else.
+ */
+export async function setAltEmail(memberId: string, email: string) {
+  const session = await requireMember()
+  if (!session) return { error: 'Not signed in' }
+
+  const { data: me } = await session.supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', session.userId)
+    .single()
+
+  if (!me?.is_admin) return { error: 'Not allowed' }
+
+  const trimmed = email.trim().toLowerCase()
+  if (trimmed && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(trimmed)) {
+    return { error: 'That does not look like an address.' }
+  }
+
+  const { error } = await session.supabase
+    .from('profiles')
+    .update({ alt_email: trimmed || null })
+    .eq('id', memberId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath(`/admin/${memberId}`)
+  return { error: null }
+}

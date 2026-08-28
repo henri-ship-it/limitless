@@ -179,6 +179,7 @@ export function DailyJournal({
                   plain
                   action={
                     <Dictate
+                      label={question}
                       onText={(said) => {
                         const list = [...(data.huddle ?? [])]
                         list[i] = list[i] ? `${list[i]} ${said}` : said
@@ -249,6 +250,7 @@ export function DailyJournal({
                 label={field.label}
                 action={
                   <Dictate
+                    label={field.label}
                     onText={(said) => {
                       const current = (data[field.key] as string) ?? ''
                       update({

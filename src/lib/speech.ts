@@ -15,6 +15,8 @@
 
 type Listener = {
   onText: (text: string) => void
+  /** Words heard but not yet settled, so they can be shown as they arrive. */
+  onInterim?: (text: string) => void
   /** Called when this field stops receiving, with a reason if it failed. */
   onStop: (reason?: string) => void
 }
@@ -61,15 +63,21 @@ function ensure() {
   // iOS ends a session on its own after a pause whatever this asks for, so the
   // button reflects what happened rather than what was requested.
   r.continuous = true
-  r.interimResults = false
+  // Shown live while speaking, which is the difference between a
+  // recorder that looks alive and one that looks broken.
+  r.interimResults = true
 
   r.onresult = (event: any) => {
     let said = ''
+    let pending = ''
     for (let i = event.resultIndex; i < event.results.length; i += 1) {
-      if (event.results[i].isFinal) said += event.results[i][0].transcript
+      const text = event.results[i][0].transcript
+      if (event.results[i].isFinal) said += text
+      else pending += text
     }
     said = said.trim()
     if (said) listener?.onText(said)
+    listener?.onInterim?.(pending.trim())
   }
 
   const finish = (reason?: string) => {

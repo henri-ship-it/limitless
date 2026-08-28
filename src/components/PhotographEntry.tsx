@@ -7,21 +7,30 @@ import { CameraIcon } from './icons'
  * Photographs a page of the printed journal and reads it into the entry.
  *
  * For the people who write on paper, which from the cohort chats is a good few
- * of them. The guide frame is the whole trick: an A5 rectangle held in the
- * middle of the viewfinder, with everything outside it dimmed, so what gets
- * sent is the page and not the table it is lying on. The crop is real - the
- * frame is measured against the video and cut out of it, rather than drawn on
- * top and hoped for.
+ * of them. The guide frame is the whole trick: the shape of the open spread
+ * held in the middle of the viewfinder with everything outside it dimmed, so
+ * what gets sent is the pages and not the table they are lying on. The crop is
+ * real - the frame is measured against the video and cut out of it, rather than
+ * drawn on top and hoped for.
+ *
+ * An entry is a spread, not a page: the day is previewed and reviewed on the
+ * left and the exercise worked on the right, so both halves have to be in the
+ * shot. Two A5 pages side by side is A4 landscape, which means the phone has to
+ * be turned. Nobody reads that in an instruction, so the frame simply refuses
+ * to pretend otherwise and asks for the turn.
  *
  * Nothing is saved without the member seeing it. The transcription lands in
  * their form for them to check against the page still in their hand.
  */
 
-/** A5 is 148 by 210, which is the shape of the printed journal. */
-const PAGE_RATIO = 148 / 210
+/** An open spread is two A5 pages side by side, which is A4 landscape. */
+const SPREAD_RATIO = 297 / 210
 
-/** Long edge of what gets sent. Enough for handwriting, small enough to post. */
-const LONGEST_EDGE = 1600
+/**
+ * Long edge of what gets sent. A spread carries two pages of handwriting across
+ * it, so it needs more than a single page would to stay legible.
+ */
+const LONGEST_EDGE = 2200
 
 type Stage = 'closed' | 'starting' | 'framing' | 'reading' | 'problem'
 
@@ -34,6 +43,7 @@ export function PhotographEntry({
 }) {
   const [stage, setStage] = useState<Stage>('closed')
   const [problem, setProblem] = useState('')
+  const [upright, setUpright] = useState(false)
   const video = useRef<HTMLVideoElement>(null)
   const frame = useRef<HTMLDivElement>(null)
   const stage_ = useRef<HTMLDivElement>(null)
@@ -45,6 +55,19 @@ export function PhotographEntry({
   }, [])
 
   useEffect(() => stop, [stop])
+
+  /*
+   * Which way the phone is being held. Watched rather than read once, because
+   * the whole point is to notice the moment they turn it.
+   */
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const portrait = window.matchMedia('(orientation: portrait)')
+    const read = () => setUpright(portrait.matches)
+    read()
+    portrait.addEventListener('change', read)
+    return () => portrait.removeEventListener('change', read)
+  }, [])
 
   async function open() {
     setProblem('')
@@ -195,8 +218,8 @@ export function PhotographEntry({
           <div
             ref={frame}
             style={{
-              aspectRatio: String(PAGE_RATIO),
-              maxWidth: `calc((100dvh - 15rem) * ${PAGE_RATIO})`,
+              aspectRatio: String(SPREAD_RATIO),
+              maxWidth: `calc((100dvh - 15rem) * ${SPREAD_RATIO})`,
               boxShadow: '0 0 0 100vmax rgba(0,0,0,0.55)',
             }}
             className="relative w-full rounded-[2px] outline outline-2 outline-white/80"
@@ -205,6 +228,9 @@ export function PhotographEntry({
             <Corner className="right-0 top-0 border-r-2 border-t-2" />
             <Corner className="bottom-0 left-0 border-b-2 border-l-2" />
             <Corner className="bottom-0 right-0 border-b-2 border-r-2" />
+            {/* The gutter, so the spread is lined up rather than merely inside
+                the frame. */}
+            <span className="absolute inset-y-4 left-1/2 w-px -translate-x-1/2 bg-white/25" />
           </div>
         </div>
 
@@ -233,7 +259,9 @@ export function PhotographEntry({
           </p>
         ) : (
           <p className="!mb-5 text-center text-[0.8125rem] text-white/50">
-            Fill the frame with the page, flat and evenly lit.
+            {upright
+              ? 'Turn your phone sideways — both pages need to be in the shot.'
+              : 'Both pages in the frame, spine on the line, flat and evenly lit.'}
           </p>
         )}
 

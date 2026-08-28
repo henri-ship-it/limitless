@@ -159,7 +159,7 @@ export async function getMemberDetail(id: string) {
       supabase
         .from('profiles')
         .select(
-          'id, email, first_name, phone, tier, personalised_nudges, last_seen_at, created_at, assessment',
+          'id, email, alt_email, first_name, phone, tier, personalised_nudges, last_seen_at, created_at, assessment',
         )
         .eq('id', id)
         .single(),

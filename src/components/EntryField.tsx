@@ -165,7 +165,10 @@ export function EntryField({ field, path, value, onChange }: Props) {
     <div>
       <div className="flex items-start justify-between gap-4">
         <Label field={field} />
-        <Dictate onText={(said) => onChange(path, single ? `${single} ${said}` : said)} />
+        <Dictate
+          label={'label' in field ? field.label : undefined}
+          onText={(said) => onChange(path, single ? `${single} ${said}` : said)}
+        />
       </div>
       <textarea
         rows={4}

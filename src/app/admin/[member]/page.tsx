@@ -15,6 +15,7 @@ import {
   type AssessmentData,
 } from '@/components/admin/Assessments'
 import { MemberTabs } from '@/components/admin/MemberTabs'
+import { AltEmail } from '@/components/admin/AltEmail'
 import { DraftMessage } from '@/components/admin/DraftMessage'
 
 export const metadata = { title: 'Member · Limitless' }
@@ -82,6 +83,10 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
           Both open in your own client, so it reads as a person rather than a system. Replies come
           back to {SITE.email}.
         </p>
+      </Section>
+
+      <Section label="Other address">
+        <AltEmail memberId={profile.id} current={profile.alt_email} />
       </Section>
 
       <Section label="Draft a message">
