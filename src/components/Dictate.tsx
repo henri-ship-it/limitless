@@ -1,79 +1,45 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
+import { speechProblem, speechSupported, startSpeech, stopSpeech } from '@/lib/speech'
 
 /**
  * Speaks into a field instead of typing.
  *
- * This uses the recognition built into the browser rather than sending audio
- * anywhere, so it costs nothing, needs no key, and the words never leave the
- * device. Safari and Chrome have it. Firefox does not, and there the button
- * simply does not appear.
+ * Recognition happens in the browser rather than being sent anywhere, so it
+ * costs nothing, needs no key, and the words never leave the device. Safari and
+ * Chrome have it. Firefox does not, and there the button does not appear.
  *
- * The bars are a real reading of the microphone, not a decoration: without
- * them there is no way to tell the difference between listening and a dead
- * microphone.
+ * Every button on the page shares one recogniser, because the browser only
+ * allows one session at a time. Tapping a second field takes over from the
+ * first rather than failing silently.
+ *
+ * The bars read the actual microphone level. Without them there is no way to
+ * tell listening from a dead microphone.
  */
 export function Dictate({ onText }: { onText: (text: string) => void }) {
+  const id = useId()
   const [supported, setSupported] = useState(false)
   const [listening, setListening] = useState(false)
   const [levels, setLevels] = useState<number[]>([0, 0, 0, 0, 0])
+  const [problem, setProblem] = useState<string | null>(null)
 
-  const recognition = useRef<any>(null)
   const audio = useRef<{ ctx: AudioContext; stream: MediaStream; frame: number } | null>(null)
+  const meterOn = useRef(false)
 
-  /*
-   * The callback lives in a ref so the recogniser is built once. Held in the
-   * dependency array it was rebuilt on every keystroke, which stopped it
-   * mid-sentence: the parent passes a new function on each render.
-   */
+  // Held in a ref so the button never has to be rebuilt to pick up a new one.
   const handler = useRef(onText)
   handler.current = onText
 
   useEffect(() => {
-    const Recognition =
-      (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition
-    if (!Recognition) return
-
-    setSupported(true)
-    const r = new Recognition()
-    r.lang = 'en-GB'
-    r.continuous = true
-    r.interimResults = false
-
-    r.onresult = (event: any) => {
-      let said = ''
-      for (let i = event.resultIndex; i < event.results.length; i += 1) {
-        if (event.results[i].isFinal) said += event.results[i][0].transcript
-      }
-      said = said.trim()
-      if (said) handler.current(said)
-    }
-    r.onend = () => {
-      setListening(false)
-      stopMeter()
-    }
-    r.onerror = () => {
-      setListening(false)
-      stopMeter()
-    }
-
-    recognition.current = r
-
+    setSupported(speechSupported())
     return () => {
-      r.onresult = null
-      r.onend = null
-      r.onerror = null
-      try {
-        r.stop()
-      } catch {
-        // Already stopped.
-      }
       stopMeter()
     }
   }, [])
 
   function stopMeter() {
+    meterOn.current = false
     const a = audio.current
     if (!a) return
     cancelAnimationFrame(a.frame)
@@ -84,8 +50,15 @@ export function Dictate({ onText }: { onText: (text: string) => void }) {
   }
 
   async function startMeter() {
+    if (audio.current) return
+    meterOn.current = true
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      if (!meterOn.current) {
+        for (const track of stream.getTracks()) track.stop()
+        return
+      }
+
       const ctx = new AudioContext()
       const analyser = ctx.createAnalyser()
       analyser.fftSize = 256
@@ -95,52 +68,58 @@ export function Dictate({ onText }: { onText: (text: string) => void }) {
       const tick = () => {
         analyser.getByteFrequencyData(bins)
         // Five bars across the low end, where speech sits.
-        const next = [0, 1, 2, 3, 4].map((i) => {
-          const from = Math.floor((bins.length / 3 / 5) * i)
-          const to = Math.floor((bins.length / 3 / 5) * (i + 1))
-          let sum = 0
-          for (let j = from; j < to; j += 1) sum += bins[j]
-          return Math.min(1, sum / (to - from) / 140)
-        })
-        setLevels(next)
+        setLevels(
+          [0, 1, 2, 3, 4].map((i) => {
+            const from = Math.floor((bins.length / 3 / 5) * i)
+            const to = Math.floor((bins.length / 3 / 5) * (i + 1))
+            let sum = 0
+            for (let j = from; j < to; j += 1) sum += bins[j]
+            return Math.min(1, sum / (to - from) / 140)
+          }),
+        )
         if (audio.current) audio.current.frame = requestAnimationFrame(tick)
       }
 
       audio.current = { ctx, stream, frame: requestAnimationFrame(tick) }
     } catch {
-      // No microphone, or permission refused. Recognition may still work, and
+      // No microphone, or permission refused. Recognition may still work and
       // the bars simply stay flat.
     }
   }
 
   if (!supported) return null
 
-  function toggle() {
-    const r = recognition.current
-    if (!r) return
-
+  async function toggle() {
     if (listening) {
-      try {
-        r.stop()
-      } catch {
-        // Already stopped.
-      }
+      await stopSpeech()
       setListening(false)
       stopMeter()
       return
     }
 
-    try {
-      r.start()
+    setProblem(null)
+    const started = await startSpeech(id, {
+      onText: (said) => handler.current(said),
+      // Fires when this session ends for any reason, including another field
+      // taking over or iOS stopping after a pause.
+      onStop: (reason) => {
+        setListening(false)
+        stopMeter()
+        setProblem(speechProblem(reason))
+      },
+    })
+
+    if (started) {
       setListening(true)
       void startMeter()
-    } catch {
-      // Already running.
+    } else {
+      setProblem('Dictation could not start. Another field may still be listening.')
     }
   }
 
   return (
-    <button
+    <span className="flex shrink-0 flex-col items-end gap-1">
+      <button
       type="button"
       onClick={toggle}
       aria-pressed={listening}
@@ -175,6 +154,12 @@ export function Dictate({ onText }: { onText: (text: string) => void }) {
         </svg>
       )}
       {listening ? 'Listening' : 'Speak'}
-    </button>
+      </button>
+      {problem ? (
+        <span className="max-w-[14rem] text-right text-[0.6875rem] leading-snug text-ink-56">
+          {problem}
+        </span>
+      ) : null}
+    </span>
   )
 }
