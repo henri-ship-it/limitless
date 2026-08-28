@@ -5,10 +5,25 @@
  * in between. The exercise prompts come from the entry itself, so they are not
  * listed here.
  */
-export const SCHEDULE_HOURS = [
-  '5am', '6am', '7am', '8am', '9am', '10am', '11am', '12pm',
-  '1pm', '2pm', '3pm', '4pm', '5pm', '6pm', '7pm', '8pm', '9pm', '10pm',
-] as const
+/** How many hours the schedule shows, matching the printed page. */
+export const SCHEDULE_LENGTH = 18
+
+/** The printed journal starts at 5am. The setting moves it. */
+export const DEFAULT_SCHEDULE_START = 5
+
+export function hourLabel(hour: number): string {
+  const h = ((hour % 24) + 24) % 24
+  if (h === 0) return '12am'
+  if (h === 12) return '12pm'
+  return h < 12 ? `${h}am` : `${h - 12}pm`
+}
+
+/** The hours on show, given the start the member has chosen. */
+export function scheduleHours(start = DEFAULT_SCHEDULE_START): string[] {
+  return Array.from({ length: SCHEDULE_LENGTH }, (_, i) => hourLabel(start + i))
+}
+
+export const SCHEDULE_HOURS = scheduleHours()
 
 export const REVIEW_FIELDS = [
   { key: 'win', label: 'One win of your day' },

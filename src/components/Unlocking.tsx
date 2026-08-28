@@ -9,7 +9,7 @@
 export function Unlocking({ label = 'Unlocking' }: { label?: string }) {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6" role="status">
-      <svg viewBox="0 0 48 56" className="h-14 w-12" fill="none" aria-hidden>
+      <svg viewBox="-14 -12 76 72" className="h-20 w-20" fill="none" aria-hidden>
         <g
           stroke="var(--color-ink)"
           strokeWidth="1.5"
@@ -27,17 +27,18 @@ export function Unlocking({ label = 'Unlocking' }: { label?: string }) {
 
       <style>{`
         .shackle {
+          /* Hinged on the right leg, so it swings out rather than lifting. */
           transform-origin: 33px 22px;
-          animation: lift 1.8s ease-in-out infinite;
+          animation: swing 2.2s ease-in-out infinite;
         }
         .tumbler {
           transform-origin: 24px 33px;
-          animation: pulse 1.8s ease-in-out infinite;
+          animation: pulse 2.2s ease-in-out infinite;
         }
-        @keyframes lift {
-          0%, 20%   { transform: translateY(0) rotate(0deg); }
-          45%, 70%  { transform: translateY(-5px) rotate(14deg); }
-          100%      { transform: translateY(0) rotate(0deg); }
+        @keyframes swing {
+          0%, 15%   { transform: rotate(0deg); }
+          50%, 72%  { transform: rotate(58deg); }
+          100%      { transform: rotate(0deg); }
         }
         @keyframes pulse {
           0%, 20%   { opacity: 0.15; transform: scale(0.7); }

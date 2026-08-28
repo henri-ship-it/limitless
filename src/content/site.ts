@@ -17,7 +17,6 @@ export type SocialLink = { label: string; url: string }
 
 export const socials: SocialLink[] = [
   { label: 'Website', url: 'https://lmntaryperformance.com' },
-  // Add the handles and these appear on their own.
-  // { label: 'Instagram', url: 'https://instagram.com/...' },
-  // { label: 'LinkedIn', url: 'https://linkedin.com/company/...' },
+  { label: 'Instagram', url: 'https://www.instagram.com/chrisbodman_/' },
+  { label: 'LinkedIn', url: 'https://www.linkedin.com/in/chris-bodman-9a4ba340/' },
 ]

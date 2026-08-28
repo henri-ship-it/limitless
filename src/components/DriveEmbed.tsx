@@ -17,7 +17,11 @@ export function DriveEmbed({ url, title }: { url: string; title: string }) {
   }
 
   return (
-    <div className="aspect-video w-full overflow-hidden border border-line bg-ink-5">
+    /*
+     * No overflow clipping, and a floor on the height: Drive's player crops
+     * its own video rather than scaling it when the frame gets small.
+     */
+    <div className="aspect-video w-full min-h-[240px] border border-line bg-ink-5">
       <iframe
         className="h-full w-full"
         src={`https://drive.google.com/file/d/${id}/preview`}

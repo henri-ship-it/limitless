@@ -62,7 +62,7 @@ export function Checklist({
               </span>
             </button>
 
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p
                 className={`!mb-0 text-[0.9375rem] ${
                   checked ? 'text-ink-56 line-through' : 'text-ink'
@@ -76,7 +76,7 @@ export function Checklist({
                 </p>
               ) : null}
               {asset?.url ? (
-                <div className="mt-3 max-w-xl">
+                <div className="mt-3 w-full">
                   <DriveEmbed url={asset.url} title={item.label} />
                 </div>
               ) : link ? (

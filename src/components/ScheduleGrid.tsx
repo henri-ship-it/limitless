@@ -1,7 +1,13 @@
 'use client'
 
-import { useRef, useState } from 'react'
-import { SCHEDULE_HOURS, type ScheduleBlock } from '@/content/journal-fields'
+import { useEffect, useRef, useState } from 'react'
+import {
+  DEFAULT_SCHEDULE_START,
+  SCHEDULE_LENGTH,
+  hourLabel,
+  scheduleHours,
+  type ScheduleBlock,
+} from '@/content/journal-fields'
 
 const ROW = 34
 
@@ -18,8 +24,35 @@ type Props = {
  * so a three hour session is one label and one drag rather than three
  * identical entries.
  */
+const START_KEY = 'limitless:schedule-start'
+
 export function ScheduleGrid({ blocks, onChange }: Props) {
   const grid = useRef<HTMLDivElement>(null)
+  const [start, setStart] = useState(DEFAULT_SCHEDULE_START)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const hours = scheduleHours(start)
+
+  /*
+   * The start hour is a preference for this device rather than part of the
+   * entry: it says how you like to see the day, not what you did with it.
+   */
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(START_KEY)
+      if (stored !== null) setStart(Number(stored))
+    } catch {
+      // Blocked storage just means the printed default.
+    }
+  }, [])
+
+  function chooseStart(hour: number) {
+    setStart(hour)
+    try {
+      window.localStorage.setItem(START_KEY, String(hour))
+    } catch {
+      // Nothing useful to do.
+    }
+  }
   const [draft, setDraft] = useState<ScheduleBlock | null>(null)
   const [focusOn, setFocusOn] = useState<number | null>(null)
 
@@ -29,13 +62,13 @@ export function ScheduleGrid({ blocks, onChange }: Props) {
     const box = grid.current?.getBoundingClientRect()
     if (!box) return 0
     const row = Math.floor((clientY - box.top) / ROW)
-    return Math.min(SCHEDULE_HOURS.length - 1, Math.max(0, row))
+    return Math.min(SCHEDULE_LENGTH - 1, Math.max(0, row))
   }
 
   /** A block cannot run into the one below it. */
   function ceilingFor(start: number, ignore?: number): number {
     const next = sorted.find((b, i) => i !== ignore && b.start > start)
-    return next ? next.start - 1 : SCHEDULE_HOURS.length - 1
+    return next ? next.start - 1 : SCHEDULE_LENGTH - 1
   }
 
   function occupied(row: number): boolean {
@@ -102,7 +135,49 @@ export function ScheduleGrid({ blocks, onChange }: Props) {
   }
 
   return (
-    <div className="relative border border-line select-none">
+    <div className="relative select-none">
+      <div className="mb-2 flex items-center justify-between">
+        <p className="label">
+          {hours[0]} to {hours[hours.length - 1]}
+        </p>
+        <button
+          type="button"
+          onClick={() => setSettingsOpen((v) => !v)}
+          aria-expanded={settingsOpen}
+          aria-label="Change the hour your day starts"
+          className="label flex items-center gap-1.5 hover:!text-ink"
+        >
+          <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.1" aria-hidden>
+            <circle cx="6" cy="6" r="1.9" />
+            <path d="M6 1v1.3M6 9.7V11M11 6H9.7M2.3 6H1M9.5 2.5l-.9.9M3.4 8.6l-.9.9M9.5 9.5l-.9-.9M3.4 3.4l-.9-.9" strokeLinecap="round" />
+          </svg>
+          Start
+        </button>
+      </div>
+
+      {settingsOpen ? (
+        <div className="mb-2 border border-line p-3">
+          <p className="label mb-2">Your day starts at</p>
+          <div className="flex flex-wrap gap-1.5">
+            {Array.from({ length: 12 }, (_, i) => i + 3).map((hour) => (
+              <button
+                key={hour}
+                type="button"
+                onClick={() => chooseStart(hour)}
+                aria-pressed={start === hour}
+                className={`pill ${start === hour ? '!border-accent-ink !bg-accent-soft !text-ink' : 'hover:!border-line-strong hover:!text-ink'}`}
+              >
+                {hourLabel(hour)}
+              </button>
+            ))}
+          </div>
+          <p className="label mt-3 !text-ink-40">
+            Saved on this device. The printed journal starts at 5am.
+          </p>
+        </div>
+      ) : null}
+
+      <div className="relative border border-line">
       {/* The hours themselves, and the surface you press to start a block. */}
       <div
         ref={grid}
@@ -116,7 +191,7 @@ export function ScheduleGrid({ blocks, onChange }: Props) {
          */
         style={{ touchAction: 'pan-y' }}
       >
-        {SCHEDULE_HOURS.map((hour) => (
+        {hours.map((hour) => (
           <div
             key={hour}
             className="flex items-center border-b border-line last:border-b-0"
@@ -129,13 +204,13 @@ export function ScheduleGrid({ blocks, onChange }: Props) {
         {draft ? (
           <Block
             block={draft}
-            className="border-ink-20 bg-ink-8"
+            className="border-accent-ink/40 bg-accent-soft"
             style={{ pointerEvents: 'none' }}
           />
         ) : null}
 
         {sorted.map((block, i) => (
-          <Block key={`${block.start}-${i}`} block={block} className="border-ink bg-surface">
+          <Block key={`${block.start}-${i}`} block={block} className="border-accent-ink bg-accent-soft">
             <input
               autoFocus={focusOn === block.start}
               value={block.label}
@@ -164,7 +239,7 @@ export function ScheduleGrid({ blocks, onChange }: Props) {
               aria-label={`Length of ${block.label || 'block'}, in hours`}
               aria-valuenow={block.end - block.start + 1}
               aria-valuemin={1}
-              aria-valuemax={SCHEDULE_HOURS.length - block.start}
+              aria-valuemax={SCHEDULE_LENGTH - block.start}
               onKeyDown={(e) => {
                 if (e.key === 'ArrowDown') {
                   e.preventDefault()
@@ -182,6 +257,7 @@ export function ScheduleGrid({ blocks, onChange }: Props) {
             </span>
           </Block>
         ))}
+        </div>
       </div>
     </div>
   )
