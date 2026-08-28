@@ -3,7 +3,16 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { modules, weeks } from '@/content/programme'
-import { LockIcon, NowIndicator, TickIcon } from './icons'
+import {
+  AccountIcon,
+  AdminIcon,
+  GuideIcon,
+  JournalIcon,
+  LockIcon,
+  NowIndicator,
+  ProIcon,
+  TickIcon,
+} from './icons'
 
 type Props = {
   currentWeek: number
@@ -24,15 +33,33 @@ export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro, isAdm
           <TopLink
             href="/"
             label="Start Guide"
+            icon={<GuideIcon />}
             active={pathname === '/'}
             marker={currentWeek === 0 ? <span className="radar" aria-hidden /> : null}
           />
-          <TopLink href="/journal" label="Journal" active={pathname === '/journal'} />
-          {isPro ? <TopLink href="/pro" label="Pro" active={pathname === '/pro'} /> : null}
-          {isAdmin ? (
-            <TopLink href="/admin" label="Admin" active={pathname.startsWith('/admin')} />
+          <TopLink
+            href="/journal"
+            label="Journal"
+            icon={<JournalIcon />}
+            active={pathname === '/journal'}
+          />
+          {isPro ? (
+            <TopLink href="/pro" label="Pro" icon={<ProIcon />} active={pathname === '/pro'} />
           ) : null}
-          <TopLink href="/account" label="Your account" active={pathname === '/account'} />
+          {isAdmin ? (
+            <TopLink
+              href="/admin"
+              label="Admin"
+              icon={<AdminIcon />}
+              active={pathname.startsWith('/admin')}
+            />
+          ) : null}
+          <TopLink
+            href="/account"
+            label="Your account"
+            icon={<AccountIcon />}
+            active={pathname === '/account'}
+          />
         </ul>
 
         {modules.map((m) => (
@@ -93,11 +120,13 @@ export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro, isAdm
 function TopLink({
   href,
   label,
+  icon,
   active,
   marker,
 }: {
   href: string
   label: string
+  icon: React.ReactNode
   active: boolean
   marker?: React.ReactNode
 }) {
@@ -105,11 +134,19 @@ function TopLink({
     <li>
       <Link
         href={href}
-        className={`flex items-center justify-between gap-2 py-1 text-[0.9375rem] ${
-          active ? 'font-medium text-ink' : 'text-ink-72 hover:text-ink'
+        /*
+         * The negative margin lets the active tint sit in a padded box while
+         * the icon still lines up with the module headings underneath, so the
+         * two halves of the sidebar share one left edge.
+         */
+        className={`-mx-2 flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[0.9375rem] ${
+          active
+            ? 'bg-ink-8 font-medium text-ink'
+            : 'text-ink-72 hover:bg-ink-3 hover:text-ink'
         }`}
       >
-        <span>{label}</span>
+        <span className="shrink-0">{icon}</span>
+        <span className="flex-1 truncate">{label}</span>
         {marker}
       </Link>
     </li>
