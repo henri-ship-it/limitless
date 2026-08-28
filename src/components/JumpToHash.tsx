@@ -15,10 +15,19 @@ export function JumpToHash() {
     const id = decodeURIComponent(window.location.hash.slice(1))
     if (!id) return
 
-    const deadline = performance.now() + 3000
+    /*
+     * Existing is not enough. The weeks arrive inside the hidden buffer React
+     * streams into, so for a second or two the section can be found by id while
+     * having no height and no position - and scrolling to it does nothing at
+     * all. Waiting for it to take up space is waiting for it to be real.
+     *
+     * The journal runs to some fifty thousand pixels, so laying it out takes
+     * longer than a page has any right to. Hence the generous deadline.
+     */
+    const deadline = performance.now() + 12_000
     const find = () => {
       const target = document.getElementById(id)
-      if (target) {
+      if (target && target.getBoundingClientRect().height > 0) {
         target.scrollIntoView()
         return
       }
