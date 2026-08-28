@@ -4,7 +4,6 @@ import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
 import { Checklist } from '@/components/Checklist'
 import { Timeline } from '@/components/Timeline'
-import { NudgeToggle } from '@/components/NudgeToggle'
 import { LockIcon } from '@/components/icons'
 import { CopyEmail } from '@/components/CopyEmail'
 import { Workshops } from '@/components/Workshops'
@@ -20,7 +19,6 @@ const TOC = [
   { id: 'how-it-works', label: 'How it works' },
   { id: 'workshops', label: 'Workshops' },
   { id: 'rhythm', label: 'The weekly rhythm' },
-  { id: 'your-data', label: 'Your data' },
   { id: 'support', label: 'Support' },
 ]
 
@@ -156,22 +154,6 @@ export default async function StartGuide() {
             <span>A deload week and the module workshop.</span>
           </li>
         </ul>
-      </Section>
-
-      <Section id="your-data" label="Your data">
-        <p>
-          What you write in the journal is stored so it follows you between devices. Chris can read
-          it, and may do so to support you on the programme. It goes no further.
-        </p>
-        <p>
-          With this on, your entries may also inform the reminders and prompts you are sent,
-          including ones drafted with the help of Anthropic&rsquo;s Claude. Turn it off and nothing
-          you write is used that way.
-        </p>
-        <NudgeToggle enabled={member?.personalisedNudges ?? true} />
-        <p className="mt-4 !text-ink-56 text-[0.8125rem]">
-          The full detail is in the <Link href="/privacy">privacy notice</Link>.
-        </p>
       </Section>
 
       <Section id="support" label="Support">

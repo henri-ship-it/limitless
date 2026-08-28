@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const FLUSH_EVERY_MS = 20_000
@@ -16,8 +16,22 @@ const FLUSH_EVERY_MS = 20_000
  */
 export function TimeOnPage() {
   const pathname = usePathname()
+  const params = useSearchParams()
   const seconds = useRef(0)
   const since = useRef<number | null>(null)
+  const noted = useRef(false)
+
+  /*
+   * Where they came in from. Kit knows who opened a digest and who clicked;
+   * this is the other half, what happened once they landed. Append ?from=digest
+   * to the links in a broadcast and it lands here.
+   */
+  const from = params.get('from') ?? params.get('utm_source')
+  useEffect(() => {
+    if (!from || noted.current) return
+    noted.current = true
+    void createClient().rpc('record_arrival', { source: from, page: pathname })
+  }, [from, pathname])
 
   useEffect(() => {
     const supabase = createClient()

@@ -32,6 +32,7 @@ export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro, isAdm
           {isAdmin ? (
             <TopLink href="/admin" label="Admin" active={pathname.startsWith('/admin')} />
           ) : null}
+          <TopLink href="/account" label="Your account" active={pathname === '/account'} />
         </ul>
 
         {modules.map((m) => (

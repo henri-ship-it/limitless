@@ -69,3 +69,21 @@ export async function setNudgePreference(enabled: boolean) {
   await session.supabase.rpc('set_personalised_nudges', { enabled })
   revalidatePath('/')
 }
+
+/** Deletes everything the member has written. Theirs to do, not ours. */
+export async function wipeMyEntries() {
+  const session = await requireMember()
+  if (!session) return
+
+  await session.supabase.rpc('wipe_my_entries')
+  revalidatePath('/journal')
+  revalidatePath('/account')
+}
+
+/** Notes that a member arrived from somewhere, such as the weekly digest. */
+export async function recordArrival(source: string, path: string) {
+  const session = await requireMember()
+  if (!session) return
+
+  await session.supabase.rpc('record_arrival', { source, page: path })
+}

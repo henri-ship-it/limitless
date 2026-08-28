@@ -6,6 +6,8 @@ import { currentWeek } from './cohort'
 import { weeks, type Tier } from '@/content/programme'
 import { journalEntries } from '@/content/journal'
 
+export { since, readable } from './format'
+
 export type MemberRow = {
   id: string
   email: string
@@ -156,7 +158,9 @@ export async function getMemberDetail(id: string) {
     await Promise.all([
       supabase
         .from('profiles')
-        .select('id, email, first_name, phone, tier, personalised_nudges, last_seen_at, created_at')
+        .select(
+          'id, email, first_name, phone, tier, personalised_nudges, last_seen_at, created_at, assessment',
+        )
         .eq('id', id)
         .single(),
       supabase.from('member_progress').select('week_number').eq('member_id', id),
@@ -169,6 +173,13 @@ export async function getMemberDetail(id: string) {
       service.auth.admin.listUsers({ perPage: 1000 }),
     ])
 
+  const { data: arrivals } = await supabase
+    .from('member_arrivals')
+    .select('source, path, at')
+    .eq('member_id', id)
+    .order('at', { ascending: false })
+    .limit(20)
+
   if (!profile) return null
 
   const signedIn = users.data?.users.find((u) => u.id === id)?.last_sign_in_at ?? null
@@ -176,6 +187,7 @@ export async function getMemberDetail(id: string) {
   return {
     profile: { ...profile, last_seen_at: latest(profile.last_seen_at, signedIn) },
     time: (time ?? []).sort((a, b) => b.seconds - a.seconds),
+    arrivals: arrivals ?? [],
     secondsSpent: (time ?? []).reduce((sum, row) => sum + row.seconds, 0),
     weeksComplete: (progress ?? []).map((p) => p.week_number).sort((a, b) => a - b),
     entries: (journal ?? []).map((row) => ({
@@ -188,25 +200,4 @@ export async function getMemberDetail(id: string) {
   }
 }
 
-/** Reads as "3 days ago", or "never". */
-export function since(iso: string | null): string {
-  if (!iso) return 'never'
-  const ms = Date.now() - Date.parse(iso)
-  const minutes = Math.floor(ms / 60000)
-  if (minutes < 1) return 'just now'
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  return days === 1 ? 'yesterday' : `${days} days ago`
-}
 
-/** Reads as "12m" or "1h 20m". */
-export function readable(seconds: number): string {
-  if (!seconds) return '—'
-  const minutes = Math.round(seconds / 60)
-  if (minutes < 60) return `${Math.max(1, minutes)}m`
-  const hours = Math.floor(minutes / 60)
-  const rest = minutes % 60
-  return rest ? `${hours}h ${rest}m` : `${hours}h`
-}

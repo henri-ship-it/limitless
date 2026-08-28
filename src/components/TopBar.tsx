@@ -158,15 +158,14 @@ export function TopBar({
         </div>
 
         <div className="ml-auto flex items-center gap-4">
-          <span
-            className="tier-tag hidden sm:inline-flex"
+          <Link
+            href="/account"
+            className="tier-tag !no-underline"
             data-tier={isAdmin ? 'admin' : tier}
+            aria-label="Your account"
           >
             {isAdmin ? 'admin' : tier}
-          </span>
-          <a href="/auth/sign-out" className="label hover:!text-ink">
-            Sign out
-          </a>
+          </Link>
         </div>
       </div>
     </header>

@@ -42,7 +42,7 @@ export function NudgeToggle({ enabled }: { enabled: boolean }) {
         </span>
         <span className="mt-1 block text-[0.8125rem] leading-relaxed text-ink-56">
           {on
-            ? 'On. What you write may inform the prompts and reminders you receive.'
+            ? 'On. What you write may shape the emails, reminders and prompts you receive.'
             : 'Off. You will still get the weekly digests, and nothing else changes.'}
         </span>
       </span>

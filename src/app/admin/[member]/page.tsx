@@ -20,7 +20,7 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
   const detail = await getMemberDetail(id)
   if (!detail) notFound()
 
-  const { profile, weeksComplete, entries, totalWeeks, time, secondsSpent } = detail
+  const { profile, weeksComplete, entries, totalWeeks, time, secondsSpent, arrivals } = detail
   const name = profile.first_name ?? profile.email.split('@')[0]
 
   return (
@@ -76,6 +76,25 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
         </p>
       </Section>
 
+      {profile.assessment ? <Assessment data={profile.assessment as AssessmentData} /> : null}
+
+      {arrivals.length ? (
+        <Section label="How they arrived">
+          <dl className="!mb-0">
+            {arrivals.map((row, i) => (
+              <div
+                key={i}
+                className="grid gap-1 border-t border-line py-2.5 sm:grid-cols-[8rem_1fr_auto] sm:gap-5"
+              >
+                <dt className="label !text-ink">{row.source}</dt>
+                <dd className="font-mono text-[0.8125rem] text-ink-72">{row.path}</dd>
+                <dd className="label !text-ink-40">{since(row.at)}</dd>
+              </div>
+            ))}
+          </dl>
+        </Section>
+      ) : null}
+
       {time.length ? (
         <Section label="Where their time goes">
           <dl className="!mb-0">
@@ -129,6 +148,65 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
         </Link>
       </div>
     </Shell>
+  )
+}
+
+type AssessmentData = {
+  scores?: Record<string, number>
+  focus?: string[]
+  wants?: string[]
+}
+
+/**
+ * What they told us before the programme started: the Know Thyself scorecard
+ * and the pre-programme assessment, both of which Kit already carries.
+ */
+function Assessment({ data }: { data: AssessmentData }) {
+  const scores = Object.entries(data.scores ?? {}).sort((a, b) => b[1] - a[1])
+
+  return (
+    <Section label="Where they started">
+      {data.focus?.length ? (
+        <>
+          <p className="label !mb-2">They asked to work on</p>
+          <p className="!mb-5 flex flex-wrap gap-1.5">
+            {data.focus.map((f) => (
+              <span key={f} className="pill">
+                {f}
+              </span>
+            ))}
+          </p>
+        </>
+      ) : null}
+
+      {data.wants?.length ? (
+        <>
+          <p className="label !mb-2">In their words</p>
+          <ul className="!mb-6">
+            {data.wants.map((w) => (
+              <li key={w}>{w}</li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+
+      {scores.length ? (
+        <dl className="!mb-0">
+          {scores.map(([name, value]) => (
+            <div key={name} className="grid grid-cols-[10rem_1fr_2.5rem] items-center gap-4 border-t border-line py-2">
+              <dt className="label !text-ink-72">{name}</dt>
+              <dd className="h-1 bg-ink-8">
+                <span
+                  className="block h-full bg-ink"
+                  style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+                />
+              </dd>
+              <dd className="label !text-ink text-right">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+    </Section>
   )
 }
 
