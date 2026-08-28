@@ -184,10 +184,19 @@ export function PhotographEntry({
         {/* The frame. Dimmed all round by a very large shadow rather than four
             separate panels, so the hole is always exactly the crop. */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
+          {/*
+            Sized by width, capped so the height it implies still fits. A fixed
+            height with a max width instead would go out of shape on a phone
+            held upright, which is where this will almost always be used.
+          */}
           <div
             ref={frame}
-            style={{ aspectRatio: String(PAGE_RATIO), boxShadow: '0 0 0 100vmax rgba(0,0,0,0.55)' }}
-            className="relative h-full max-h-full w-auto max-w-full rounded-[2px] outline outline-2 outline-white/80"
+            style={{
+              aspectRatio: String(PAGE_RATIO),
+              maxWidth: `calc((100dvh - 15rem) * ${PAGE_RATIO})`,
+              boxShadow: '0 0 0 100vmax rgba(0,0,0,0.55)',
+            }}
+            className="relative w-full rounded-[2px] outline outline-2 outline-white/80"
           >
             <Corner className="left-0 top-0 border-l-2 border-t-2" />
             <Corner className="right-0 top-0 border-r-2 border-t-2" />
