@@ -55,6 +55,21 @@ export function ScheduleGrid({ blocks, onChange }: Props) {
   }
   const [draft, setDraft] = useState<ScheduleBlock | null>(null)
   const [focusOn, setFocusOn] = useState<number | null>(null)
+  const justCreated = useRef<HTMLInputElement | null>(null)
+
+  /*
+   * A block that has just been drawn takes focus so it can be named. This runs
+   * once and then forgets, rather than leaving a flag set that React would act
+   * on again the next time it rebuilt the input. That was pulling focus back to
+   * the schedule from wherever the member had moved to.
+   */
+  useEffect(() => {
+    if (focusOn === null) return
+    justCreated.current?.focus()
+    justCreated.current = null
+    setFocusOn(null)
+  }, [focusOn])
+
 
   const sorted = [...blocks].sort((a, b) => a.start - b.start)
 
@@ -212,11 +227,10 @@ export function ScheduleGrid({ blocks, onChange }: Props) {
         {sorted.map((block, i) => (
           <Block key={`${block.start}-${i}`} block={block} className="border-accent-ink bg-accent-soft">
             <input
-              autoFocus={focusOn === block.start}
+              ref={focusOn === block.start ? justCreated : null}
               value={block.label}
               onChange={(e) => update(i, { label: e.target.value })}
               onBlur={() => {
-                setFocusOn(null)
                 if (!block.label.trim()) remove(i)
               }}
               onPointerDown={(e) => e.stopPropagation()}
