@@ -118,38 +118,118 @@ function KnowThyself({ filled }: { filled: Filled }) {
   )
 }
 
+/**
+ * The pre-assessment runs to fifty-odd answers, which is a wall unless it is
+ * sorted by what it costs to read.
+ *
+ * What somebody wrote in their own words comes first and in full. The importance
+ * ratings become one ranked list, because ten separate rows saying "9" tell you
+ * less than seeing them in order. Everything short is folded away until asked
+ * for.
+ */
 function Survey({ filled }: { filled: Filled }) {
-  const scores = Object.entries(filled.scores ?? {}).sort((a, b) => b[1] - a[1])
+  const notes = Object.entries(filled.notes ?? {})
+  const written = notes.filter(([, answer]) => answer.length > 60)
+  const ratings = notes
+    .filter(([, answer]) => answer.length <= 60 && /^\d+(\.\d+)?$/.test(answer.trim()))
+    .sort((a, b) => Number(b[1]) - Number(a[1]))
+  const brief = notes.filter(
+    ([, answer]) => answer.length <= 60 && !/^\d+(\.\d+)?$/.test(answer.trim()),
+  )
+
+  const scores = Object.entries(filled.scores ?? {})
+    .filter(([name]) => name !== 'Overall')
+    .sort((a, b) => b[1] - a[1])
   const top = Math.max(100, ...scores.map(([, v]) => v))
 
   return (
     <div>
-      <Notes filled={filled} />
       {scores.length ? (
-        <dl className="!mb-0 mt-5">
+        <dl className="!mb-8">
           {scores.map(([name, value]) => (
             <div
               key={name}
-              className="grid grid-cols-[10rem_1fr_2.5rem] items-center gap-4 border-t border-line py-2"
+              className="grid grid-cols-[11rem_1fr_4.5rem] items-center gap-4 border-t border-line py-2"
             >
               <dt className="label !text-ink-72">{name}</dt>
-              <dd className="h-1 bg-ink-8">
-                <span
-                  className="block h-full bg-ink"
-                  style={{ width: `${Math.min(100, Math.max(0, (value / top) * 100))}%` }}
-                />
-              </dd>
-              <dd className="label !text-ink text-right">{value}</dd>
+              {value > 0 ? (
+                <>
+                  <dd className="h-1 bg-ink-8">
+                    <span
+                      className="block h-full bg-ink"
+                      style={{ width: `${Math.min(100, (value / top) * 100)}%` }}
+                    />
+                  </dd>
+                  <dd className="label !text-ink text-right">{value}</dd>
+                </>
+              ) : (
+                // A survey section that carries no scoring reads as zero out of
+                // a hundred otherwise, which is not what it means.
+                <dd className="label col-span-2 !text-ink-40 text-right">not scored</dd>
+              )}
             </div>
           ))}
         </dl>
       ) : null}
+
+      {written.length ? (
+        <>
+          <p className="label !mb-3 !text-ink">In their words</p>
+          <dl className="!mb-8">
+            {written.map(([question, answer]) => (
+              <div key={question} className="border-t border-line py-3">
+                <dt className="label !mb-1.5 !text-ink-56">{question}</dt>
+                <dd className="text-[0.9375rem] leading-relaxed whitespace-pre-line text-ink">
+                  {answer}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </>
+      ) : null}
+
+      {ratings.length ? (
+        <>
+          <p className="label !mb-3 !text-ink">What matters most to them</p>
+          <dl className="!mb-8">
+            {ratings.map(([question, answer]) => (
+              <div
+                key={question}
+                className="grid grid-cols-[1fr_2.5rem] items-baseline gap-4 border-t border-line py-2"
+              >
+                <dt className="text-[0.9375rem] text-ink-72">{question}</dt>
+                <dd className="label !text-ink text-right">{answer}</dd>
+              </div>
+            ))}
+          </dl>
+        </>
+      ) : null}
+
+      {brief.length ? (
+        <details className="!mb-0 border-t border-line pt-3">
+          <summary className="label cursor-pointer hover:!text-ink">
+            {brief.length} shorter answers
+          </summary>
+          <dl className="!mb-0 mt-3">
+            {brief.map(([question, answer]) => (
+              <div
+                key={question}
+                className="grid gap-1 border-t border-line py-2 sm:grid-cols-[1fr_12rem] sm:gap-4"
+              >
+                <dt className="text-[0.9375rem] text-ink-72">{question}</dt>
+                <dd className="text-[0.9375rem] text-ink">{answer}</dd>
+              </div>
+            ))}
+          </dl>
+        </details>
+      ) : null}
+
       <Received filled={filled} />
     </div>
   )
 }
 
-/** Free text answers, which on the survey are the part worth reading. */
+/** Free text answers, as they appear on the Know Thyself tab. */
 function Notes({ filled }: { filled: Filled }) {
   const notes = Object.entries(filled.notes ?? {})
   if (!notes.length) return null

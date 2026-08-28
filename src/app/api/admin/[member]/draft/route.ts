@@ -105,10 +105,29 @@ function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>)
     if (scores) lines.push(`Full spread: ${scores}.`)
   }
 
+  /*
+   * The pre-assessment runs to fifty-odd answers, most of them a word or a
+   * number. What they wrote at length is the part worth putting in front of a
+   * draft; the importance ratings go in as a ranked line rather than a list.
+   */
   const preNotes = Object.entries(assessment.preAssessment?.notes ?? {})
-  if (preNotes.length) {
+  const written = preNotes.filter(([, answer]) => answer.length > 60)
+  const ratings = preNotes
+    .filter(([, answer]) => /^\d+(\.\d+)?$/.test(answer.trim()))
+    .sort((a, b) => Number(b[1]) - Number(a[1]))
+
+  if (written.length) {
     lines.push('', 'What they said in the pre-assessment, in their own words:')
-    for (const [question, answer] of preNotes) lines.push(`- ${question} - ${answer}`)
+    for (const [question, answer] of written) lines.push(`- ${question} ${answer}`)
+  }
+  if (ratings.length) {
+    lines.push(
+      '',
+      `What they said matters most, highest first: ${ratings
+        .slice(0, 6)
+        .map(([question, answer]) => `${question} ${answer}`)
+        .join('; ')}`,
+    )
   }
 
   if (entries.length) {
