@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { createDwell } from '@/lib/dwell'
 
 const FLUSH_EVERY_MS = 20_000
 
@@ -17,8 +18,6 @@ const FLUSH_EVERY_MS = 20_000
 export function TimeOnPage() {
   const pathname = usePathname()
   const params = useSearchParams()
-  const seconds = useRef(0)
-  const since = useRef<number | null>(null)
   const noted = useRef(false)
 
   /*
@@ -35,32 +34,21 @@ export function TimeOnPage() {
 
   useEffect(() => {
     const supabase = createClient()
-    let flushTimer: ReturnType<typeof setInterval>
-
-    const bank = () => {
-      if (since.current === null) return
-      seconds.current += Math.round((Date.now() - since.current) / 1000)
-      since.current = null
-    }
+    const dwell = createDwell()
+    const here = () => document.visibilityState === 'visible'
 
     const send = () => {
-      bank()
-      const amount = seconds.current
-      if (amount < 3) return
-      seconds.current = 0
-      void supabase.rpc('add_time', { page: pathname, amount })
+      const amount = dwell.flush(here())
+      if (amount) void supabase.rpc('add_time', { page: pathname, amount })
     }
 
     const onVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        since.current = Date.now()
-      } else {
-        send()
-      }
+      if (here()) dwell.resume()
+      else send()
     }
 
-    if (document.visibilityState === 'visible') since.current = Date.now()
-    flushTimer = setInterval(send, FLUSH_EVERY_MS)
+    if (here()) dwell.resume()
+    const flushTimer = setInterval(send, FLUSH_EVERY_MS)
     document.addEventListener('visibilitychange', onVisibility)
     window.addEventListener('pagehide', send)
 
@@ -68,6 +56,7 @@ export function TimeOnPage() {
       clearInterval(flushTimer)
       document.removeEventListener('visibilitychange', onVisibility)
       window.removeEventListener('pagehide', send)
+      dwell.pause()
       send()
     }
   }, [pathname])
