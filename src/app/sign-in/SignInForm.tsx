@@ -9,6 +9,7 @@ export function SignInForm() {
   const next = params.get('next') ?? '/'
   const [email, setEmail] = useState('')
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [message, setMessage] = useState('')
 
   async function submit(event: React.FormEvent) {
     event.preventDefault()
@@ -23,7 +24,29 @@ export function SignInForm() {
       },
     })
 
-    setState(error ? 'error' : 'sent')
+    if (!error) {
+      setState('sent')
+      return
+    }
+
+    /*
+     * Asking for a second link too quickly is the common case, and telling
+     * someone to check their spelling then is worse than useless: it sends
+     * them looking for a problem that is not there.
+     */
+    const wait = /after (\d+) seconds?/.exec(error.message)
+    if (wait || error.status === 429) {
+      setMessage(
+        wait
+          ? `A link is already on its way. Check your inbox, or ask again in ${wait[1]} seconds.`
+          : 'A link is already on its way. Check your inbox, including spam.',
+      )
+    } else {
+      setMessage(
+        'We could not send a link to that address. Check the spelling, or reply to any email from Chris and he will sort it out.',
+      )
+    }
+    setState('error')
   }
 
   if (state === 'sent') {
@@ -56,10 +79,7 @@ export function SignInForm() {
         {state === 'sending' ? 'Sending' : 'Send my link'}
       </button>
       {state === 'error' ? (
-        <p className="mt-4 text-[0.8125rem] leading-relaxed text-ink-56">
-          We could not send a link to that address. Check the spelling, or reply to any email from
-          Chris and he will sort it out.
-        </p>
+        <p className="mt-4 text-[0.8125rem] leading-relaxed text-ink-56">{message}</p>
       ) : null}
     </form>
   )
