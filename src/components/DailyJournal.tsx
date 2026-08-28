@@ -11,6 +11,7 @@ import {
 import { HUDDLE_QUESTIONS, type Field } from '@/content/entry-fields'
 import { VALUES, customExercise } from '@/content/entry-extras'
 import { EntryField } from './EntryField'
+import { EntryText } from './EntryText'
 import { ScheduleGrid } from './ScheduleGrid'
 import { TickIcon } from './icons'
 
@@ -212,7 +213,7 @@ export function DailyJournal({
           <Panel label="The exercise">
             {intro.map((line, i) => (
               <p key={i} className="text-[0.9375rem] leading-relaxed text-ink-72">
-                {line}
+                <EntryText text={line} />
               </p>
             ))}
 
@@ -233,7 +234,7 @@ export function DailyJournal({
               <>
                 {custom.guidance.map((line, i) => (
                   <p key={i} className="text-[0.9375rem] leading-relaxed text-ink-72">
-                    {line}
+                    <EntryText text={line} />
                   </p>
                 ))}
                 <ValuePicker

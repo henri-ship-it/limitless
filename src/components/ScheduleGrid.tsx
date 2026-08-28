@@ -44,6 +44,9 @@ export function ScheduleGrid({ blocks, onChange }: Props) {
 
   function startDraw(event: React.PointerEvent) {
     if (event.button !== 0) return
+    // On touch the page owns vertical movement, so a tap makes a single hour
+    // and the handle does the rest.
+    const drawable = event.pointerType !== 'touch'
     const start = rowAt(event.clientY)
     if (occupied(start)) return
 
@@ -56,13 +59,14 @@ export function ScheduleGrid({ blocks, onChange }: Props) {
     setDraft({ start, end: start, label: '' })
 
     const move = (e: PointerEvent) => {
+      if (!drawable) return
       const end = Math.min(ceiling, Math.max(start, rowAt(e.clientY)))
       setDraft({ start, end, label: '' })
     }
     const up = (e: PointerEvent) => {
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
-      const end = Math.min(ceiling, Math.max(start, rowAt(e.clientY)))
+      const end = drawable ? Math.min(ceiling, Math.max(start, rowAt(e.clientY))) : start
       setDraft(null)
       onChange([...blocks, { start, end, label: '' }])
       setFocusOn(start)
@@ -104,7 +108,13 @@ export function ScheduleGrid({ blocks, onChange }: Props) {
         ref={grid}
         onPointerDown={startDraw}
         className="relative cursor-crosshair"
-        style={{ touchAction: 'none' }}
+        /*
+         * pan-y lets a finger scroll the page through the grid. Blocking every
+         * gesture here trapped the scroll on a phone, since the schedule is
+         * tall enough to fill the screen. Drawing a block with a pointer still
+         * works, because that gesture starts with a press rather than a drag.
+         */
+        style={{ touchAction: 'pan-y' }}
       >
         {SCHEDULE_HOURS.map((hour) => (
           <div

@@ -5,6 +5,7 @@ import { useOptimistic, useTransition } from 'react'
 import { toggleChecklistItem } from '@/app/actions'
 import type { ChecklistItem } from '@/content/checklist'
 import { assets } from '@/content/assets'
+import { DriveEmbed } from './DriveEmbed'
 import { TickIcon } from './icons'
 
 /**
@@ -74,7 +75,11 @@ export function Checklist({
                   {item.detail}
                 </p>
               ) : null}
-              {link ? (
+              {asset?.url ? (
+                <div className="mt-3 max-w-xl">
+                  <DriveEmbed url={asset.url} title={item.label} />
+                </div>
+              ) : link ? (
                 <Link
                   href={link.href}
                   className="label mt-2 inline-flex !no-underline border border-line px-3 py-1.5 hover:border-ink hover:!text-ink"

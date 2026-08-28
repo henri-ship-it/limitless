@@ -47,10 +47,10 @@ export const workshops: Record<number, Workshop> = {
 
 /** Module workshop recordings, keyed by the deload week they belong to. */
 export const workshopRecordings: Record<number, Asset> = {
-  4: { url: null, minTier: 'core', note: 'Module 01 workshop, cohort 4.0.' },
-  8: { url: null, minTier: 'core', note: 'Module 02 workshop, cohort 4.0.' },
-  12: { url: null, minTier: 'core', note: 'Module 03 workshop, cohort 4.0.' },
-  16: { url: null, minTier: 'core', note: 'Module 04 workshop, cohort 4.0.' },
+  4: { url: 'https://drive.google.com/file/d/1aO4YmSlU_-U2nvEFocppO4UOHALc463f/view', minTier: 'core' },
+  8: { url: 'https://drive.google.com/file/d/1sO6m9OUKoo36Ts3rQ4GTs35vYj392yj6/view', minTier: 'core' },
+  12: { url: 'https://drive.google.com/file/d/1lQlJYy7XBIa_EPLo8C5dpXjok_lCwiP1/view', minTier: 'core' },
+  16: { url: 'https://drive.google.com/file/d/1eFne7DccdbTVn9e9LGjvYJxRpa4zPpx9/view', minTier: 'core' },
 }
 
 export const SUPPORT_EMAIL = 'chris@lmntaryperformance.com'

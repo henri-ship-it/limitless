@@ -6,6 +6,7 @@ import { Section } from '@/components/Section'
 import { Quote } from '@/components/Quote'
 import { ChapterVisual } from '@/components/ChapterVisual'
 import { VideoEmbed } from '@/components/VideoEmbed'
+import { DriveEmbed } from '@/components/DriveEmbed'
 import { DigestBody } from '@/components/DigestBody'
 import { MarkWeekDone } from '@/components/MarkWeekDone'
 import { LockIcon } from '@/components/icons'
@@ -73,10 +74,13 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
   const toc: TocItem[] = [
     { id: 'overview', label: 'Overview' },
     ...(week.type === 'deload' && week.recap ? [{ id: 'why', label: 'Why this matters' }] : []),
-    { id: 'masterclass', label: 'Video masterclass' },
+    {
+      id: 'masterclass',
+      label: week.type === 'deload' ? 'Workshop keynote' : 'Video masterclass',
+    },
     { id: 'digest', label: 'Weekly digest' },
     { id: 'journal', label: 'To close' },
-    ...(week.type === 'deload' ? [{ id: 'workshop', label: 'Module workshop' }] : []),
+    ...(n === 16 ? [{ id: 'workshop', label: 'Finishing the programme' }] : []),
   ]
 
   return (
@@ -118,12 +122,31 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
         </Section>
       ) : null}
 
-      <Section id="masterclass" label="Video masterclass">
-        <VideoEmbed youtubeId={week.youtubeId} title={`${week.title} masterclass`} />
-        <p className="mt-4 !text-ink-56 text-[0.8125rem]">
-          Chris walks through the chapter. Watch it before you start the week.
-        </p>
-      </Section>
+      {week.type === 'deload' ? (
+        <Section id="masterclass" label="Workshop keynote">
+          {recording?.url ? (
+            <DriveEmbed
+              url={recording.url}
+              title={`Module ${String(module.number).padStart(2, '0')} workshop`}
+            />
+          ) : (
+            <div className="flex aspect-video w-full items-center justify-center border border-line bg-ink-3">
+              <p className="label">Recording to follow</p>
+            </div>
+          )}
+          <p className="mt-4 !text-ink-56 text-[0.8125rem]">
+            Chris works through the whole of {module.name}, drawing the three chapters together.
+            The workshop runs live during this week and the recording lands here afterwards.
+          </p>
+        </Section>
+      ) : (
+        <Section id="masterclass" label="Video masterclass">
+          <VideoEmbed youtubeId={week.youtubeId} title={`${week.title} masterclass`} />
+          <p className="mt-4 !text-ink-56 text-[0.8125rem]">
+            Chris walks through the chapter. Watch it before you start the week.
+          </p>
+        </Section>
+      )}
 
       <Section id="digest" label="Weekly digest">
         {digest ? (
@@ -132,7 +155,6 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
               nodes={digest.nodes}
               week={n}
               firstEntry={week.firstEntry}
-              entriesInWeek={entries.length}
               completedItems={[...progress.completedItems]}
             />
             <p className="label !mt-8">Chris</p>
@@ -152,28 +174,13 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
         </p>
       </Section>
 
-      {week.type === 'deload' ? (
-        <Section id="workshop" label="Module workshop">
-          {recording?.url ? (
-            <p>
-              <a href={recording.url} target="_blank" rel="noreferrer">
-                Watch the module {String(module.number).padStart(2, '0')} workshop
-              </a>
-            </p>
-          ) : (
-            <p className="!text-ink-56">
-              {member?.tier === 'pro'
-                ? 'The live workshop runs this week. The recording is posted here afterwards.'
-                : 'The recording is posted here on the Thursday of this week.'}
-            </p>
-          )}
-          {n === 16 ? (
-            <p className="mt-4">
-              <a href={COHORT.postAssessmentUrl} target="_blank" rel="noreferrer">
-                Complete your post-programme assessment
-              </a>
-            </p>
-          ) : null}
+      {n === 16 ? (
+        <Section id="workshop" label="Finishing the programme">
+          <p>
+            <a href={COHORT.postAssessmentUrl} target="_blank" rel="noreferrer">
+              Complete your post-programme assessment
+            </a>
+          </p>
         </Section>
       ) : null}
 

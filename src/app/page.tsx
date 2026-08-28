@@ -14,7 +14,7 @@ import { currentWeek, unlockedThrough } from '@/lib/cohort'
 
 const TOC = [
   { id: 'progress', label: 'Your progress' },
-  { id: 'get-started', label: 'Get started' },
+  { id: 'get-started', label: 'Where you are' },
   { id: 'how-it-works', label: 'How it works' },
   { id: 'workshops', label: 'Workshops' },
   { id: 'rhythm', label: 'The weekly rhythm' },
@@ -36,13 +36,15 @@ export default async function StartGuide() {
       <PageHeader
         eyebrow={`Cohort ${COHORT.label}`}
         title={member?.firstName ? `Welcome, ${member.firstName}` : 'Start Guide'}
-        lede="Sixteen weeks, four modules, one journal. This page covers how the programme runs and what to do before it begins."
+        lede="Sixteen weeks, four modules, one journal. This page covers how the programme runs and where you are in it."
         pills={
           <>
             <span className="pill">{tier}</span>
-            <span className="pill">
-              {progress.completedItems.size}/{items.length} set up
-            </span>
+            {active === 0 ? (
+              <span className="pill">
+                {progress.completedItems.size}/{items.length} set up
+              </span>
+            ) : null}
             <span className="pill">
               {progress.completedWeeks.size}/{weeks.length} weeks complete
             </span>
@@ -58,12 +60,19 @@ export default async function StartGuide() {
         />
       </Section>
 
-      <Section id="get-started" label="Get started">
-        <Checklist items={items} completed={[...progress.completedItems]} />
-        <p className="mt-6 !text-ink-56 text-[0.8125rem]">
-          Your progress is saved as you go.
-        </p>
-      </Section>
+      {/*
+        Setting up matters during onboarding and never again. Once the
+        programme is running this becomes a pointer to the week in hand.
+      */}
+      {active === 0 ? (
+        <Section id="get-started" label="Get started">
+          <Checklist items={items} completed={[...progress.completedItems]} />
+        </Section>
+      ) : (
+        <Section id="get-started" label="Where you are">
+          <WhereYouAre week={active} />
+        </Section>
+      )}
 
       <Section id="how-it-works" label="How it works">
         <p>
@@ -153,5 +162,39 @@ export default async function StartGuide() {
         </Link>
       </div>
     </Shell>
+  )
+}
+
+/** The week in hand, and the way into it. */
+function WhereYouAre({ week }: { week: number }) {
+  const chapter = weeks.find((w) => w.number === week)
+  if (!chapter) {
+    return (
+      <p>
+        You have reached the end of the sixteen weeks. Everything stays open, so revisit any
+        chapter whenever you want to.
+      </p>
+    )
+  }
+
+  const module = modules.find((m) => m.weeks.includes(week))!
+
+  return (
+    <div className="border border-line p-6">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <span className="radar" aria-hidden />
+        <span className="label">
+          Week {String(week).padStart(2, '0')} · Module {String(module.number).padStart(2, '0')}{' '}
+          {module.name}
+        </span>
+      </div>
+      <p className="!mb-1 text-[1.25rem] font-medium tracking-[-0.015em] text-ink">
+        {chapter.title}
+      </p>
+      {chapter.topic ? <span className="pill">{chapter.topic}</span> : null}
+      <p className="mt-5 !mb-0">
+        <Link href={`/week/${week}`}>Open this week</Link>
+      </p>
+    </div>
   )
 }

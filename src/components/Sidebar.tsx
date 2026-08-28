@@ -20,7 +20,12 @@ export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro }: Pro
     <aside className="hidden lg:block lg:w-64 lg:shrink-0 lg:border-r lg:border-line">
       <div className="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto px-5 py-8">
         <ul className="mb-8 space-y-0.5">
-          <TopLink href="/" label="Start Guide" active={pathname === '/'} />
+          <TopLink
+            href="/"
+            label="Start Guide"
+            active={pathname === '/'}
+            marker={currentWeek === 0 ? <span className="radar" aria-hidden /> : null}
+          />
           <TopLink href="/journal" label="Journal" active={pathname === '/journal'} />
           {isPro ? <TopLink href="/pro" label="Pro" active={pathname === '/pro'} /> : null}
         </ul>
@@ -80,16 +85,27 @@ export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro }: Pro
   )
 }
 
-function TopLink({ href, label, active }: { href: string; label: string; active: boolean }) {
+function TopLink({
+  href,
+  label,
+  active,
+  marker,
+}: {
+  href: string
+  label: string
+  active: boolean
+  marker?: React.ReactNode
+}) {
   return (
     <li>
       <Link
         href={href}
-        className={`block py-1 text-[0.9375rem] ${
+        className={`flex items-center justify-between gap-2 py-1 text-[0.9375rem] ${
           active ? 'font-medium text-ink' : 'text-ink-72 hover:text-ink'
         }`}
       >
-        {label}
+        <span>{label}</span>
+        {marker}
       </Link>
     </li>
   )

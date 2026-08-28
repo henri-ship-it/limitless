@@ -7,7 +7,7 @@ import { visualForEntry } from '@/content/journal-visuals'
 export type ResolvedEntry = {
   n: number
   week: number
-  /** Position in the week, one to seven. */
+  /** Reads straight off the entry number, so entry 8 is day 8. */
   day: number
   huddle: boolean
   title: string
@@ -33,7 +33,7 @@ export function resolveEntry(n: number): ResolvedEntry | null {
   const override = overrideFor(n)
   const custom = customExercise(n)
   const huddle = isHuddleEntry(n)
-  const day = ((n - 1) % 7) + 1
+  const day = n
 
   const visual = override?.hideVisual ? null : visualForEntry(n)
   const link = override?.link ?? linkForEntry(n)

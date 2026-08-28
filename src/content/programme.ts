@@ -97,7 +97,7 @@ export const weeks: Week[] = [
       text: 'The cave you fear to enter holds the treasure you seek.',
       author: 'Joseph Campbell',
     },
-    youtubeId: 'ZW0xDjZG16c',
+    youtubeId: 'rRJmJfykNbc',
     firstEntry: 1,
   },
   {
@@ -132,7 +132,7 @@ export const weeks: Week[] = [
       text: 'I fear not the man who has practiced 10,000 kicks once, but I fear the man who has practiced one kick 10,000 times.',
       author: 'Bruce Lee',
     },
-    youtubeId: 'Pqw-k7TjVPA',
+    youtubeId: 'UqR51p5mrdg',
     firstEntry: 15,
   },
   {
@@ -310,7 +310,7 @@ export const weeks: Week[] = [
       'Behaviour is the often neglected element in goal pursuit. Perhaps a better term would be behaviour-setting. It’s the process of decoding the necessary behaviours to hit a target.',
       'Goal-setting requires nuance. This is your framework.',
     ],
-    youtubeId: 'R6trhjRe6OI',
+    youtubeId: 'NTqwwNpt73M',
     firstEntry: 92,
   },
   {

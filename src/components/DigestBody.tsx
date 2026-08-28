@@ -5,9 +5,8 @@ import { DigestChecklist } from './DigestChecklist'
 type Props = {
   nodes: DigestNode[]
   week: number
-  /** First journal entry of the week, used to point practice at the right day. */
+  /** First journal entry of the week, which the practice rows link into. */
   firstEntry: number
-  entriesInWeek: number
   completedItems: string[]
 }
 
@@ -25,7 +24,7 @@ const CHALLENGE = /challenge/i
  * journal entries, reflection questions are set as questions, and a list of
  * "Label: explanation" pairs is set as a table of terms.
  */
-export function DigestBody({ nodes, week, firstEntry, entriesInWeek, completedItems }: Props) {
+export function DigestBody({ nodes, week, firstEntry, completedItems }: Props) {
   let heading = ''
   let sub = ''
   let focusCount = 0
@@ -78,12 +77,7 @@ export function DigestBody({ nodes, week, firstEntry, entriesInWeek, completedIt
 
         if (PRACTICE.test(context)) {
           return (
-            <PracticeList
-              key={i}
-              items={node.items}
-              firstEntry={firstEntry}
-              entriesInWeek={entriesInWeek}
-            />
+            <PracticeList key={i} items={node.items} firstEntry={firstEntry} />
           )
         }
 
@@ -102,36 +96,21 @@ export function DigestBody({ nodes, week, firstEntry, entriesInWeek, completedIt
 }
 
 /**
- * The week's practice, stepped across its journal entries. The mapping is by
- * position, since the copy names no entry numbers: the first practice belongs
- * to the first day, and so on. It stops pointing at days once the list runs
- * longer than the week does.
+ * The week's practice. Chris's copy does not say which practice belongs to
+ * which day, so nothing here claims one does. Each row links into the week's
+ * entries, marked simply as a prompt.
  */
-function PracticeList({
-  items,
-  firstEntry,
-  entriesInWeek,
-}: {
-  items: string[]
-  firstEntry: number
-  entriesInWeek: number
-}) {
-  const stepped = items.length <= entriesInWeek
-
+function PracticeList({ items, firstEntry }: { items: string[]; firstEntry: number }) {
   return (
     <ol className="!list-none !pl-0 !mb-0 border-t border-line">
       {items.map((item, i) => (
         <li key={i} className="!mb-0 flex items-center gap-4 border-b border-line py-3">
-          {stepped ? (
-            <Link
-              href={`/journal/${firstEntry + i}`}
-              className="pill !no-underline shrink-0 hover:border-line-strong hover:!text-ink"
-            >
-              Day {i + 1}
-            </Link>
-          ) : (
-            <span className="label w-5 shrink-0 text-center">{i + 1}</span>
-          )}
+          <Link
+            href={`/journal/${firstEntry}`}
+            className="pill !no-underline shrink-0 hover:border-line-strong hover:!text-ink"
+          >
+            Prompt
+          </Link>
           <span className="text-[0.9375rem] leading-relaxed text-ink-72">{item}</span>
         </li>
       ))}
