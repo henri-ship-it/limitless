@@ -14,6 +14,7 @@ import { EntryField } from './EntryField'
 import { Dictate } from './Dictate'
 import { EntryText } from './EntryText'
 import { ScheduleGrid } from './ScheduleGrid'
+import { PhotographEntry } from './PhotographEntry'
 import { TickIcon } from './icons'
 
 type Props = {
@@ -47,6 +48,9 @@ export function DailyJournal({
   const custom = customExercise(entry)
   const [data, setData] = useState<EntryData>(initial)
   const [state, setState] = useState<'idle' | 'saving' | 'saved'>('idle')
+  /* What the entry looked like before a photograph filled it in, so there is
+     always a way back from a transcription that came out wrong. */
+  const [before, setBefore] = useState<EntryData | null>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const loaded = useRef(false)
 
@@ -116,9 +120,20 @@ export function DailyJournal({
 
   return (
     <div className="space-y-px">
-      <div className="flex items-center justify-between border-b border-line px-6 py-3 sm:px-10">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-line px-6 py-3 sm:px-10">
         <p className="label">Your entry</p>
-        <p className="label flex items-center gap-1.5">
+        {persist === 'db' ? (
+          <PhotographEntry
+            entry={entry}
+            onFilled={(read) => {
+              setBefore(data)
+              const next = fromPhoto(data, read)
+              setData(next)
+              save(next)
+            }}
+          />
+        ) : null}
+        <p className="label ml-auto flex items-center gap-1.5">
           {state === 'saving' ? (
             'Saving'
           ) : state === 'saved' ? (
@@ -132,6 +147,26 @@ export function DailyJournal({
           )}
         </p>
       </div>
+
+      {before ? (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-accent-soft px-6 py-3 sm:px-10">
+          <p className="!mb-0 text-[0.9375rem] text-ink">
+            Filled in from your photo. Read it against the page and correct anything that came out
+            wrong — it is saved as you go.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setData(before)
+              save(before)
+              setBefore(null)
+            }}
+            className="label ml-auto border border-line-strong px-3 py-1.5 hover:border-ink hover:!text-ink"
+          >
+            Undo
+          </button>
+        </div>
+      ) : null}
 
       <div className="grid lg:grid-cols-2">
         <div className="border-b border-line lg:border-r">
@@ -447,4 +482,40 @@ function ValuePicker({
       </div>
     </div>
   )
+}
+
+/**
+ * Folds a transcription into the entry.
+ *
+ * Only what was actually read is written: a field the photograph did not
+ * produce keeps whatever was already there, so photographing one page of a
+ * spread does not wipe the other. Everything is reversible from the Undo above.
+ */
+function fromPhoto(current: EntryData, read: Record<string, unknown>): EntryData {
+  const next: EntryData = { ...current }
+  const words = (value: unknown) => (typeof value === 'string' ? value.trim() : '')
+  const lines = (value: unknown) =>
+    Array.isArray(value) ? value.map(words).filter((v, i, all) => v || i < all.length - 1) : null
+
+  for (const key of ['intentions', 'achievements', 'huddle', 'values'] as const) {
+    const list = lines(read[key])
+    if (list?.length) next[key] = list
+  }
+
+  for (const key of ['win', 'mind', 'grateful'] as const) {
+    const said = words(read[key])
+    if (said) next[key] = said
+  }
+
+  if (read.fields && typeof read.fields === 'object') {
+    const held: Record<string, string | string[]> = { ...(current.fields ?? {}) }
+    for (const [key, value] of Object.entries(read.fields as Record<string, unknown>)) {
+      const list = lines(value)
+      if (Array.isArray(value) && list?.length) held[key] = list
+      else if (words(value)) held[key] = words(value)
+    }
+    next.fields = held
+  }
+
+  return next
 }

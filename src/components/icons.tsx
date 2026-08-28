@@ -125,3 +125,13 @@ export function AccountIcon({ className = '' }: NavIcon) {
     </svg>
   )
 }
+
+/** Photographing a page of the printed journal. */
+export function CameraIcon({ className = '' }: NavIcon) {
+  return (
+    <svg {...nav} className={`h-4 w-4 ${className}`} aria-hidden>
+      <path d="M2 5.6h2.6l1-1.6h4.8l1 1.6H14v7.2H2z" />
+      <circle cx="8" cy="9.1" r="2.3" />
+    </svg>
+  )
+}

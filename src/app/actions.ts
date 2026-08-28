@@ -75,7 +75,23 @@ export async function wipeMyEntries() {
   const session = await requireMember()
   if (!session) return
 
-  await session.supabase.rpc('wipe_my_entries')
+  const { supabase, userId } = session
+
+  /*
+   * The photographs go first. A foreign key reaches the row that records one,
+   * but not the file itself, so deleting only the rows would leave the pages
+   * they photographed sitting in storage with nothing pointing at them.
+   */
+  const { data: photos } = await supabase
+    .from('member_photos')
+    .select('path')
+    .eq('member_id', userId)
+
+  if (photos?.length) {
+    await supabase.storage.from('journal-photos').remove(photos.map((row) => row.path))
+  }
+
+  await supabase.rpc('wipe_my_entries')
   // Week ticks live in the sidebar on every page, so the layout has to go too.
   revalidatePath('/', 'layout')
 }

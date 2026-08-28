@@ -10,6 +10,11 @@
  *
  * where type is know-thyself or pre-assessment. Add --dry to see what it would
  * do without writing anything.
+ *
+ * People do not always answer from the address they enrolled with, which is the
+ * one case the webhook cannot resolve on its own. --as <email> files every row
+ * in the export against that member instead of the address in the file, so use
+ * it on a single row export and check who you are pointing it at.
  */
 
 import { readFileSync } from 'node:fs'
@@ -122,6 +127,8 @@ function read(headers, cells, slot) {
 
 const [csvPath, type] = process.argv.slice(2)
 const dry = process.argv.includes('--dry')
+const asIndex = process.argv.indexOf('--as')
+const forced = asIndex === -1 ? null : process.argv[asIndex + 1]?.trim().toLowerCase()
 
 if (!csvPath || !SLOTS[type]) {
   console.error('Usage: node --env-file=.env.local scripts/import-scorecards.mjs <csv> <know-thyself|pre-assessment> [--dry]')
@@ -144,8 +151,12 @@ const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABA
 })
 
 for (const cells of body) {
-  const email = (cells[emailAt] ?? '').trim().toLowerCase()
+  const answered = (cells[emailAt] ?? '').trim().toLowerCase()
+  const email = forced ?? answered
   if (!email) continue
+  if (forced && forced !== answered) {
+    console.log(`filing ${answered} against ${forced}`)
+  }
 
   const { data: profile } = await db
     .from('profiles')

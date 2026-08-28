@@ -90,8 +90,14 @@ export default function PrivacyPage() {
           models, and does not keep it beyond producing the message.
         </p>
         <p>
-          You can turn this off at any time from the Start Guide, under Your data. Nothing else
-          about your membership changes: you keep the journal, the digests and everything else.
+          If you photograph a page of your printed journal so it can be typed up for you, that
+          photograph is sent to Anthropic on the same terms, at the moment you ask for it and not
+          before. The photograph is kept alongside the entry so you can check the transcription
+          against it, and it goes when you delete your entries.
+        </p>
+        <p>
+          You can turn the nudges off at any time from your account page. Nothing else about your
+          membership changes: you keep the journal, the digests and everything else.
           Our lawful basis is legitimate interests, in keeping members engaged with a programme
           they have paid for, and this switch is how you object to it.
         </p>
@@ -136,7 +142,8 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>Anthropic</strong> helps draft the personalised nudges, for members who have
-            left that switched on.
+            left that switched on, and reads a photographed journal page into the entry when you
+            ask it to.
           </li>
         </ul>
         <p>
