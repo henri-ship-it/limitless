@@ -27,9 +27,17 @@ export const getMember = cache(async (): Promise<Member | null> => {
   }
 
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+
+  /*
+   * getClaims verifies the token against the project's public keys, which for
+   * this project happens locally. getUser asks Supabase over the network, and
+   * the middleware has already done that on this same request, so repeating it
+   * here was costing a round trip on every page.
+   */
+  const { data: claims } = await supabase.auth.getClaims()
+  const user = claims?.claims
+    ? { id: claims.claims.sub as string, email: claims.claims.email as string | undefined }
+    : null
   if (!user) return null
 
   const { data: profile } = await supabase

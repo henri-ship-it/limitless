@@ -3,9 +3,10 @@ import { notFound } from 'next/navigation'
 import { Shell } from '@/components/Shell'
 import { PageHeader } from '@/components/PageHeader'
 import { DailyJournal } from '@/components/DailyJournal'
+import { DownloadWeek } from '@/components/DownloadWeek'
 import { JournalVisual } from '@/components/JournalVisual'
 import { LockIcon } from '@/components/icons'
-import { journalEntries } from '@/content/journal'
+import { journalEntries, entriesForWeek } from '@/content/journal'
 import { getWeek, moduleForWeek } from '@/content/programme'
 import type { EntryData } from '@/content/journal-fields'
 import { resolveEntry } from '@/lib/entry'
@@ -77,6 +78,18 @@ export default async function EntryPage({ params }: { params: Promise<{ entry: s
         initial={(saved ?? {}) as EntryData}
         persist={supabaseConfigured ? 'db' : 'local'}
       />
+
+      {/* The huddle closes the week, so it is where the week can be taken away. */}
+      {entry.huddle ? (
+        <div className="border-t border-line px-6 py-8 sm:px-10">
+          <p className="label mb-3">Keep your week</p>
+          <p className="mb-4 max-w-xl text-[0.9375rem] leading-relaxed text-ink-72">
+            Everything you have written this week, as a markdown file. It is built in your browser
+            and downloaded straight to your device.
+          </p>
+          <DownloadWeek week={entry.week} entries={entriesForWeek(entry.week).map((e) => e.n)} />
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line px-6 py-8 sm:px-10">
         <Link href={`/journal#week-${entry.week}`} className="label hover:!text-ink">

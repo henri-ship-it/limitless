@@ -1,6 +1,7 @@
 'use client'
 
 import type { Field } from '@/content/entry-fields'
+import { Dictate } from './Dictate'
 import { EntryText } from './EntryText'
 
 type Value = string | string[]
@@ -162,7 +163,10 @@ export function EntryField({ field, path, value, onChange }: Props) {
 
   return (
     <div>
-      <Label field={field} />
+      <div className="flex items-start justify-between gap-4">
+        <Label field={field} />
+        <Dictate onText={(said) => onChange(path, single ? `${single} ${said}` : said)} />
+      </div>
       <textarea
         rows={4}
         value={single}

@@ -112,6 +112,13 @@ None of these stop launch, but members will see the gaps.
 | `src/content/digests.ts` | Week 7, which exists only in Kit |
 | `src/content/entry-extras.ts` | Nothing outstanding |
 | `src/app/globals.css` | Brand green, once Dan confirms the hex |
+| `src/content/site.ts` | Instagram and LinkedIn handles for the footer |
+
+The privacy notice and terms are a working draft, not legal advice. Read them
+through before launch, and have someone qualified look at them if the cohort
+grows. Two things in particular need your sign off: the twelve month retention
+period, and the statement that Chris may read a member's journal in order to
+support them.
 
 ## 7. Before you announce it
 

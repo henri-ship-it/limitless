@@ -11,6 +11,7 @@ import {
 import { HUDDLE_QUESTIONS, type Field } from '@/content/entry-fields'
 import { VALUES, customExercise } from '@/content/entry-extras'
 import { EntryField } from './EntryField'
+import { Dictate } from './Dictate'
 import { EntryText } from './EntryText'
 import { ScheduleGrid } from './ScheduleGrid'
 import { TickIcon } from './icons'
@@ -137,7 +138,20 @@ export function DailyJournal({
           {huddle ? (
             <Panel label="Huddle" meta="The week behind">
               {HUDDLE_QUESTIONS.map((question, i) => (
-                <FieldGroup key={i} label={question} plain>
+                <FieldGroup
+                  key={i}
+                  label={question}
+                  plain
+                  action={
+                    <Dictate
+                      onText={(said) => {
+                        const list = [...(data.huddle ?? [])]
+                        list[i] = list[i] ? `${list[i]} ${said}` : said
+                        update({ huddle: list })
+                      }}
+                    />
+                  }
+                >
                   <textarea
                     rows={3}
                     value={data.huddle?.[i] ?? ''}
@@ -195,7 +209,20 @@ export function DailyJournal({
             </FieldGroup>
 
             {REVIEW_FIELDS.map((field) => (
-              <FieldGroup key={field.key} label={field.label}>
+              <FieldGroup
+                key={field.key}
+                label={field.label}
+                action={
+                  <Dictate
+                    onText={(said) => {
+                      const current = (data[field.key] as string) ?? ''
+                      update({
+                        [field.key]: current ? `${current} ${said}` : said,
+                      } as Partial<EntryData>)
+                    }}
+                  />
+                }
+              >
                 <textarea
                   rows={2}
                   value={(data[field.key] as string) ?? ''}
@@ -309,18 +336,20 @@ function FieldGroup({
   label,
   meta,
   plain,
+  action,
   children,
 }: {
   label: string
   meta?: string
   plain?: boolean
+  action?: React.ReactNode
   children: React.ReactNode
 }) {
   return (
     <div>
       <div className="mb-2 flex items-baseline justify-between gap-4">
         <p className={plain ? 'text-[0.9375rem] leading-relaxed text-ink' : 'label'}>{label}</p>
-        {meta ? <p className="label shrink-0">{meta}</p> : null}
+        {action ?? (meta ? <p className="label shrink-0">{meta}</p> : null)}
       </div>
       <div className="space-y-2">{children}</div>
     </div>

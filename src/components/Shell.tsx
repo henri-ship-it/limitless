@@ -3,6 +3,7 @@ import { currentWeek, resumeHref, unlockedThrough } from '@/lib/cohort'
 import { TopBar } from './TopBar'
 import { Sidebar } from './Sidebar'
 import { OnThisPage, type TocItem } from './OnThisPage'
+import { Footer } from './Footer'
 
 export async function Shell({
   children,
@@ -38,7 +39,10 @@ export async function Shell({
           completedWeeks={completed}
           isPro={tier === 'pro'}
         />
-        <main className="guides min-w-0 flex-1 bg-surface">{children}</main>
+        <main className="guides min-w-0 flex-1 bg-surface">
+          {children}
+          <Footer />
+        </main>
         {toc ? <OnThisPage items={toc} /> : null}
       </div>
     </div>
