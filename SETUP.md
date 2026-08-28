@@ -102,23 +102,66 @@ Members are created ahead of time and confirmed, so their first magic link
 signs them straight in. Anyone who signs in without a profile gets Core, which
 is the safe way round.
 
-## 6. The Know Thyself scorecard
+## 6. The ScoreApp scorecards
 
 Results arrive on a webhook, so nothing here holds ScoreApp credentials and
-nothing polls. Point either ScoreApp's own webhook or a Zapier step at:
+nothing polls. There are three scorecards and two endpoints, because the Core
+and Pro pre-assessments are separate in ScoreApp but the tier is already known
+from the member's own record.
+
+| Scorecard in ScoreApp | Webhook URL |
+|---|---|
+| Know Thyself | `https://limitless.lmntaryperformance.com/api/webhooks/scorecard/know-thyself` |
+| Pre-Assessment (Core) | `https://limitless.lmntaryperformance.com/api/webhooks/scorecard/pre-assessment` |
+| Pre-Assessment (Pro) | `https://limitless.lmntaryperformance.com/api/webhooks/scorecard/pre-assessment` |
+
+In each scorecard: **Integrate → Webhooks → Connect**, then:
+
+1. **Webhook URL** — from the table above.
+2. **Webhook secret key** — the same long random string in all three, and the
+   same string set as `SCORECARD_WEBHOOK_SECRET` in Vercel. ScoreApp hashes
+   each request with it and sends the result as a `Scoreapp-Signature` header;
+   the endpoint recomputes that hash and refuses anything that does not match.
+   There is no header to type in by hand.
+3. **Events** — set **Quiz finished** and **Lead details updated** to send.
+   Leave Quiz started and Lead signed up on "Don't send"; they fire before
+   there is anything worth filing.
+4. **Save**, then **Test integration**. A 200 back means it is wired up. A test
+   lead who is not a member comes back as "no matching member", which is a pass,
+   not a failure.
+
+Results appear on the member's profile under **What they told us**, in two tabs.
+Know Thyself files the four style scores; the pre-assessment files what they
+wrote. A member who answers from a different address than they enrolled with
+will not match, and the endpoint says so in its reply rather than failing.
+
+Zapier works identically: POST the JSON to the same URL with a header
+`x-limitless-secret` set to `SCORECARD_WEBHOOK_SECRET`.
+
+## 6b. Drafting messages to members
+
+The **Draft a message** box on a member's profile writes a first draft in
+Chris's voice, from what they have written, their two assessments and where
+they are in the programme. It never sends anything: the draft opens in WhatsApp
+or your own mail client so a person reads it first.
+
+It needs one environment variable in Vercel:
 
 ```
-https://limitless.lmntaryperformance.com/api/webhooks/scorecard
+ANTHROPIC_API_KEY=...
 ```
 
-Send JSON, with a header `x-limitless-secret` matching the
-`SCORECARD_WEBHOOK_SECRET` environment variable in Vercel. Pick any long random
-string for that and set it in both places.
+Add it under **Settings → Environment Variables** for Production, Preview and
+Development, then redeploy. Without it the box says so and does nothing else.
+`ANTHROPIC_MODEL` is optional and defaults to `claude-opus-5`.
 
-The reader is lenient about shape: it flattens whatever nesting arrives, takes
-any number beside a name as a score, finds the email wherever it sits, and
-matches on it. An address that is not a member returns 200 saying so, rather
-than failing, so the sender does not retry forever.
+The voice lives in `src/content/voice.ts` — the rules, Chris's own vocabulary,
+and seven of his real messages as examples. That file is what stops the output
+sounding generic, so it is worth editing as his writing moves on rather than
+editing the code.
+
+Members who turn personalised messages off in their account settings are
+excluded: their writing does not leave the platform, and the box says so.
 
 ## 7. Content still to add
 

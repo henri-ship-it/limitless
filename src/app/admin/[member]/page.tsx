@@ -10,6 +10,7 @@ import { HUDDLE_QUESTIONS } from '@/content/entry-fields'
 import { SITE } from '@/content/site'
 import type { EntryData } from '@/content/journal-fields'
 import { Assessments, type AssessmentData } from '@/components/admin/Assessments'
+import { DraftMessage } from '@/components/admin/DraftMessage'
 
 export const metadata = { title: 'Member · Limitless' }
 
@@ -75,6 +76,15 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
           Both open in your own client, so it reads as a person rather than a system. Replies come
           back to {SITE.email}.
         </p>
+      </Section>
+
+      <Section label="Draft a message">
+        <DraftMessage
+          memberId={profile.id}
+          name={name}
+          email={profile.email}
+          phone={profile.phone}
+        />
       </Section>
 
       {profile.assessment ? (
