@@ -89,16 +89,16 @@ export function Dictate({ onText }: { onText: (text: string) => void }) {
 
   if (!supported) return null
 
-  async function toggle() {
+  function toggle() {
     if (listening) {
-      await stopSpeech()
+      stopSpeech()
       setListening(false)
       stopMeter()
       return
     }
 
     setProblem(null)
-    const started = await startSpeech(id, {
+    const started = startSpeech(id, {
       onText: (said) => handler.current(said),
       // Fires when this session ends for any reason, including another field
       // taking over or iOS stopping after a pause.
@@ -113,7 +113,7 @@ export function Dictate({ onText }: { onText: (text: string) => void }) {
       setListening(true)
       void startMeter()
     } else {
-      setProblem('Dictation could not start. Another field may still be listening.')
+      setProblem('Dictation is not available in this browser.')
     }
   }
 

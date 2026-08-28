@@ -1,19 +1,31 @@
 /**
  * One speech recogniser for the whole page.
  *
- * The browser allows a single recognition session at a time. Building one per
- * field meant the first field to start held the microphone and every other
- * button did nothing, because the failure to start throws quietly.
+ * Two things forced this shape.
  *
- * This keeps a single recogniser and routes its results to whichever field is
- * listening. Starting a new field stops the previous one and waits for it to
- * actually finish before starting again, which the browser requires.
+ * The browser allows a single recognition session at a time, so building one
+ * per field meant the first field to start held the microphone and every other
+ * button did nothing.
+ *
+ * And Safari, which is every browser on iOS, only honours `start()` when it is
+ * called synchronously inside the tap that asked for it. Anything awaited first
+ * loses that permission. So moving between fields never stops and restarts:
+ * the session keeps running and the text is simply routed somewhere else.
  */
 
 type Listener = {
   onText: (text: string) => void
-  /** Called when the session ends. `reason` is set only when it failed. */
+  /** Called when this field stops receiving, with a reason if it failed. */
   onStop: (reason?: string) => void
+}
+
+let recognition: any = null
+let active: string | null = null
+let listener: Listener | null = null
+
+export function speechSupported(): boolean {
+  if (typeof window === 'undefined') return false
+  return Boolean((window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition)
 }
 
 /**
@@ -39,17 +51,6 @@ export function speechProblem(code?: string): string | null {
   }
 }
 
-let recognition: any = null
-let active: string | null = null
-let listener: Listener | null = null
-let ending: Promise<void> | null = null
-let resolveEnding: (() => void) | null = null
-
-export function speechSupported(): boolean {
-  if (typeof window === 'undefined') return false
-  return Boolean((window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition)
-}
-
 function ensure() {
   if (recognition) return recognition
 
@@ -57,8 +58,8 @@ function ensure() {
     (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition
   const r = new Recognition()
   r.lang = 'en-GB'
-  // iOS ends a session on its own after a pause whatever this says, so the
-  // button reflects what actually happened rather than what was asked for.
+  // iOS ends a session on its own after a pause whatever this asks for, so the
+  // button reflects what happened rather than what was requested.
   r.continuous = true
   r.interimResults = false
 
@@ -72,12 +73,10 @@ function ensure() {
   }
 
   const finish = (reason?: string) => {
-    listener?.onStop(reason)
+    const ending = listener
     listener = null
     active = null
-    resolveEnding?.()
-    resolveEnding = null
-    ending = null
+    ending?.onStop(reason)
   }
 
   r.onend = () => finish()
@@ -87,44 +86,46 @@ function ensure() {
   return r
 }
 
-/** Stops whatever is listening, and resolves once the browser confirms it. */
-export async function stopSpeech(): Promise<void> {
-  if (!recognition || !active) return
-  if (ending) return ending
-
-  ending = new Promise<void>((resolve) => {
-    resolveEnding = resolve
-  })
-  const pending = ending
-  try {
-    recognition.stop()
-  } catch {
-    resolveEnding?.()
-    resolveEnding = null
-    ending = null
-  }
-  return pending
-}
-
 /**
- * Starts listening for one field. Returns false when the browser refuses, so
- * the button can show that rather than pretending to listen.
+ * Points the recogniser at a field, starting it if nothing is running.
+ *
+ * Deliberately synchronous: on iOS the call has to happen inside the tap that
+ * asked for it, so nothing may be awaited first.
  */
-export async function startSpeech(id: string, next: Listener): Promise<boolean> {
+export function startSpeech(id: string, next: Listener): boolean {
   if (!speechSupported()) return false
 
   const r = ensure()
-  if (active) await stopSpeech()
+
+  /*
+   * Already listening for another field: hand the session over rather than
+   * stopping and starting, which on iOS would need a fresh tap and so would
+   * simply do nothing. This is why a second field used to be dead.
+   */
+  if (active && active !== id) {
+    const previous = listener
+    active = id
+    listener = next
+    previous?.onStop()
+    return true
+  }
 
   active = id
   listener = next
   try {
     r.start()
-    return true
   } catch {
-    active = null
-    listener = null
-    return false
+    // Already running for this field, which is not a problem.
+  }
+  return true
+}
+
+export function stopSpeech(): void {
+  if (!recognition || !active) return
+  try {
+    recognition.stop()
+  } catch {
+    // Already stopped.
   }
 }
 
