@@ -4,6 +4,7 @@ import { TopBar } from './TopBar'
 import { Sidebar } from './Sidebar'
 import { OnThisPage, type TocItem } from './OnThisPage'
 import { Footer } from './Footer'
+import { TimeOnPage } from './TimeOnPage'
 
 export async function Shell({
   children,
@@ -24,9 +25,11 @@ export async function Shell({
 
   return (
     <div className="min-h-screen bg-bg">
+      {member ? <TimeOnPage /> : null}
       <TopBar
         resumeHref={resume}
         tier={tier}
+        isAdmin={member?.isAdmin ?? false}
         currentWeek={active}
         openThrough={openThrough}
         completedWeeks={completed}

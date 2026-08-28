@@ -42,6 +42,14 @@ export default function PrivacyPage() {
           <li>Which weeks you have marked complete and which set up items you have ticked.</li>
           <li>Anything you write in the digital journal.</li>
           <li>
+            Your phone number, for Pro members, so Chris can reach you on WhatsApp. Nobody else
+            sees it and it is never used for marketing.
+          </li>
+          <li>
+            How long you spend on each page, counted only while the tab is in front of you. This
+            is per page and per day, not a minute by minute record.
+          </li>
+          <li>
             Anonymous page view counts, which record that a page was opened but not who opened it.
           </li>
         </ul>

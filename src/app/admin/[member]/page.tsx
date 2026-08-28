@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { Shell } from '@/components/Shell'
 import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
-import { getMemberDetail, requireAdmin, since } from '@/lib/admin'
+import { getMemberDetail, readable, requireAdmin, since } from '@/lib/admin'
 import { resolveEntry } from '@/lib/entry'
 import { getWeek } from '@/content/programme'
 import { HUDDLE_QUESTIONS } from '@/content/entry-fields'
@@ -20,7 +20,7 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
   const detail = await getMemberDetail(id)
   if (!detail) notFound()
 
-  const { profile, weeksComplete, entries, totalWeeks } = detail
+  const { profile, weeksComplete, entries, totalWeeks, time, secondsSpent } = detail
   const name = profile.first_name ?? profile.email.split('@')[0]
 
   return (
@@ -34,6 +34,7 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
             <span className="tier-tag" data-tier={profile.tier}>
               {profile.tier}
             </span>
+            <span className="pill">{readable(secondsSpent)} on the platform</span>
             <span className="pill">Last seen {since(profile.last_seen_at)}</span>
             <span className="pill">
               {weeksComplete.length}/{totalWeeks} weeks
@@ -45,14 +46,55 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
       />
 
       <Section label="Get in touch">
-        <p>
-          <a href={`mailto:${profile.email}?subject=Limitless`}>Email {name}</a>
-        </p>
+        <div className="!mb-4 flex flex-wrap gap-3">
+          <a
+            href={`mailto:${profile.email}?subject=Limitless`}
+            className="label !no-underline border border-line px-4 py-2.5 hover:border-ink hover:!text-ink"
+          >
+            Email {name}
+          </a>
+          {profile.phone ? (
+            <a
+              href={`https://wa.me/${profile.phone.replace(/[^0-9]/g, '')}`}
+              target="_blank"
+              rel="noreferrer"
+              className="label !no-underline border border-line px-4 py-2.5 hover:border-ink hover:!text-ink"
+            >
+              WhatsApp {name}
+            </a>
+          ) : null}
+          <a
+            href={`/api/admin/${profile.id}/markdown`}
+            className="label !no-underline border border-line px-4 py-2.5 hover:border-ink hover:!text-ink"
+          >
+            Export markdown
+          </a>
+        </div>
         <p className="!text-ink-56 text-[0.8125rem]">
-          Sent from your own mail, so it reads as a person rather than a system. Replies come back
-          to {SITE.email}.
+          Both open in your own client, so it reads as a person rather than a system. Replies come
+          back to {SITE.email}.
         </p>
       </Section>
+
+      {time.length ? (
+        <Section label="Where their time goes">
+          <dl className="!mb-0">
+            {time.slice(0, 12).map((row) => (
+              <div
+                key={row.path}
+                className="grid gap-1 border-t border-line py-2.5 sm:grid-cols-[1fr_auto] sm:gap-5"
+              >
+                <dt className="font-mono text-[0.8125rem] text-ink-72">{row.path}</dt>
+                <dd className="label !text-ink">{readable(row.seconds)}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-4 !text-ink-56 text-[0.8125rem]">
+            Counted only while the tab was in front, and never more than ten minutes in one go, so
+            a page left open overnight does not read as a night of study.
+          </p>
+        </Section>
+      ) : null}
 
       <Section label="What they have written">
         {entries.length === 0 ? (

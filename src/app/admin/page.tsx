@@ -3,16 +3,12 @@ import { notFound } from 'next/navigation'
 import { Shell } from '@/components/Shell'
 import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
-import { NudgePlan } from '@/components/admin/NudgePlan'
-import { getCohort, requireAdmin, since } from '@/lib/admin'
+import { getCohort, readable, requireAdmin, since } from '@/lib/admin'
 import { weeks } from '@/content/programme'
 
 export const metadata = { title: 'Cohort · Limitless' }
 
-const TOC = [
-  { id: 'members', label: 'Members' },
-  { id: 'nudges', label: 'Nudges' },
-]
+const TOC = [{ id: 'members', label: 'Members' }]
 
 export default async function AdminPage() {
   const admin = await requireAdmin()
@@ -43,7 +39,7 @@ export default async function AdminPage() {
           <table className="w-full min-w-[46rem] border-collapse text-left">
             <thead>
               <tr className="border-b border-line">
-                {['Member', 'Tier', 'Last seen', 'Wrote', 'Weeks', 'Entries'].map((h) => (
+                {['Member', 'Tier', 'Last seen', 'Wrote', 'Time', 'Weeks', 'Entries'].map((h) => (
                   <th key={h} className="label py-2 pr-4 font-normal">
                     {h}
                   </th>
@@ -62,12 +58,13 @@ export default async function AdminPage() {
                     </span>
                   </td>
                   <td className="py-3 pr-4">
-                    <span className="tier-tag" data-tier={m.tier}>
-                      {m.tier}
+                    <span className="tier-tag" data-tier={m.isAdmin ? 'admin' : m.tier}>
+                      {m.isAdmin ? 'admin' : m.tier}
                     </span>
                   </td>
                   <td className="label py-3 pr-4 !text-ink-72">{since(m.lastSeenAt)}</td>
                   <td className="label py-3 pr-4 !text-ink-72">{since(m.lastWroteAt)}</td>
+                  <td className="label py-3 pr-4 !text-ink-72">{readable(m.secondsSpent)}</td>
                   <td className="label py-3 pr-4 !text-ink-72">
                     {m.weeksComplete}/{weeks.length}
                   </td>
@@ -78,12 +75,9 @@ export default async function AdminPage() {
           </table>
         </div>
         <p className="mt-6 !text-ink-56 text-[0.8125rem]">
-          Last seen is a page load. Wrote is the last time an entry changed, which says more.
+          Last seen takes the later of a page load and a sign-in. Wrote is the last time an entry
+          changed, which says more. Time counts only while the tab was actually in front.
         </p>
-      </Section>
-
-      <Section id="nudges" label="Nudges">
-        <NudgePlan members={cohort.members} currentWeek={cohort.currentWeek} />
       </Section>
     </Shell>
   )

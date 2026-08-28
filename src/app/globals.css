@@ -102,6 +102,12 @@ body {
   color: #ffffff;
 }
 
+.tier-tag[data-tier='admin'] {
+  background: transparent;
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
 /* Small mono tag. Topics, tiers, entry counts. */
 .pill {
   display: inline-flex;

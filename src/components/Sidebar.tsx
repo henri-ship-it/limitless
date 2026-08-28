@@ -30,7 +30,7 @@ export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro, isAdm
           <TopLink href="/journal" label="Journal" active={pathname === '/journal'} />
           {isPro ? <TopLink href="/pro" label="Pro" active={pathname === '/pro'} /> : null}
           {isAdmin ? (
-            <TopLink href="/admin" label="Cohort" active={pathname.startsWith('/admin')} />
+            <TopLink href="/admin" label="Admin" active={pathname.startsWith('/admin')} />
           ) : null}
         </ul>
 

@@ -1,3 +1,4 @@
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseConfigured } from './env'
 import { getMember } from './member'
@@ -9,10 +10,13 @@ export type MemberRow = {
   id: string
   email: string
   firstName: string | null
+  phone: string | null
   tier: Tier
   isAdmin: boolean
   personalisedNudges: boolean
   lastSeenAt: string | null
+  /** Seconds on the platform, all time. */
+  secondsSpent: number
   weeksComplete: number
   entriesWritten: number
   /** The most recent entry they touched, which says more than a login does. */
@@ -25,6 +29,18 @@ export type CohortSummary = {
   activeThisWeek: number
   notStarted: number
   currentWeek: number
+}
+
+/*
+ * Sign-in times live in Supabase's auth schema, which a member's own session
+ * cannot read. Every caller here has already been checked as an admin.
+ */
+function serviceClient() {
+  return createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } },
+  )
 }
 
 /** Nobody who is not an admin gets past here. */
@@ -48,13 +64,34 @@ export async function getCohort(): Promise<CohortSummary> {
 
   const supabase = await createClient()
 
-  const [{ data: profiles }, { data: progress }, { data: journal }] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('id, email, first_name, tier, is_admin, personalised_nudges, last_seen_at'),
-    supabase.from('member_progress').select('member_id, week_number'),
-    supabase.from('member_journal').select('member_id, updated_at'),
-  ])
+  const service = serviceClient()
+
+  const [{ data: profiles }, { data: progress }, { data: journal }, { data: time }, users] =
+    await Promise.all([
+      supabase
+        .from('profiles')
+        .select('id, email, first_name, phone, tier, is_admin, personalised_nudges, last_seen_at'),
+      supabase.from('member_progress').select('member_id, week_number'),
+      supabase.from('member_journal').select('member_id, updated_at'),
+      supabase.from('member_time').select('member_id, seconds'),
+      service.auth.admin.listUsers({ perPage: 1000 }),
+    ])
+
+  /*
+   * Last seen has two sources. The column only records page loads since it was
+   * added, so on its own it reports "never" for people who have plainly been
+   * in. Supabase has recorded every sign-in all along, so the later of the two
+   * is the honest answer.
+   */
+  const signedInAt = new Map<string, string>()
+  for (const u of users.data?.users ?? []) {
+    if (u.last_sign_in_at) signedInAt.set(u.id, u.last_sign_in_at)
+  }
+
+  const secondsBy = new Map<string, number>()
+  for (const row of time ?? []) {
+    secondsBy.set(row.member_id, (secondsBy.get(row.member_id) ?? 0) + row.seconds)
+  }
 
   const weeksBy = new Map<string, number>()
   for (const row of progress ?? []) {
@@ -74,10 +111,12 @@ export async function getCohort(): Promise<CohortSummary> {
       id: p.id,
       email: p.email,
       firstName: p.first_name,
+      phone: p.phone,
       tier: p.tier as Tier,
       isAdmin: p.is_admin,
       personalisedNudges: p.personalised_nudges,
-      lastSeenAt: p.last_seen_at,
+      lastSeenAt: latest(p.last_seen_at, signedInAt.get(p.id) ?? null),
+      secondsSpent: secondsBy.get(p.id) ?? 0,
       weeksComplete: weeksBy.get(p.id) ?? 0,
       entriesWritten: entriesBy.get(p.id) ?? 0,
       lastWroteAt: wroteBy.get(p.id) ?? null,
@@ -100,29 +139,44 @@ export async function getCohort(): Promise<CohortSummary> {
   }
 }
 
+function latest(a: string | null, b: string | null): string | null {
+  if (!a) return b
+  if (!b) return a
+  return Date.parse(a) > Date.parse(b) ? a : b
+}
+
 /** One member, with everything they have written. */
 export async function getMemberDetail(id: string) {
   if (!supabaseConfigured) return null
 
   const supabase = await createClient()
-  const [{ data: profile }, { data: progress }, { data: journal }] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('id, email, first_name, tier, personalised_nudges, last_seen_at, created_at')
-      .eq('id', id)
-      .single(),
-    supabase.from('member_progress').select('week_number').eq('member_id', id),
-    supabase
-      .from('member_journal')
-      .select('entry_number, data, updated_at')
-      .eq('member_id', id)
-      .order('entry_number'),
-  ])
+  const service = serviceClient()
+
+  const [{ data: profile }, { data: progress }, { data: journal }, { data: time }, users] =
+    await Promise.all([
+      supabase
+        .from('profiles')
+        .select('id, email, first_name, phone, tier, personalised_nudges, last_seen_at, created_at')
+        .eq('id', id)
+        .single(),
+      supabase.from('member_progress').select('week_number').eq('member_id', id),
+      supabase
+        .from('member_journal')
+        .select('entry_number, data, updated_at')
+        .eq('member_id', id)
+        .order('entry_number'),
+      supabase.from('member_time').select('path, seconds').eq('member_id', id),
+      service.auth.admin.listUsers({ perPage: 1000 }),
+    ])
 
   if (!profile) return null
 
+  const signedIn = users.data?.users.find((u) => u.id === id)?.last_sign_in_at ?? null
+
   return {
-    profile,
+    profile: { ...profile, last_seen_at: latest(profile.last_seen_at, signedIn) },
+    time: (time ?? []).sort((a, b) => b.seconds - a.seconds),
+    secondsSpent: (time ?? []).reduce((sum, row) => sum + row.seconds, 0),
     weeksComplete: (progress ?? []).map((p) => p.week_number).sort((a, b) => a - b),
     entries: (journal ?? []).map((row) => ({
       n: row.entry_number,
@@ -145,4 +199,14 @@ export function since(iso: string | null): string {
   if (hours < 24) return `${hours}h ago`
   const days = Math.floor(hours / 24)
   return days === 1 ? 'yesterday' : `${days} days ago`
+}
+
+/** Reads as "12m" or "1h 20m". */
+export function readable(seconds: number): string {
+  if (!seconds) return '—'
+  const minutes = Math.round(seconds / 60)
+  if (minutes < 60) return `${Math.max(1, minutes)}m`
+  const hours = Math.floor(minutes / 60)
+  const rest = minutes % 60
+  return rest ? `${hours}h ${rest}m` : `${hours}h`
 }

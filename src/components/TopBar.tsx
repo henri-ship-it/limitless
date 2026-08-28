@@ -12,10 +12,18 @@ type Props = {
   tier: Tier
   currentWeek: number
   openThrough: number
+  isAdmin: boolean
   completedWeeks: number[]
 }
 
-export function TopBar({ resumeHref, tier, currentWeek, openThrough, completedWeeks }: Props) {
+export function TopBar({
+  resumeHref,
+  tier,
+  isAdmin,
+  currentWeek,
+  openThrough,
+  completedWeeks,
+}: Props) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
   const menu = useRef<HTMLDivElement>(null)
@@ -74,7 +82,16 @@ export function TopBar({ resumeHref, tier, currentWeek, openThrough, completedWe
                 <Link href="/journal" onClick={() => setOpen(false)} className="label hover:!text-ink">
                   Journal
                 </Link>
-                {tier === 'pro' ? (
+                {isAdmin ? (
+                  <Link
+                    href="/admin"
+                    onClick={() => setOpen(false)}
+                    className="tier-tag !no-underline ml-auto"
+                    data-tier="admin"
+                  >
+                    Admin
+                  </Link>
+                ) : tier === 'pro' ? (
                   <Link
                     href="/pro"
                     onClick={() => setOpen(false)}
@@ -141,8 +158,11 @@ export function TopBar({ resumeHref, tier, currentWeek, openThrough, completedWe
         </div>
 
         <div className="ml-auto flex items-center gap-4">
-          <span className="tier-tag hidden sm:inline-flex" data-tier={tier}>
-            {tier}
+          <span
+            className="tier-tag hidden sm:inline-flex"
+            data-tier={isAdmin ? 'admin' : tier}
+          >
+            {isAdmin ? 'admin' : tier}
           </span>
           <a href="/auth/sign-out" className="label hover:!text-ink">
             Sign out
