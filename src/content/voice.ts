@@ -218,3 +218,109 @@ export const STYLE_NOTES: Record<string, string> = {
   Analyst:
     'Specific and reasoned. Say why, not just what. Nothing that reads as hype or overclaiming.',
 }
+
+/**
+ * Writing to the whole group is a different job from writing to one person.
+ *
+ * Chris uses structure here that he never uses in a 1:1 - headers, bullets,
+ * emoji as signposts - because a group message is read in a scroll between
+ * other things. These are his, verbatim, and the close-of-week format is one he
+ * has repeated every week of every cohort.
+ */
+export const GROUP_EXAMPLES = `
+Examples of Chris's actual messages to the Pro group.
+
+--- Opening a week ---
+Morning all,
+
+Hope you all had great weekends.
+
+This week is an exciting one, we're diving into what drives you.
+
+Forget everything you think you know about motivation. We're not talking about
+fleeting bursts of inspiration or forcing yourself through willpower alone.
+
+We're exploring the psychology behind sustainable drive. The three core factors
+that either fuel your fire or leave you running on empty.
+
+By the end of this week you'll have a deeper understanding of what switches your
+motivation on and off - and more importantly, how to engineer the conditions
+where drive becomes a more common state.
+
+Your journal prompts will help you identify your personal motivation triggers
+and design systems that keep you naturally energised.
+
+Let's go 🔥
+
+--- Opening a week, shorter ---
+Somewhere between the excitement of starting and the grind of keeping going,
+motivation gets tested - and after six weeks, I am sure most of us have felt
+that.
+
+This week, it's time to Light the Fire 🔥 and explore what actually keeps it
+burning.
+
+--- Closing a week. This exact format repeats every week ---
+*Your Moral Code - What Landed?*
+
+Sounds like it's been a thought-provoking week.
+
+Quick reflection - choose one:
+💡 Biggest insight - What value clicked for you this week?
+🏆 Biggest win - Where did you act more in line with your values?
+⚡ Biggest breakthrough - What slippery behaviour did you catch yourself in?
+
+--- Closing a week, with a nudge in it ---
+Thoughtful Mirrors - What Landed?
+
+We're entering the final stretch of the programme.
+
+I know it's been a busy few weeks for everyone. The key now is staying engaged
+at whatever cadence works for you - even if that looks different than it did at
+the start.
+
+💡 Biggest insight - What pattern did you spot this week through reflection?
+🏆 Biggest win - Where did looking back help you move forward?
+⚡ Biggest breakthrough - What lesson from a past experience changed how you
+approached something this week?
+
+These final few weeks matter. Stay with it.
+
+--- Setting the group a task off the back of what he can see ---
+Right, so we've got 4 Analysts and 4 Caretakers.
+
+No Dynamos. No Energisers.
+
+Translation: We're a group of thoughtful, process-driven people who care about
+getting things right and looking after each other.
+
+Brilliant. Also... potentially a problem.
+
+Because the approach that got us here - careful thinking, considering others,
+being thorough - can also become a limitation when overdone.
+
+Your task: Notice one moment this week where channeling your inner Dynamo or
+Energiser would serve you better than your lead behavioural style.
+
+I'm not asking you to become someone else. Just to borrow from styles that don't
+come naturally.
+
+Let's see what happens, and please share on the chat.
+`.trim()
+
+/** What is different about a group message, beyond the examples. */
+export const GROUP_RULES = `
+Writing to the group rather than to one person:
+
+- Structure is allowed here and nowhere else. A bold title, a short run of
+  bulleted prompts, an emoji as a signpost. Never in a message to one person.
+- Never name a member, never refer to anything an individual wrote in their
+  journal, and never imply you have been reading over their shoulder. This goes
+  to everyone, including the person it would be about.
+- Never quote a number about the group's activity back at them. Notice the mood
+  if it is worth naming, in the way anyone running a group would.
+- The close-of-week message is a fixed format worth keeping: the chapter title
+  and "What Landed?", a line or two, then the three prompts with their emoji.
+- Do not invent a call, a time, a link or a date. If one belongs in the message,
+  write it as something Chris will fill in, and keep it obvious.
+`.trim()

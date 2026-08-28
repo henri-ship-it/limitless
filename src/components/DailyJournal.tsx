@@ -509,6 +509,10 @@ function fromPhoto(current: EntryData, read: Record<string, unknown>): EntryData
     if (said) next[key] = said
   }
 
+  if (Array.isArray(read.blocks) && read.blocks.length) {
+    next.blocks = read.blocks as ScheduleBlock[]
+  }
+
   if (read.fields && typeof read.fields === 'object') {
     const held: Record<string, string | string[]> = { ...(current.fields ?? {}) }
     for (const [key, value] of Object.entries(read.fields as Record<string, unknown>)) {

@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { supabaseConfigured } from '@/lib/env'
 import { resolveEntry } from '@/lib/entry'
 import { isHuddleEntry, HUDDLE_QUESTIONS, type Field } from '@/content/entry-fields'
-import { REVIEW_FIELDS } from '@/content/journal-fields'
+import { REVIEW_FIELDS, SCHEDULE_HOURS } from '@/content/journal-fields'
 import { VALUES } from '@/content/entry-extras'
 
 /**
@@ -15,8 +15,10 @@ import { VALUES } from '@/content/entry-extras'
  * looking at. Anything it cannot read comes back empty, and the member proofs
  * the result against the page in their hand before it counts.
  *
- * The schedule grid is deliberately not read. It is a drawing, not text, and a
- * plausible looking grid that is wrong is worse than an empty one.
+ * The schedule is read as times and labels rather than as a grid. Asked for as
+ * geometry it comes back as confident nonsense; asked as "nine to eleven, deep
+ * work" it is just handwriting again, and anything that does not land on an
+ * hour the journal actually prints is dropped rather than rounded.
  */
 
 const MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-opus-5'
@@ -97,6 +99,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ ent
   } else {
     wanted.push('"intentions": an array of up to three intentions for the day')
     wanted.push('"achievements": an array of the achievements listed, however many there are')
+    wanted.push(
+      '"blocks": an array of {"from": "9am", "to": "11am", "label": "what it says"} for anything' +
+        ' written or blocked out on the hour by hour schedule, using only these hour labels: ' +
+        SCHEDULE_HOURS.join(', ') +
+        '. "to" is the hour the block ends at. Leave it out entirely if the schedule is empty.',
+    )
     for (const field of REVIEW_FIELDS) wanted.push(`"${field.key}": ${field.label}`)
   }
   entry.fields.forEach((field, i) => describe(field, String(i), wanted))
@@ -117,7 +125,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ ent
     'Rules:',
     '- Transcribe what is written, word for word. Do not tidy it up, complete a half finished sentence, or improve the grammar.',
     '- Leave a field out entirely if it is blank, or if you cannot read it with confidence. An empty field is right; a guess is not.',
-    '- Ignore the hour by hour schedule grid and any ticks or boxes. Those are not being asked for.',
+    '- Ignore any ticks, boxes and checkmarks. Whether something was done is not being asked for.',
+    '- For the schedule, read the times and what is written beside them. Do not infer a block from an empty row.',
     '- Only one page of the spread may be in shot, or one page may be blank. Fill in what you can see and leave the rest out.',
     '- Ignore the printed prompts and quotations. Only the handwriting is wanted.',
     '- If the page is not a journal page at all, return {}.',
@@ -171,7 +180,38 @@ export async function POST(request: Request, { params }: { params: Promise<{ ent
     }
   }
 
-  return NextResponse.json({ path, data: nest(flat) })
+  return NextResponse.json({ path, data: withBlocks(nest(flat)) })
+}
+
+/**
+ * Turns "9am to 11am" into the pair of row numbers the schedule is stored as.
+ *
+ * A block covers both ends, so nine to eleven is rows 4 to 6 of a day starting
+ * at five. An hour the journal does not print is a misreading, and is dropped.
+ */
+function withBlocks(data: Record<string, unknown>): Record<string, unknown> {
+  const raw = data.blocks
+  if (!Array.isArray(raw)) {
+    delete data.blocks
+    return data
+  }
+
+  const blocks = raw
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null
+      const row = item as { from?: string; to?: string; label?: string }
+      const label = (row.label ?? '').trim()
+      const start = SCHEDULE_HOURS.indexOf((row.from ?? '').trim().toLowerCase())
+      if (!label || start === -1) return null
+      const end = SCHEDULE_HOURS.indexOf((row.to ?? '').trim().toLowerCase())
+      return { start, end: end > start ? end : start, label }
+    })
+    .filter((block): block is { start: number; end: number; label: string } => Boolean(block))
+
+  if (blocks.length) data.blocks = blocks
+  else delete data.blocks
+
+  return data
 }
 
 /**

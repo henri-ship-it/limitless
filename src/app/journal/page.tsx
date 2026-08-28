@@ -1,6 +1,7 @@
 import { Shell } from '@/components/Shell'
 import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
+import { JumpToHash } from '@/components/JumpToHash'
 import { LockIcon } from '@/components/icons'
 import { modules, weeks } from '@/content/programme'
 import { entriesForWeek } from '@/content/journal'
@@ -45,6 +46,8 @@ export default async function JournalPage() {
           <a href="/journal/download">Download the PDF journal</a>
         </p>
       </Section>
+
+      <JumpToHash />
 
       {modules.map((m) => (
         <div key={m.number} id={`module-${m.number}`} className="scroll-mt-20">

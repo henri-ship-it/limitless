@@ -15,9 +15,9 @@ import { CameraIcon } from './icons'
  *
  * An entry is a spread, not a page: the day is previewed and reviewed on the
  * left and the exercise worked on the right, so both halves have to be in the
- * shot. Two A5 pages side by side is A4 landscape, which means the phone has to
- * be turned. Nobody reads that in an instruction, so the frame simply refuses
- * to pretend otherwise and asks for the turn.
+ * shot. Two A5 pages side by side is A4 landscape, so the frame is that shape
+ * whichever way the phone is held, and turning it is left to whoever is holding
+ * it rather than nagged about - the shape of the hole says it on its own.
  *
  * Nothing is saved without the member seeing it. The transcription lands in
  * their form for them to check against the page still in their hand.
@@ -34,6 +34,9 @@ const LONGEST_EDGE = 2200
 
 type Stage = 'closed' | 'starting' | 'framing' | 'reading' | 'problem'
 
+/** What is actually happening, in order, while a page is being read. */
+const STAGES = ['Analysing your journal', 'Matching it to the entry', 'Checking the answers']
+
 export function PhotographEntry({
   entry,
   onFilled,
@@ -43,7 +46,7 @@ export function PhotographEntry({
 }) {
   const [stage, setStage] = useState<Stage>('closed')
   const [problem, setProblem] = useState('')
-  const [upright, setUpright] = useState(false)
+  const [step, setStep] = useState(0)
   const video = useRef<HTMLVideoElement>(null)
   const frame = useRef<HTMLDivElement>(null)
   const stage_ = useRef<HTMLDivElement>(null)
@@ -57,17 +60,16 @@ export function PhotographEntry({
   useEffect(() => stop, [stop])
 
   /*
-   * Which way the phone is being held. Watched rather than read once, because
-   * the whole point is to notice the moment they turn it.
+   * Moves through the stages of the read while it happens. The work really is
+   * sequential, so this is a description of it rather than a decoration, but it
+   * cannot know how far along it is - hence a pace rather than a percentage.
    */
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    const portrait = window.matchMedia('(orientation: portrait)')
-    const read = () => setUpright(portrait.matches)
-    read()
-    portrait.addEventListener('change', read)
-    return () => portrait.removeEventListener('change', read)
-  }, [])
+    if (stage !== 'reading') return
+    setStep(0)
+    const timer = setInterval(() => setStep((s) => Math.min(s + 1, STAGES.length - 1)), 2600)
+    return () => clearInterval(timer)
+  }, [stage])
 
   async function open() {
     setProblem('')
@@ -190,7 +192,7 @@ export function PhotographEntry({
         className="flex items-center justify-between px-4 py-3"
         style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}
       >
-        <p className="label !text-white/60">Entry {entry}</p>
+        <span />
         <button type="button" onClick={close} className="label !text-white/60 hover:!text-white">
           Cancel
         </button>
@@ -209,7 +211,7 @@ export function PhotographEntry({
 
         {/* The frame. Dimmed all round by a very large shadow rather than four
             separate panels, so the hole is always exactly the crop. */}
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center p-6">
           {/*
             Sized by width, capped so the height it implies still fits. A fixed
             height with a max width instead would go out of shape on a phone
@@ -231,12 +233,24 @@ export function PhotographEntry({
             {/* The gutter, so the spread is lined up rather than merely inside
                 the frame. */}
             <span className="absolute inset-y-4 left-1/2 w-px -translate-x-1/2 bg-white/25" />
+            {/* Above the frame rather than in the corner, so it reads as a label
+                for the thing being photographed. z-index because the dimming is
+                a shadow cast by the frame itself. */}
+            <p className="label absolute inset-x-0 -top-7 z-10 text-center !text-white/70">
+              Entry {entry}
+            </p>
           </div>
         </div>
 
         {stage === 'reading' ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/70">
-            <p className="label !text-white">Reading your page…</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/80">
+            <p className="label !text-white">{STAGES[step]}</p>
+            <div className="h-[3px] w-52 overflow-hidden rounded-full bg-white/15">
+              <span
+                className="block h-full rounded-full bg-accent transition-[width] duration-[2600ms] ease-out"
+                style={{ width: `${28 + step * 28}%` }}
+              />
+            </div>
           </div>
         ) : null}
 
@@ -259,9 +273,7 @@ export function PhotographEntry({
           </p>
         ) : (
           <p className="!mb-5 text-center text-[0.8125rem] text-white/50">
-            {upright
-              ? 'Turn your phone sideways — both pages need to be in the shot.'
-              : 'Both pages in the frame, spine on the line, flat and evenly lit.'}
+            Both pages in the frame, spine on the line, flat and evenly lit.
           </p>
         )}
 
