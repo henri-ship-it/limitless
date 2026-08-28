@@ -9,7 +9,12 @@ import { getWeek } from '@/content/programme'
 import { HUDDLE_QUESTIONS } from '@/content/entry-fields'
 import { SITE } from '@/content/site'
 import type { EntryData } from '@/content/journal-fields'
-import { Assessments, type AssessmentData } from '@/components/admin/Assessments'
+import {
+  BehaviouralStyle,
+  PreAssessment,
+  type AssessmentData,
+} from '@/components/admin/Assessments'
+import { MemberTabs } from '@/components/admin/MemberTabs'
 import { DraftMessage } from '@/components/admin/DraftMessage'
 
 export const metadata = { title: 'Member · Limitless' }
@@ -24,6 +29,7 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
 
   const { profile, weeksComplete, entries, totalWeeks, time, secondsSpent, arrivals } = detail
   const name = profile.first_name ?? profile.email.split('@')[0]
+  const assessment = (profile.assessment ?? {}) as AssessmentData
 
   return (
     <Shell>
@@ -87,15 +93,91 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
         />
       </Section>
 
-      {profile.assessment ? (
-        <Section label="What they told us">
-          <Assessments data={profile.assessment as AssessmentData} />
-        </Section>
-      ) : null}
+      <Section label="Their record">
+        <MemberTabs
+          tabs={[
+            {
+              key: 'style',
+              label: 'Behavioural style',
+              panel: <BehaviouralStyle filled={assessment.scorecard} />,
+            },
+            {
+              key: 'told',
+              label: 'What they told us',
+              panel: <PreAssessment filled={assessment.preAssessment} />,
+            },
+            {
+              key: 'written',
+              label: 'What they have written',
+              note: entries.length ? String(entries.length) : undefined,
+              panel: <Written entries={entries} />,
+            },
+            {
+              key: 'activity',
+              label: 'Activity',
+              panel: <Activity arrivals={arrivals} time={time} />,
+            },
+          ]}
+        />
+      </Section>
 
+      <div className="px-6 py-8 sm:px-10">
+        <Link href="/admin" className="label hover:!text-ink">
+          ← All members
+        </Link>
+      </div>
+    </Shell>
+  )
+}
+
+type Detail = NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>
+
+/** Everything they have put in the digital journal, newest week last. */
+function Written({ entries }: { entries: Detail['entries'] }) {
+  if (!entries.length) {
+    return (
+      <p className="!mb-0 text-[0.9375rem] !text-ink-56">
+        Nothing in the digital journal. Plenty of people write in the printed one instead, so this
+        is not the same as not doing the work.
+      </p>
+    )
+  }
+
+  return (
+    <div className="space-y-8">
+      {entries.map((row) => {
+        const entry = resolveEntry(row.n)
+        const week = getWeek(row.week)
+        return (
+          <div key={row.n} className="border-t border-line pt-5">
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <span className="pill">Entry {row.n}</span>
+              {week ? <span className="pill">Week {row.week}</span> : null}
+              <span className="label ml-auto">{since(row.updatedAt)}</span>
+            </div>
+            <p className="!mb-3 text-[1rem] font-medium text-ink">
+              {entry?.title ?? `Entry ${row.n}`}
+            </p>
+            <Answers entry={entry} data={row.data as EntryData} />
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+/** Where they came from and where the time went. */
+function Activity({ arrivals, time }: { arrivals: Detail['arrivals']; time: Detail['time'] }) {
+  if (!arrivals.length && !time.length) {
+    return <p className="!mb-0 text-[0.9375rem] !text-ink-56">Nothing recorded yet.</p>
+  }
+
+  return (
+    <div>
       {arrivals.length ? (
-        <Section label="How they arrived">
-          <dl className="!mb-0">
+        <>
+          <p className="label !mb-3 !text-ink">How they arrived</p>
+          <dl className="!mb-8">
             {arrivals.map((row, i) => (
               <div
                 key={i}
@@ -107,11 +189,12 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
               </div>
             ))}
           </dl>
-        </Section>
+        </>
       ) : null}
 
       {time.length ? (
-        <Section label="Where their time goes">
+        <>
+          <p className="label !mb-3 !text-ink">Where their time goes</p>
           <dl className="!mb-0">
             {time.slice(0, 12).map((row) => (
               <div
@@ -123,46 +206,13 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
               </div>
             ))}
           </dl>
-          <p className="mt-4 !text-ink-56 text-[0.8125rem]">
-            Counted only while the tab was in front, and never more than ten minutes in one go, so
-            a page left open overnight does not read as a night of study.
+          <p className="mt-4 !mb-0 !text-ink-56 text-[0.8125rem]">
+            Counted only while the tab was in front, and never more than ten minutes in one go, so a
+            page left open overnight does not read as a night of study.
           </p>
-        </Section>
+        </>
       ) : null}
-
-      <Section label="What they have written">
-        {entries.length === 0 ? (
-          <p className="!text-ink-56">Nothing yet.</p>
-        ) : (
-          <div className="space-y-8">
-            {entries.map((row) => {
-              const entry = resolveEntry(row.n)
-              const week = getWeek(row.week)
-              const data = row.data as EntryData
-              return (
-                <div key={row.n} className="border-t border-line pt-5">
-                  <div className="mb-3 flex flex-wrap items-center gap-2">
-                    <span className="pill">Entry {row.n}</span>
-                    {week ? <span className="pill">Week {row.week}</span> : null}
-                    <span className="label ml-auto">{since(row.updatedAt)}</span>
-                  </div>
-                  <p className="!mb-3 text-[1rem] font-medium text-ink">
-                    {entry?.title ?? `Entry ${row.n}`}
-                  </p>
-                  <Answers entry={entry} data={data} />
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </Section>
-
-      <div className="px-6 py-8 sm:px-10">
-        <Link href="/admin" className="label hover:!text-ink">
-          ← All members
-        </Link>
-      </div>
-    </Shell>
+    </div>
   )
 }
 

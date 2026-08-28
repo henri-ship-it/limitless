@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { leadStyle, styleFor } from '@/content/know-thyself'
+import { STYLES, leadStyle, styleFor } from '@/content/know-thyself'
 import { since } from '@/lib/format'
 
 export type Filled = {
@@ -16,47 +15,62 @@ export type AssessmentData = {
 }
 
 /**
- * What a member told us before and during the programme, in two tabs.
+ * The Know Thyself scorecard: how somebody prefers to be spoken to.
  *
- * Kept side by side because they answer different questions: the scorecard says
- * how to talk to somebody, the survey says what they came here to fix.
+ * Always rendered, filled or not. An empty panel that explains what will land
+ * in it is more use than one that disappears, which reads as a missing feature
+ * rather than as a scorecard nobody has taken yet.
  */
-export function Assessments({ data }: { data: AssessmentData }) {
-  const tabs = [
-    { key: 'know-thyself' as const, label: 'Know Thyself', filled: data.scorecard },
-    { key: 'pre-assessment' as const, label: 'Pre-assessment', filled: data.preAssessment },
-  ].filter((t) => t.filled)
+export function BehaviouralStyle({ filled }: { filled?: Filled }) {
+  if (!filled?.scores || !Object.keys(filled.scores).length) return <NoStyleYet />
+  return <KnowThyself filled={filled} />
+}
 
-  const [active, setActive] = useState(tabs[0]?.key)
-  if (!tabs.length) return null
+/** The pre-programme survey: what somebody came here to fix. */
+export function PreAssessment({ filled }: { filled?: Filled }) {
+  if (!filled) {
+    return (
+      <p className="!mb-0 text-[0.9375rem] !text-ink-56">
+        No pre-assessment yet. It lands here as soon as they complete it.
+      </p>
+    )
+  }
+  return <Survey filled={filled} />
+}
 
-  const current = tabs.find((t) => t.key === active) ?? tabs[0]
-
+/**
+ * The empty state, which doubles as the key to the four styles.
+ *
+ * Worth reading before anyone has answered: it is the whole point of the
+ * scorecard, and it says what each result will mean when it arrives.
+ */
+function NoStyleYet() {
   return (
     <div>
-      <div className="mb-5 flex flex-wrap gap-1.5">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            onClick={() => setActive(tab.key)}
-            aria-pressed={current.key === tab.key}
-            className={`pill ${
-              current.key === tab.key
-                ? '!border-accent-ink !bg-accent-soft !text-ink'
-                : 'hover:!border-line-strong hover:!text-ink'
-            }`}
+      <p className="!mb-6 text-[0.9375rem] !text-ink-56">
+        No Know Thyself scorecard yet. Their four style scores land here as soon as they complete
+        it, with the one they lead with called out.
+      </p>
+      <dl className="!mb-0">
+        {STYLES.map((style) => (
+          <div
+            key={style.key}
+            className="grid grid-cols-[2rem_1fr] gap-3 border-t border-line py-3 sm:grid-cols-[2rem_7rem_1fr]"
           >
-            {tab.label}
-          </button>
+            <dt>
+              <img
+                src={style.icon}
+                alt=""
+                width={22}
+                height={22}
+                className="h-[22px] w-[22px] object-contain opacity-40"
+              />
+            </dt>
+            <dd className="label !text-ink-72">{style.name}</dd>
+            <dd className="text-[0.875rem] text-ink-56">{style.reads}</dd>
+          </div>
         ))}
-      </div>
-
-      {current.key === 'know-thyself' ? (
-        <KnowThyself filled={current.filled!} />
-      ) : (
-        <Survey filled={current.filled!} />
-      )}
+      </dl>
     </div>
   )
 }
