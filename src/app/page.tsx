@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
 import { Checklist } from '@/components/Checklist'
 import { Timeline } from '@/components/Timeline'
+import { LockIcon } from '@/components/icons'
 import { CopyEmail } from '@/components/CopyEmail'
 import { Workshops } from '@/components/Workshops'
 import { checklistFor } from '@/content/checklist'
@@ -91,11 +92,27 @@ export default async function StartGuide() {
               <ul className="!list-none !pl-0 !mb-0">
                 {m.weeks.map((n) => {
                   const w = weeks.find((x) => x.number === n)!
-                  return (
-                    <li key={n} className="flex items-baseline gap-4 border-t border-line py-2.5">
+                  const open = n <= openThrough
+                  const row = (
+                    <>
                       <span className="label w-14 shrink-0">Week {n}</span>
-                      <span className="text-[0.9375rem] text-ink">{w.title}</span>
+                      <span className="text-[0.9375rem]">{w.title}</span>
                       {w.topic ? <span className="pill ml-auto">{w.topic}</span> : null}
+                      {open ? null : <LockIcon className="ml-auto shrink-0 text-ink-20" />}
+                    </>
+                  )
+                  return (
+                    <li key={n} className="border-t border-line">
+                      {open ? (
+                        <Link
+                          href={`/week/${n}`}
+                          className="flex items-baseline gap-4 py-2.5 !text-ink !no-underline hover:bg-ink-3"
+                        >
+                          {row}
+                        </Link>
+                      ) : (
+                        <span className="flex items-baseline gap-4 py-2.5 text-ink-40">{row}</span>
+                      )}
                     </li>
                   )
                 })}

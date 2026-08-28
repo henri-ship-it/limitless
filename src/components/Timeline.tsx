@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { modules, weeks } from '@/content/programme'
+import { modules, weeks, getWeek } from '@/content/programme'
 import { LockIcon, TickIcon } from './icons'
 
 /**
@@ -53,7 +53,15 @@ export function Timeline({
                     : n > openThrough
                       ? 'locked'
                       : 'open'
-                return <Marker key={n} label={String(n)} state={state} href={`/week/${n}`} />
+                return (
+                  <Marker
+                    key={n}
+                    label={String(n)}
+                    caption={getWeek(n)?.title}
+                    state={state}
+                    href={`/week/${n}`}
+                  />
+                )
               })}
             </div>
             <p className="label !text-[0.625rem] truncate">{m.name}</p>
@@ -87,17 +95,34 @@ function Marker({
   const inner = (
     <span
       className={`flex h-9 flex-1 items-center justify-center border font-mono text-[0.625rem] transition-colors ${tone}`}
-      title={caption ?? `Week ${label}`}
     >
       {state === 'done' ? <TickIcon /> : state === 'locked' ? <LockIcon /> : label}
     </span>
   )
 
-  if (!href || state === 'locked') return <span className="flex flex-1">{inner}</span>
+  /* The number alone says nothing. Hovering names the chapter. */
+  const tooltip = caption ? (
+    <span
+      role="tooltip"
+      className="pointer-events-none absolute bottom-[calc(100%+0.5rem)] left-1/2 z-20 hidden -translate-x-1/2 whitespace-nowrap border border-line bg-surface px-2.5 py-1.5 font-mono text-[0.625rem] tracking-[0.04em] text-ink uppercase shadow-[0_6px_20px_-8px_rgba(0,0,0,0.25)] group-hover:block group-focus-visible:block"
+    >
+      {caption}
+    </span>
+  ) : null
+
+  if (!href || state === 'locked') {
+    return (
+      <span className="group relative flex flex-1" title={caption}>
+        {inner}
+        {tooltip}
+      </span>
+    )
+  }
 
   return (
-    <Link href={href} className="flex flex-1 !no-underline">
+    <Link href={href} className="group relative flex flex-1 !no-underline" title={caption}>
       {inner}
+      {tooltip}
     </Link>
   )
 }

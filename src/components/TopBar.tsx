@@ -61,7 +61,12 @@ export function TopBar({ resumeHref, tier, currentWeek, openThrough, completedWe
           </button>
 
           {open ? (
-            <div className="absolute left-0 top-[calc(100%+0.5rem)] z-50 max-h-[calc(100vh-5rem)] w-[min(92vw,42rem)] overflow-y-auto overscroll-contain border border-line bg-surface shadow-[0_12px_40px_-12px_rgba(0,0,0,0.18)]">
+            <div /*
+               * Anchored under the button on a wide screen. On a phone it
+               * spans the viewport instead, because anchoring it to a button
+               * two thirds of the way across ran it off the right edge.
+               */
+              className="fixed inset-x-2 top-[3.5rem] z-50 max-h-[calc(100vh-4.5rem)] overflow-y-auto overscroll-contain border border-line bg-surface shadow-[0_12px_40px_-12px_rgba(0,0,0,0.18)] sm:absolute sm:inset-x-auto sm:left-0 sm:top-[calc(100%+0.5rem)] sm:max-h-[calc(100vh-5rem)] sm:w-[min(92vw,42rem)]">
               <div className="sticky top-0 z-10 flex flex-wrap gap-x-6 gap-y-2 border-b border-line bg-surface px-4 py-3">
                 <Link href="/" onClick={() => setOpen(false)} className="label hover:!text-ink">
                   Start Guide
@@ -70,10 +75,19 @@ export function TopBar({ resumeHref, tier, currentWeek, openThrough, completedWe
                   Journal
                 </Link>
                 {tier === 'pro' ? (
-                  <Link href="/pro" onClick={() => setOpen(false)} className="label hover:!text-ink">
+                  <Link
+                    href="/pro"
+                    onClick={() => setOpen(false)}
+                    className="tier-tag !no-underline ml-auto"
+                    data-tier="pro"
+                  >
                     Pro
                   </Link>
-                ) : null}
+                ) : (
+                  <span className="tier-tag ml-auto" data-tier="core">
+                    Core
+                  </span>
+                )}
               </div>
 
               <div className="grid sm:grid-cols-2">
@@ -127,7 +141,9 @@ export function TopBar({ resumeHref, tier, currentWeek, openThrough, completedWe
         </div>
 
         <div className="ml-auto flex items-center gap-4">
-          <span className="pill hidden sm:inline-flex">{tier}</span>
+          <span className="tier-tag hidden sm:inline-flex" data-tier={tier}>
+            {tier}
+          </span>
           <a href="/auth/sign-out" className="label hover:!text-ink">
             Sign out
           </a>
