@@ -13,10 +13,17 @@ import { createClient } from '@supabase/supabase-js'
  * senders, so the reader is lenient: any number alongside a name is taken as a
  * score, and the email is found wherever it is.
  *
- *   curl -X POST https://limitless.lmntaryperformance.com/api/webhooks/scorecard \
+ * One endpoint serves both scorecards. ?type=know-thyself files the behavioural
+ * style, ?type=pre-assessment files the survey, and the two sit side by side on
+ * a profile rather than overwriting each other.
+ *
+ *   curl -X POST ".../api/webhooks/scorecard?type=know-thyself" \
  *     -H "x-limitless-secret: ..." -H "content-type: application/json" \
  *     -d '{"email":"someone@example.com","Dynamo":72,"Analyst":41}'
  */
+
+const SLOTS = { 'know-thyself': 'scorecard', 'pre-assessment': 'preAssessment' } as const
+type SlotName = keyof typeof SLOTS
 
 /**
  * Flattens whatever shape arrived into one level of name and value.
@@ -66,6 +73,15 @@ function findEmail(flat: Record<string, unknown>): string | null {
 }
 
 export async function POST(request: Request) {
+  const asked = new URL(request.url).searchParams.get('type') ?? 'know-thyself'
+  const slot = SLOTS[asked as SlotName]
+  if (!slot) {
+    return NextResponse.json(
+      { error: 'Unknown type', expected: Object.keys(SLOTS) },
+      { status: 400 },
+    )
+  }
+
   const secret = process.env.SCORECARD_WEBHOOK_SECRET
   if (!secret) {
     return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 })
@@ -123,11 +139,17 @@ export async function POST(request: Request) {
 
   const assessment = {
     ...((profile.assessment as Record<string, unknown>) ?? {}),
-    scorecard: { scores, notes, receivedAt: new Date().toISOString() },
+    [slot]: { scores, notes, receivedAt: new Date().toISOString() },
   }
 
   const { error } = await supabase.from('profiles').update({ assessment }).eq('id', profile.id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  return NextResponse.json({ status: 'stored', email, scores: Object.keys(scores).length })
+  return NextResponse.json({
+    status: 'stored',
+    type: asked,
+    email,
+    scores: Object.keys(scores).length,
+    notes: Object.keys(notes).length,
+  })
 }

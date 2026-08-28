@@ -9,6 +9,7 @@ import { getWeek } from '@/content/programme'
 import { HUDDLE_QUESTIONS } from '@/content/entry-fields'
 import { SITE } from '@/content/site'
 import type { EntryData } from '@/content/journal-fields'
+import { Assessments, type AssessmentData } from '@/components/admin/Assessments'
 
 export const metadata = { title: 'Member · Limitless' }
 
@@ -77,12 +78,9 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
       </Section>
 
       {profile.assessment ? (
-        <>
-          {(profile.assessment as AssessmentData).scorecard ? (
-            <Scorecard data={(profile.assessment as AssessmentData).scorecard!} />
-          ) : null}
-          <Assessment data={profile.assessment as AssessmentData} />
-        </>
+        <Section label="What they told us">
+          <Assessments data={profile.assessment as AssessmentData} />
+        </Section>
       ) : null}
 
       {arrivals.length ? (
@@ -155,108 +153,6 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
         </Link>
       </div>
     </Shell>
-  )
-}
-
-type AssessmentData = {
-  preAssessment?: {
-    scores?: Record<string, number>
-    focus?: string[]
-    wants?: string[]
-  }
-  scorecard?: {
-    scores?: Record<string, number>
-    notes?: Record<string, string>
-    receivedAt?: string
-  }
-}
-
-/** The Know Thyself scorecard, which arrives on the webhook as it is completed. */
-function Scorecard({ data }: { data: NonNullable<AssessmentData['scorecard']> }) {
-  const scores = Object.entries(data.scores ?? {}).sort((a, b) => b[1] - a[1])
-  const notes = Object.entries(data.notes ?? {})
-  if (!scores.length && !notes.length) return null
-
-  return (
-    <Section label="Behavioural style">
-      <p className="!text-ink-56 text-[0.8125rem]">
-        From the Know Thyself scorecard{data.receivedAt ? `, ${since(data.receivedAt)}` : ''}.
-      </p>
-      <Bars scores={scores} />
-      {notes.length ? (
-        <dl className="!mb-0 mt-5">
-          {notes.map(([name, value]) => (
-            <div key={name} className="grid gap-1 border-t border-line py-2.5 sm:grid-cols-[10rem_1fr] sm:gap-5">
-              <dt className="label !text-ink-56">{name}</dt>
-              <dd className="text-[0.9375rem] text-ink">{value}</dd>
-            </div>
-          ))}
-        </dl>
-      ) : null}
-    </Section>
-  )
-}
-
-function Bars({ scores }: { scores: [string, number][] }) {
-  if (!scores.length) return null
-  const top = Math.max(100, ...scores.map(([, v]) => v))
-  return (
-    <dl className="!mb-0">
-      {scores.map(([name, value]) => (
-        <div
-          key={name}
-          className="grid grid-cols-[10rem_1fr_2.5rem] items-center gap-4 border-t border-line py-2"
-        >
-          <dt className="label !text-ink-72">{name}</dt>
-          <dd className="h-1 bg-ink-8">
-            <span
-              className="block h-full bg-ink"
-              style={{ width: `${Math.min(100, Math.max(0, (value / top) * 100))}%` }}
-            />
-          </dd>
-          <dd className="label !text-ink text-right">{value}</dd>
-        </div>
-      ))}
-    </dl>
-  )
-}
-
-/** What they said they wanted before the programme started. */
-function Assessment({ data }: { data: AssessmentData }) {
-  const pre = data.preAssessment
-  if (!pre) return null
-  const scores = Object.entries(pre.scores ?? {}).sort((a, b) => b[1] - a[1])
-  const { focus, wants } = pre
-
-  return (
-    <Section label="Where they started">
-      <p className="!text-ink-56 text-[0.8125rem]">From the pre-programme assessment.</p>
-      {focus?.length ? (
-        <>
-          <p className="label !mb-2">They asked to work on</p>
-          <p className="!mb-5 flex flex-wrap gap-1.5">
-            {focus.map((f) => (
-              <span key={f} className="pill">
-                {f}
-              </span>
-            ))}
-          </p>
-        </>
-      ) : null}
-
-      {wants?.length ? (
-        <>
-          <p className="label !mb-2">In their words</p>
-          <ul className="!mb-6">
-            {wants.map((w) => (
-              <li key={w}>{w}</li>
-            ))}
-          </ul>
-        </>
-      ) : null}
-
-      <Bars scores={scores} />
-    </Section>
   )
 }
 
