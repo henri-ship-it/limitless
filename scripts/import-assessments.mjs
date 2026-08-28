@@ -4,9 +4,9 @@
  *   node scripts/import-assessments.mjs "Core 4.0.csv" "Pro 4.0.csv"
  *   node scripts/import-assessments.mjs *.csv --commit
  *
- * Kit already carries these: the Know Thyself scorecard and the pre-programme
- * assessment both write back to the subscriber, so the export has a column per
- * score. Nothing new needs connecting to get this on a profile.
+ * These are the pre-programme assessment, which writes its scores back to the
+ * Kit subscriber, so the export already has a column per score. The Know Thyself
+ * scorecard is a separate thing and arrives through the webhook instead.
  *
  * Only members who already exist are touched. Nobody is created here.
  */
@@ -122,10 +122,18 @@ const supabase = createClient(
 let written = 0
 let missing = 0
 
-for (const [email, assessment] of collected) {
+for (const [email, preAssessment] of collected) {
+  // Written under its own key so the scorecard, which arrives separately, does
+  // not overwrite it.
+  const { data: existing } = await supabase
+    .from('profiles')
+    .select('assessment')
+    .eq('email', email)
+    .single()
+
   const { data, error } = await supabase
     .from('profiles')
-    .update({ assessment })
+    .update({ assessment: { ...(existing?.assessment ?? {}), preAssessment } })
     .eq('email', email)
     .select('email')
 

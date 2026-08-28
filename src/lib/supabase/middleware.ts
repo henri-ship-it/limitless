@@ -9,6 +9,8 @@ const PUBLIC_PATHS = [
   '/auth/sign-out',
   '/privacy',
   '/terms',
+  // Webhooks carry a shared secret rather than a member session.
+  '/api/webhooks',
 ]
 
 export async function updateSession(request: NextRequest) {

@@ -102,7 +102,25 @@ Members are created ahead of time and confirmed, so their first magic link
 signs them straight in. Anyone who signs in without a profile gets Core, which
 is the safe way round.
 
-## 6. Content still to add
+## 6. The Know Thyself scorecard
+
+Results arrive on a webhook, so nothing here holds ScoreApp credentials and
+nothing polls. Point either ScoreApp's own webhook or a Zapier step at:
+
+```
+https://limitless.lmntaryperformance.com/api/webhooks/scorecard
+```
+
+Send JSON, with a header `x-limitless-secret` matching the
+`SCORECARD_WEBHOOK_SECRET` environment variable in Vercel. Pick any long random
+string for that and set it in both places.
+
+The reader is lenient about shape: it flattens whatever nesting arrives, takes
+any number beside a name as a score, finds the email wherever it sits, and
+matches on it. An address that is not a member returns 200 saying so, rather
+than failing, so the sender does not retry forever.
+
+## 7. Content still to add
 
 None of these stop launch, but members will see the gaps.
 
@@ -120,7 +138,7 @@ grows. Two things in particular need your sign off: the twelve month retention
 period, and the statement that Chris may read a member's journal in order to
 support them.
 
-## 7. Before you announce it
+## 8. Before you announce it
 
 - [ ] Sign in as yourself with a real magic link, on a phone
 - [ ] Week 1 reads; weeks 2 to 16 show a padlock
