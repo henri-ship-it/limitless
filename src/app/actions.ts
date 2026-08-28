@@ -60,3 +60,12 @@ export async function saveJournalEntry(entry: number, data: unknown) {
       { onConflict: 'member_id,entry_number' },
     )
 }
+
+/** Turns the personalised nudges on or off for the signed-in member. */
+export async function setNudgePreference(enabled: boolean) {
+  const session = await requireMember()
+  if (!session) return
+
+  await session.supabase.rpc('set_personalised_nudges', { enabled })
+  revalidatePath('/')
+}

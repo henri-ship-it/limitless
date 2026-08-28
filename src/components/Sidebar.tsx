@@ -10,9 +10,10 @@ type Props = {
   openThrough: number
   completedWeeks: number[]
   isPro: boolean
+  isAdmin: boolean
 }
 
-export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro }: Props) {
+export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro, isAdmin }: Props) {
   const pathname = usePathname()
   const done = new Set(completedWeeks)
 
@@ -28,6 +29,9 @@ export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro }: Pro
           />
           <TopLink href="/journal" label="Journal" active={pathname === '/journal'} />
           {isPro ? <TopLink href="/pro" label="Pro" active={pathname === '/pro'} /> : null}
+          {isAdmin ? (
+            <TopLink href="/admin" label="Cohort" active={pathname.startsWith('/admin')} />
+          ) : null}
         </ul>
 
         {modules.map((m) => (

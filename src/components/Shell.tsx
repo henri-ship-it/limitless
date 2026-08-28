@@ -38,6 +38,7 @@ export async function Shell({
           openThrough={openThrough}
           completedWeeks={completed}
           isPro={tier === 'pro'}
+          isAdmin={member?.isAdmin ?? false}
         />
         <main className="guides min-w-0 flex-1 bg-surface">
           {children}

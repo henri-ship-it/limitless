@@ -9,6 +9,7 @@ const TOC = [
   { id: 'who', label: 'Who we are' },
   { id: 'what', label: 'What we hold' },
   { id: 'journal', label: 'Your journal' },
+  { id: 'nudges', label: 'Nudges and AI' },
   { id: 'why', label: 'Why we hold it' },
   { id: 'who-else', label: 'Who else sees it' },
   { id: 'how-long', label: 'How long' },
@@ -68,6 +69,30 @@ export default function PrivacyPage() {
         </p>
       </Section>
 
+      <Section id="nudges" label="Nudges and AI">
+        <p>
+          We send reminders and prompts through the programme, to help people keep going. Where you
+          have left it switched on, what you have written in your journal may inform those: which
+          week you are on, what you said you were working towards, where you said you were stuck.
+        </p>
+        <p>
+          Drafting them may involve <strong>Anthropic</strong>, whose Claude models we use for that
+          purpose. Where that happens, the relevant part of what you wrote is sent to Anthropic to
+          produce the message. Anthropic acts as our processor, does not use it to train their
+          models, and does not keep it beyond producing the message.
+        </p>
+        <p>
+          You can turn this off at any time from the Start Guide, under Your data. Nothing else
+          about your membership changes: you keep the journal, the digests and everything else.
+          Our lawful basis is legitimate interests, in keeping members engaged with a programme
+          they have paid for, and this switch is how you object to it.
+        </p>
+        <p>
+          No decision that affects you is made automatically. Chris decides who to contact and what
+          to say.
+        </p>
+      </Section>
+
       <Section id="why" label="Why we hold it">
         <p>Under the UK GDPR our lawful bases are:</p>
         <ul>
@@ -100,6 +125,10 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>Kit</strong> sends the weekly digests, which sit outside this platform.
+          </li>
+          <li>
+            <strong>Anthropic</strong> helps draft the personalised nudges, for members who have
+            left that switched on.
           </li>
         </ul>
         <p>

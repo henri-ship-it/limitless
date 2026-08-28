@@ -9,7 +9,13 @@ export type Member = {
   firstName: string | null
   tier: Tier
   cohort: string
+  isAdmin: boolean
+  /** Whether their writing may inform what they are sent. */
+  personalisedNudges: boolean
 }
+
+/** Below this, seeing someone again is not worth a write. */
+const SEEN_EVERY_MS = 15 * 60 * 1000
 
 /**
  * The signed-in member. Returns null when there is no session, which the
@@ -23,6 +29,8 @@ export const getMember = cache(async (): Promise<Member | null> => {
       firstName: null,
       tier: previewTier,
       cohort: '4.0',
+      isAdmin: true,
+      personalisedNudges: true,
     }
   }
 
@@ -42,9 +50,19 @@ export const getMember = cache(async (): Promise<Member | null> => {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('first_name, tier, cohort')
+    .select('first_name, tier, cohort, is_admin, personalised_nudges, last_seen_at')
     .eq('id', user.id)
     .single()
+
+  /*
+   * Record that they were here, at most four times an hour. Not awaited: a
+   * page should not wait on bookkeeping, and if it fails the worst outcome is
+   * a slightly stale figure on the admin view.
+   */
+  const seen = profile?.last_seen_at ? new Date(profile.last_seen_at).getTime() : 0
+  if (Date.now() - seen > SEEN_EVERY_MS) {
+    void supabase.rpc('touch_last_seen')
+  }
 
   return {
     id: user.id,
@@ -53,6 +71,8 @@ export const getMember = cache(async (): Promise<Member | null> => {
     // A member with no profile row sees Core. Tier is never inferred upward.
     tier: (profile?.tier as Tier) ?? 'core',
     cohort: profile?.cohort ?? '4.0',
+    isAdmin: profile?.is_admin ?? false,
+    personalisedNudges: profile?.personalised_nudges ?? true,
   }
 })
 
