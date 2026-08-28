@@ -34,7 +34,7 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
   return (
     <Shell>
       <PageHeader
-        eyebrow="Admin"
+        eyebrow="Admin only"
         title={name}
         lede={profile.email}
         pills={
@@ -169,7 +169,24 @@ function Written({ entries }: { entries: Detail['entries'] }) {
 /** Where they came from and where the time went. */
 function Activity({ arrivals, time }: { arrivals: Detail['arrivals']; time: Detail['time'] }) {
   if (!arrivals.length && !time.length) {
-    return <p className="!mb-0 text-[0.9375rem] !text-ink-56">Nothing recorded yet.</p>
+    return (
+      <div>
+        <p className="!mb-3 text-[0.9375rem] !text-ink-56">
+          Nothing recorded yet. Two things fill this in as the programme runs.
+        </p>
+        <ul className="!mb-0 !text-ink-56 text-[0.9375rem]">
+          <li>
+            <span className="!text-ink">Where their time goes</span> — which pages they actually
+            read, counted only while the tab is in front. It starts from their next visit.
+          </li>
+          <li>
+            <span className="!text-ink">How they arrived</span> — this needs the links in a digest
+            to carry <code>?from=digest</code> on the end. Without that tag there is no way to tell
+            a click from a bookmark, so it stays empty.
+          </li>
+        </ul>
+      </div>
+    )
   }
 
   return (

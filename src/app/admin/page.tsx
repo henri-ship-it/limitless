@@ -5,7 +5,7 @@ import { Section } from '@/components/Section'
 import { CohortTable } from '@/components/admin/CohortTable'
 import { getCohort, requireAdmin } from '@/lib/admin'
 
-export const metadata = { title: 'Cohort · Limitless' }
+export const metadata = { title: 'Admin · Limitless' }
 
 const TOC = [{ id: 'members', label: 'Members' }]
 
@@ -18,9 +18,9 @@ export default async function AdminPage() {
   return (
     <Shell toc={TOC}>
       <PageHeader
-        eyebrow="Admin"
-        title="The cohort"
-        lede="Who is with you and who has gone quiet. Sorted by the longest gone."
+        eyebrow="Admin only"
+        title="Cohort admin"
+        lede="Who is with you and who has gone quiet, sorted by the longest gone. Only admins can open this. Members cannot see it, and cannot see each other."
         pills={
           <>
             <span className="pill">{cohort.members.length} members</span>

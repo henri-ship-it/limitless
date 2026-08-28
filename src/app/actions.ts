@@ -76,8 +76,8 @@ export async function wipeMyEntries() {
   if (!session) return
 
   await session.supabase.rpc('wipe_my_entries')
-  revalidatePath('/journal')
-  revalidatePath('/account')
+  // Week ticks live in the sidebar on every page, so the layout has to go too.
+  revalidatePath('/', 'layout')
 }
 
 /** Notes that a member arrived from somewhere, such as the weekly digest. */

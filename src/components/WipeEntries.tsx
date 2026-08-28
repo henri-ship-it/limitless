@@ -4,10 +4,12 @@ import { useState, useTransition } from 'react'
 import { wipeMyEntries } from '@/app/actions'
 
 /**
- * Clears everything the member has written, so they can begin again.
+ * Clears what the member has written, so they can begin again.
  *
  * Asks twice, because there is no undo and the thing being deleted is weeks of
- * their own reflection. The printed journal is untouched either way.
+ * their own reflection. The printed journal is untouched either way, and so is
+ * everything that is not their own writing: the scorecards, the Start Guide
+ * list, the account itself.
  */
 export function WipeEntries({ count }: { count: number }) {
   const [asking, setAsking] = useState(false)
@@ -15,7 +17,11 @@ export function WipeEntries({ count }: { count: number }) {
   const [pending, startTransition] = useTransition()
 
   if (done) {
-    return <p className="!mb-0 text-[0.9375rem] text-ink-56">Your entries have been deleted.</p>
+    return (
+      <p className="!mb-0 text-[0.9375rem] text-ink-56">
+        Your entries have been deleted and your progress reset.
+      </p>
+    )
   }
 
   if (!count) {
@@ -37,8 +43,9 @@ export function WipeEntries({ count }: { count: number }) {
   return (
     <div className="border border-line p-4">
       <p className="!mb-3 text-[0.9375rem] leading-relaxed text-ink">
-        This deletes all {count} of your entries, on every device, and cannot be undone. Your
-        printed journal is not affected.
+        This deletes all {count} of your entries, on every device, and clears the weeks you have
+        marked complete, so the programme starts from the beginning again. It cannot be undone.
+        Your printed journal is not affected, and nothing else about your account changes.
       </p>
       <div className="flex flex-wrap gap-3">
         <button

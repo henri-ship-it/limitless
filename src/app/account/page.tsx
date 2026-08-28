@@ -81,7 +81,8 @@ export default async function AccountPage() {
       <Section id="entries" label="Your entries">
         <p>
           Everything you write is saved so it follows you between devices. You can start again
-          whenever you want to.
+          whenever you want to: that clears your entries and the weeks you have marked complete,
+          and leaves the rest of your account alone.
         </p>
         <WipeEntries count={entryCount} />
         <p className="mt-4 !text-ink-56 text-[0.8125rem]">
