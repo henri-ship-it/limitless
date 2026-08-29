@@ -41,7 +41,8 @@ export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro, isAdm
             href="/journal"
             label="Journal"
             icon={<JournalIcon />}
-            active={pathname === '/journal'}
+            /* An open entry is still the journal, and the sidebar should say so. */
+            active={pathname.startsWith('/journal')}
           />
           {isPro ? (
             <TopLink href="/pro" label="Pro" icon={<ProIcon />} active={pathname === '/pro'} />

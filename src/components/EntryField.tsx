@@ -2,6 +2,7 @@
 
 import type { Field } from '@/content/entry-fields'
 import { Dictate } from './Dictate'
+import { Grow } from './Grow'
 import { EntryText } from './EntryText'
 
 type Value = string | string[]
@@ -170,11 +171,11 @@ export function EntryField({ field, path, value, onChange }: Props) {
           onText={(said) => onChange(path, single ? `${single} ${said}` : said)}
         />
       </div>
-      <textarea
-        rows={4}
+      <Grow
+        minRows={4}
         value={single}
         onChange={(e) => onChange(path, e.target.value)}
-        className={`${inputClass} resize-y leading-relaxed`}
+        className={`${inputClass} leading-relaxed`}
       />
     </div>
   )

@@ -14,6 +14,7 @@ import { EntryField } from './EntryField'
 import { Dictate } from './Dictate'
 import { EntryText } from './EntryText'
 import { ScheduleGrid } from './ScheduleGrid'
+import { Grow } from './Grow'
 import { PhotographEntry } from './PhotographEntry'
 import { TickIcon } from './icons'
 
@@ -188,15 +189,15 @@ export function DailyJournal({
                     />
                   }
                 >
-                  <textarea
-                    rows={3}
+                  <Grow
+                    minRows={3}
                     value={data.huddle?.[i] ?? ''}
                     onChange={(e) => {
                       const list = [...(data.huddle ?? [])]
                       list[i] = e.target.value
                       update({ huddle: list })
                     }}
-                    className="w-full resize-y border border-line bg-surface px-3 py-2.5 text-[0.9375rem] leading-relaxed outline-none focus:border-ink"
+                    className="w-full border border-line bg-surface px-3 py-2.5 text-[0.9375rem] leading-relaxed outline-none focus:border-ink"
                   />
                 </FieldGroup>
               ))}
@@ -260,11 +261,11 @@ export function DailyJournal({
                   />
                 }
               >
-                <textarea
-                  rows={2}
+                <Grow
+                  minRows={2}
                   value={(data[field.key] as string) ?? ''}
                   onChange={(e) => update({ [field.key]: e.target.value } as Partial<EntryData>)}
-                  className="w-full resize-y border border-line bg-surface px-3 py-2 text-[0.9375rem] leading-relaxed outline-none focus:border-ink"
+                  className="w-full border border-line bg-surface px-3 py-2 text-[0.9375rem] leading-relaxed outline-none focus:border-ink"
                 />
               </FieldGroup>
             ))}

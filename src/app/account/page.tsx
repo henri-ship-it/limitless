@@ -67,8 +67,7 @@ export default async function AccountPage() {
       <Section id="messages" label="Messages">
         <p>
           We send reminders and prompts through the programme to help you keep going. With this on,
-          what you have written may shape them, so they speak to where you actually are rather than
-          to everyone at once.
+          what you have written may shape them, so nudges speak to where you actually are.
         </p>
         <NudgeToggle enabled={member.personalisedNudges} />
         <p className="mt-4 !text-ink-56 text-[0.8125rem]">

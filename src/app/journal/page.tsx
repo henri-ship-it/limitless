@@ -13,6 +13,10 @@ import { isUnlocked } from '@/lib/cohort'
 const TOC = modules.map((m) => ({
   id: `module-${m.number}`,
   label: `${String(m.number).padStart(2, '0')} ${m.name}`,
+  children: m.weeks.map((n) => ({
+    id: `week-${n}`,
+    label: weeks.find((w) => w.number === n)?.title ?? `Week ${n}`,
+  })),
 }))
 
 export default async function JournalPage() {
