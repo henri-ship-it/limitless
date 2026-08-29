@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { assets } from '@/content/assets'
+import { COHORT } from '@/content/programme'
 
 type Moment = 'open' | 'close'
 
@@ -122,15 +124,38 @@ export function GroupMessage({
             className="w-full resize-y border border-line bg-surface p-4 text-[0.9375rem] leading-relaxed outline-none focus:border-ink"
           />
           <div className="mt-3 flex flex-wrap gap-3">
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(draft)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="label !text-white bg-ink px-4 py-2.5 !no-underline hover:bg-ink-72"
+            >
+              Open in WhatsApp
+            </a>
             <button
               type="button"
               onClick={copy}
               className="label border border-line px-4 py-2.5 hover:border-ink hover:!text-ink"
             >
-              {copied ? 'Copied' : 'Copy for WhatsApp'}
+              {copied ? 'Copied' : 'Copy'}
             </button>
+            {assets.whatsappInvite.url ? (
+              <a
+                href={assets.whatsappInvite.url}
+                target="_blank"
+                rel="noreferrer"
+                className="label border border-line px-4 py-2.5 !no-underline hover:border-ink hover:!text-ink"
+              >
+                Open the group
+              </a>
+            ) : null}
           </div>
           <p className="mt-4 !mb-0 !text-ink-56 text-[0.8125rem]">
+            WhatsApp carries the message in but will not open a named group, so it asks which chat
+            to put it in — pick Limitless Pro {COHORT.label}. Nothing gets sent until you send it,
+            and it can still be edited there.
+          </p>
+          <p className="mt-2 !mb-0 !text-ink-56 text-[0.8125rem]">
             Nothing anyone wrote reaches this, and no one is named. Read it before it goes to
             everybody.
           </p>
