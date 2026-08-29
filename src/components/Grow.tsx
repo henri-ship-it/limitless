@@ -27,7 +27,13 @@ export function Grow({
     if (!el) return
     // Collapse first: scrollHeight only ever grows while a height is set.
     el.style.height = 'auto'
-    el.style.height = `${el.scrollHeight}px`
+    /*
+     * scrollHeight measures the content, and the box is sized border to border,
+     * so a height taken straight from it comes up short by the borders and the
+     * last line clips - which is the whole thing this was meant to stop.
+     */
+    const frame = el.offsetHeight - el.clientHeight
+    el.style.height = `${el.scrollHeight + frame}px`
   }
 
   useLayoutEffect(fit, [value])
