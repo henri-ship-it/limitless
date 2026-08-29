@@ -12,9 +12,11 @@ export type TocItem = {
 /**
  * Right hand contents, with the current section tracked as the page scrolls.
  *
- * An entry with chapters under it opens them on hover rather than listing
- * everything at once: sixteen chapters under four modules is a wall, and the
- * point of a contents list is to be smaller than the thing it indexes.
+ * An entry with chapters under it opens them on hover and at no other time:
+ * sixteen chapters under four modules is a wall, and the point of a contents
+ * list is to be smaller than the thing it indexes. Opening whichever section
+ * you happen to be scrolled through would mean the list rearranged itself
+ * while you were reading it.
  */
 export function OnThisPage({ items }: { items: TocItem[] }) {
   const [active, setActive] = useState(items[0]?.id)
@@ -48,7 +50,10 @@ export function OnThisPage({ items }: { items: TocItem[] }) {
         <p className="label mb-3">On this page</p>
         <ul className="border-l border-line">
           {items.map((item) => {
-            const showing = open === item.id || (!open && active === item.id)
+            // Only what is being pointed at. Opening the section you happen to
+            // be scrolled through means the list moves on its own, which is the
+            // one thing a contents list should never do.
+            const showing = open === item.id
             return (
               <li
                 key={item.id}
@@ -73,7 +78,7 @@ export function OnThisPage({ items }: { items: TocItem[] }) {
                    * does not chase a list that is still arriving.
                    */
                   <ul
-                    className={`grid transition-[grid-template-rows,opacity] duration-150 ${
+                    className={`grid transition-[grid-template-rows,opacity] duration-300 ease-[cubic-bezier(0.22,0.61,0.36,1)] ${
                       showing ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
                     }`}
                     aria-hidden={!showing}
