@@ -37,7 +37,7 @@ export function JournalVisual({
 
   return (
     <figure className={`!m-0 aspect-square w-full bg-[#f1f1f1] [container-type:inline-size] ${className}`}>
-      <div className="flex h-full w-full flex-col items-center justify-center gap-[6%] px-8">
+      <div className="flex h-full w-full flex-col items-center justify-center gap-[7%] px-10 py-10">
         <img
           src={visual.src}
           alt=""

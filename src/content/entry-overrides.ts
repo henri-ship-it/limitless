@@ -66,12 +66,19 @@ export const entryOverrides: Record<number, EntryOverride> = {
   },
   5: { title: 'Expand your Range' },
   6: { title: 'Where Focus Goes', hideExercise: true },
+  // The picker sets up its own fields, so the printed line repeating that below
+  // them said the same thing twice.
+  8: { hideVisual: true, exercise: { fields: [], outro: [] } },
 
   // Week 2
   9: { title: 'Living with Intent', hideVisual: true },
   10: {
     title: 'Purpose isn’t Found, it’s Lived',
+    // Each prompt was printed twice over: once as a line of its own and again
+    // as the label on the box below it.
     exercise: {
+      intro: [],
+      outro: [],
       fields: [
         {
           kind: 'line',

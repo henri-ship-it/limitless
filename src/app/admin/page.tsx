@@ -36,7 +36,7 @@ export default async function AdminPage() {
       <PageHeader
         eyebrow="Admin only"
         title="Cohort admin"
-        lede="Who is with you and who has gone quiet, sorted by the longest gone. Only admins can open this. Members cannot see it, and cannot see each other."
+        lede="Everyone on Limitless 4.0, quietest first."
         pills={
           <>
             <span className="pill">{cohort.members.length} members</span>
@@ -56,18 +56,10 @@ export default async function AdminPage() {
           day={dayOfWeek}
           weeks={weeks.length}
         />
-        <p className="mt-6 !text-ink-56 text-[0.8125rem]">
-          For the Pro group only, since Core members have no chat. Anything worth saying to one
-          person is drafted from their own profile, where it can see them.
-        </p>
       </Section>
 
       <Section id="members" label="Members">
         <CohortTable members={cohort.members} />
-        <p className="mt-6 !text-ink-56 text-[0.8125rem]">
-          Last seen takes the later of a page load and a sign-in. Wrote is the last time an entry
-          changed, which says more. Time counts only while the tab was actually in front.
-        </p>
       </Section>
     </Shell>
   )

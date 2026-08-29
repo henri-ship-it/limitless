@@ -365,7 +365,7 @@ function Panel({
         <p className="label">{label}</p>
         {meta ? <p className="label">{meta}</p> : null}
       </div>
-      <div className="space-y-7">{children}</div>
+      <div className="space-y-9">{children}</div>
     </div>
   )
 }
@@ -385,7 +385,7 @@ function FieldGroup({
 }) {
   return (
     <div>
-      <div className="mb-2 flex items-baseline justify-between gap-4">
+      <div className="mb-3 flex items-baseline justify-between gap-4">
         <p className={plain ? 'text-[0.9375rem] leading-relaxed text-ink' : 'label'}>{label}</p>
         {action ?? (meta ? <p className="label shrink-0">{meta}</p> : null)}
       </div>

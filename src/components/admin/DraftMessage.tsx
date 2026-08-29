@@ -138,9 +138,7 @@ export function DraftMessage({
               {copied ? 'Copied' : 'Copy'}
             </button>
           </div>
-          <p className="mt-4 !mb-0 !text-ink-56 text-[0.8125rem]">
-            A draft, not a message. Read it before it goes anywhere.
-          </p>
+
         </div>
       ) : null}
     </div>

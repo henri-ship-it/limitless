@@ -151,13 +151,7 @@ export function GroupMessage({
             ) : null}
           </div>
           <p className="mt-4 !mb-0 !text-ink-56 text-[0.8125rem]">
-            WhatsApp carries the message in but will not open a named group, so it asks which chat
-            to put it in — pick Limitless Pro {COHORT.label}. Nothing gets sent until you send it,
-            and it can still be edited there.
-          </p>
-          <p className="mt-2 !mb-0 !text-ink-56 text-[0.8125rem]">
-            Nothing anyone wrote reaches this, and no one is named. Read it before it goes to
-            everybody.
+            WhatsApp will ask which chat to put it in. Pick Limitless Pro {COHORT.label}.
           </p>
         </div>
       ) : null}

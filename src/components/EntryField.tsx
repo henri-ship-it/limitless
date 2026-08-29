@@ -27,7 +27,7 @@ function Label({ field }: { field: Field }) {
   if (field.kind === 'note' || field.kind === 'group') return null
   const step = 'step' in field ? field.step : undefined
   return (
-    <p className="mb-2 flex items-start text-[0.9375rem] leading-relaxed text-ink">
+    <p className="mb-3 flex items-start text-[0.9375rem] leading-relaxed text-ink">
       {step ? <Step n={step} /> : null}
       <span className={step ? 'pt-0.5' : undefined}><EntryText text={field.label} /></span>
     </p>
@@ -45,7 +45,7 @@ export function EntryField({ field, path, value, onChange }: Props) {
   if (field.kind === 'group') {
     return (
       <div>
-        <p className="label mb-3">{field.label}</p>
+        <p className="label mb-4">{field.label}</p>
         <div className="space-y-5 border-l border-line pl-5">
           {field.fields.map((child, i) => (
             <EntryField

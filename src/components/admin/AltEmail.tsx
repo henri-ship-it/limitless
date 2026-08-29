@@ -49,7 +49,7 @@ export function AltEmail({ memberId, current }: { memberId: string; current: str
         {problem ? (
           <span className="!text-ink">{problem}</span>
         ) : (
-          'A scorecard completed from this address is filed against them too. Leave it empty unless you have seen one go missing.'
+          'A scorecard completed from this address is filed against them too.'
         )}
       </p>
     </div>

@@ -79,10 +79,6 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
             Export markdown
           </a>
         </div>
-        <p className="!text-ink-56 text-[0.8125rem]">
-          Both open in your own client, so it reads as a person rather than a system. Replies come
-          back to {SITE.email}.
-        </p>
       </Section>
 
       <Section label="Other address">
