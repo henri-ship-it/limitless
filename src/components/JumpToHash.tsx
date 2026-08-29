@@ -9,31 +9,50 @@ import { useEffect } from 'react'
  * like /journal#week-3 the browser looks for that section, does not find it
  * yet, and gives up at the top of the page. By the time the weeks render
  * nothing is going to try again. This waits for the target and then jumps.
+ *
+ * Two things it has to survive:
+ *
+ * Existing is not enough. The weeks arrive inside the buffer React streams
+ * into, so for a second or two the section can be found by id while having no
+ * height and no position, and scrolling to it does nothing at all. Waiting for
+ * it to take up space is waiting for it to be real.
+ *
+ * And the page may not be on screen. A link opened in a background tab gets no
+ * animation frames at all, which is why this polls on a timer instead: throttled
+ * in the background, but it does still run. Nothing is scrolled while hidden
+ * either, since the browser will restore its own position when the tab is
+ * shown, and the two would fight.
  */
 export function JumpToHash() {
   useEffect(() => {
     const id = decodeURIComponent(window.location.hash.slice(1))
     if (!id) return
 
-    /*
-     * Existing is not enough. The weeks arrive inside the hidden buffer React
-     * streams into, so for a second or two the section can be found by id while
-     * having no height and no position - and scrolling to it does nothing at
-     * all. Waiting for it to take up space is waiting for it to be real.
-     *
-     * The journal runs to some fifty thousand pixels, so laying it out takes
-     * longer than a page has any right to. Hence the generous deadline.
-     */
-    const deadline = performance.now() + 12_000
-    const find = () => {
-      const target = document.getElementById(id)
-      if (target && target.getBoundingClientRect().height > 0) {
-        target.scrollIntoView()
-        return
-      }
-      if (performance.now() < deadline) requestAnimationFrame(find)
+    // The journal lays out to some fifty thousand pixels and takes its time.
+    const deadline = Date.now() + 20_000
+    let timer: ReturnType<typeof setInterval>
+
+    const done = () => {
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', look)
     }
-    requestAnimationFrame(find)
+
+    function look() {
+      if (Date.now() > deadline) return done()
+      if (document.visibilityState !== 'visible') return
+
+      const target = document.getElementById(id)
+      if (!target || target.getBoundingClientRect().height === 0) return
+
+      target.scrollIntoView()
+      done()
+    }
+
+    timer = setInterval(look, 120)
+    document.addEventListener('visibilitychange', look)
+    look()
+
+    return done
   }, [])
 
   return null
