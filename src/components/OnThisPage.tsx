@@ -76,27 +76,34 @@ export function OnThisPage({ items }: { items: TocItem[] }) {
                    * Kept in the tree and collapsed rather than removed, so the
                    * height animates and a pointer moving down onto a chapter
                    * does not chase a list that is still arriving.
+                   *
+                   * Two divs, not a ul wrapping a div: only list items may sit
+                   * inside a list, and a div put there is hoisted out of it by
+                   * the parser - taking the chapters out of the box that was
+                   * meant to be collapsing them, which is exactly what happened.
                    */
-                  <ul
+                  <div
                     className={`grid transition-[grid-template-rows,opacity] duration-300 ease-[cubic-bezier(0.22,0.61,0.36,1)] ${
                       showing ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
                     }`}
                     aria-hidden={!showing}
                   >
                     <div className="overflow-hidden">
-                      {item.children.map((child) => (
-                        <li key={child.id}>
-                          <a
-                            href={`#${child.id}`}
-                            tabIndex={showing ? undefined : -1}
-                            className="block py-1 pl-7 text-[0.8125rem] text-ink-40 hover:text-ink"
-                          >
-                            {child.label}
-                          </a>
-                        </li>
-                      ))}
+                      <ul>
+                        {item.children.map((child) => (
+                          <li key={child.id}>
+                            <a
+                              href={`#${child.id}`}
+                              tabIndex={showing ? undefined : -1}
+                              className="block py-1 pl-7 text-[0.8125rem] text-ink-40 hover:text-ink"
+                            >
+                              {child.label}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                  </ul>
+                  </div>
                 ) : null}
               </li>
             )
