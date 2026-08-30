@@ -36,7 +36,12 @@ export function JournalVisual({
   const perPoint = (visual.scale * 100) / sourcePt
 
   return (
-    <figure className={`!m-0 aspect-square w-full bg-[#f1f1f1] [container-type:inline-size] ${className}`}>
+    /*
+     * m-0 without the important flag on purpose. It was !m-0, which beat every
+     * margin a caller passed in and quietly held the artwork against whatever
+     * sat above it, however much room the page asked for.
+     */
+    <figure className={`m-0 aspect-square w-full bg-[#f1f1f1] [container-type:inline-size] ${className}`}>
       <div className="flex h-full w-full flex-col items-center justify-center gap-[7%] px-10 py-10">
         <img
           src={visual.src}
