@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Shell } from '@/components/Shell'
 import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
-import { Checklist } from '@/components/Checklist'
+import { GetStarted } from '@/components/GetStarted'
 import { Timeline } from '@/components/Timeline'
 import { LockIcon } from '@/components/icons'
 import { CopyEmail } from '@/components/CopyEmail'
@@ -13,14 +13,16 @@ import { SUPPORT_EMAIL } from '@/content/assets'
 import { getMember, getProgress } from '@/lib/member'
 import { currentWeek, unlockedThrough } from '@/lib/cohort'
 
-const TOC = [
-  { id: 'progress', label: 'Your progress' },
-  { id: 'get-started', label: 'Where you are' },
-  { id: 'how-it-works', label: 'How it works' },
-  { id: 'workshops', label: 'Workshops' },
-  { id: 'rhythm', label: 'The weekly rhythm' },
-  { id: 'support', label: 'Support' },
-]
+function tocFor(setUp: boolean) {
+  return [
+    { id: 'progress', label: 'Your progress' },
+    { id: 'get-started', label: setUp ? 'Get started' : 'Where you are' },
+    { id: 'how-it-works', label: 'How it works' },
+    { id: 'workshops', label: 'Workshops' },
+    { id: 'rhythm', label: 'The weekly rhythm' },
+    { id: 'support', label: 'Support' },
+  ]
+}
 
 export default async function StartGuide() {
   const member = await getMember()
@@ -32,8 +34,16 @@ export default async function StartGuide() {
   const active = currentWeek()
   const openThrough = unlockedThrough()
 
+  /*
+   * Setting up matters for a day and never again. The list stays while there
+   * is something left in it, and once it is done the week in hand takes its
+   * place - on this render for anyone coming back, and with a dissolve for
+   * whoever just ticked the last item.
+   */
+  const settingUp = items.some((item) => !progress.completedItems.has(item.key))
+
   return (
-    <Shell toc={TOC}>
+    <Shell toc={tocFor(settingUp)}>
       <PageHeader
         eyebrow={`Cohort ${COHORT.label}`}
         title={member?.firstName ? `Welcome, ${member.firstName}` : 'Start Guide'}
@@ -61,17 +71,13 @@ export default async function StartGuide() {
         />
       </Section>
 
-      {/*
-        Setting up matters during onboarding and never again. Once the
-        programme is running this becomes a pointer to the week in hand.
-      */}
-      {active === 0 ? (
-        <Section id="get-started" label="Get started">
-          <Checklist items={items} completed={[...progress.completedItems]} />
-        </Section>
+      {settingUp ? (
+        <GetStarted items={items} completed={[...progress.completedItems]}>
+          <WhereYouAre week={Math.max(1, active)} />
+        </GetStarted>
       ) : (
         <Section id="get-started" label="Where you are">
-          <WhereYouAre week={active} />
+          <WhereYouAre week={Math.max(1, active)} />
         </Section>
       )}
 

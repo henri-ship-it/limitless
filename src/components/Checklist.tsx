@@ -17,9 +17,12 @@ import { TickIcon } from './icons'
 export function Checklist({
   items,
   completed,
+  onAllDone,
 }: {
   items: ChecklistItem[]
   completed: string[]
+  /** Fired the moment the last item goes in, so the list can be taken away. */
+  onAllDone?: () => void
 }) {
   const [, startTransition] = useTransition()
   const [done, setDone] = useOptimistic(new Set(completed), (state: Set<string>, key: string) => {
@@ -40,12 +43,15 @@ export function Checklist({
           <li key={item.key} className="!mb-0 flex items-start gap-4 border-b border-line py-4">
             <button
               type="button"
-              onClick={() =>
+              onClick={() => {
+                if (!checked && items.every((i) => i.key === item.key || done.has(i.key))) {
+                  onAllDone?.()
+                }
                 startTransition(async () => {
                   setDone(item.key)
                   await toggleChecklistItem(item.key, !checked)
                 })
-              }
+              }}
               aria-pressed={checked}
               aria-label={item.label}
               className="mt-0.5 shrink-0"

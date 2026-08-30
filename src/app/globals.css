@@ -264,3 +264,23 @@ body {
     font-size: 16px;
   }
 }
+
+/* What replaces the setting up list arrives rather than simply appearing. */
+@keyframes settle {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[settle_500ms_ease-out\] {
+    animation: none;
+  }
+}

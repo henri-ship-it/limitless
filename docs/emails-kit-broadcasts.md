@@ -503,43 +503,48 @@ Chris
 
 ## Created in Kit
 
-All sixteen scheduled on 30 August 2026, sending as `chris@lmntaryperformance.com`
-to tags 21915934 and 22298774.
+Sending as `chris@lmntaryperformance.com` to tags 21915934 (Core 4.0) and
+22298774 (Pro 4.0). Thirteen people.
 
-| Week | Broadcast ID | send_at (UTC) | Local |
+### Format, as corrected by Henri
+
+Reference: broadcast 25672495, "Know Thyself (Week 1)".
+
+- **Subject:** `<Chapter> (Week N)`. Deloads are `Module 0N — Deload (Week N)`.
+- **Banner:** left alone. The Kit-hosted image from the reference is used on
+  every one, and Henri swaps each per week by hand.
+- **Links:** a button, not a pasted URL. `#0F6973`, 16px, 4px radius, with the
+  Outlook fallback table.
+- **No sign-off line.** The template carries it.
+
+### Current state
+
+| Week | Broadcast | send_at (UTC) | Format |
 |---|---|---|---|
-| 1 | 25672463 | 2026-08-30T15:30:00Z | Sun 30 Aug 16:30 BST |
-| 2 | 25672479 | 2026-09-06T15:30:00Z | Sun 6 Sep 16:30 BST |
-| 3 | 25672114 | 2026-09-13T15:30:00Z | Sun 13 Sep 16:30 BST |
-| 4 | 25672116 | 2026-09-20T15:30:00Z | Sun 20 Sep 16:30 BST |
-| 5 | 25672115 | 2026-09-27T15:30:00Z | Sun 27 Sep 16:30 BST |
-| 6 | 25672117 | 2026-10-04T15:30:00Z | Sun 4 Oct 16:30 BST |
-| 7 | 25672118 | 2026-10-11T15:30:00Z | Sun 11 Oct 16:30 BST |
-| 8 | 25672119 | 2026-10-18T15:30:00Z | Sun 18 Oct 16:30 BST |
-| 9 | 25672127 | 2026-10-25T16:30:00Z | Sun 25 Oct 16:30 GMT |
-| 10 | 25672126 | 2026-11-01T16:30:00Z | Sun 1 Nov 16:30 GMT |
-| 11 | 25672129 | 2026-11-08T16:30:00Z | Sun 8 Nov 16:30 GMT |
-| 12 | 25672128 | 2026-11-15T16:30:00Z | Sun 15 Nov 16:30 GMT |
-| 13 | 25672132 | 2026-11-22T16:30:00Z | Sun 22 Nov 16:30 GMT |
-| 14 | 25672131 | 2026-11-29T16:30:00Z | Sun 29 Nov 16:30 GMT |
-| 15 | 25672130 | 2026-12-06T16:30:00Z | Sun 6 Dec 16:30 GMT |
-| 16 | 25672133 | 2026-12-13T16:30:00Z | Sun 13 Dec 16:30 GMT |
+| 1 | 25672495 | 2026-08-30T15:30:00Z | Corrected by Henri |
+| 2 | 25672479 | 2026-09-06T15:30:00Z | **Old** |
+| 3 | 25672114 | 2026-09-13T15:30:00Z | **Old** |
+| 4 | 25672116 | 2026-09-20T15:30:00Z | **Old** |
+| 5 | 25672115 | 2026-09-27T15:30:00Z | **Old** |
+| 6 | 25672117 | 2026-10-04T15:30:00Z | **Old** |
+| 7 | 25672118 | 2026-10-11T15:30:00Z | **Old** |
+| 8 | 25672119 | 2026-10-18T15:30:00Z | **Old** |
+| 9 | 25672127 | 2026-10-25T16:30:00Z | **Old** |
+| 10 | 25672126 | 2026-11-01T16:30:00Z | **Old** |
+| 11 | 25672129 | 2026-11-08T16:30:00Z | **Old** |
+| 12 | 25672604 | 2026-11-15T16:30:00Z | Corrected |
+| 13 | 25672606 | 2026-11-22T16:30:00Z | Corrected |
+| 14 | 25672618 | 2026-11-29T16:30:00Z | Corrected |
+| 15 | 25672619 | 2026-12-06T16:30:00Z | Corrected |
+| 16 | 25672617 | 2026-12-13T16:30:00Z | Corrected |
 
-### Styling
+Weeks 2 to 11 are still the earlier format: `Week N is open - Chapter` subjects,
+pasted URLs rather than buttons, and the platform chapter artwork as the banner.
 
-Kit refuses to attach a "Starting point" template to API-supplied content:
-*"Starting-point email template cannot be combined with explicit content."* So
-the LMNTARY Template cannot be selected through the API.
+### Still manual in Kit
 
-The way round it is the one Henri suggested: take an existing digest and rebuild
-from it. The Kit editor bakes all its styling inline, so lifting the markup off
-"Beyond The Ordinary (Week 15)" (broadcast 24150240) reproduces the look without
-needing the template selected. Every rebuilt email carries the same 640px
-sections, 36px padding, `-apple-system` at 18px in `#353535`, the banner figure
-and the Kit unsubscribe footer.
-
-Broadcast IDs above are the rebuilt ones. The originals were deleted as each
-replacement was created, so nothing sends twice.
-
-**Preview text is still not set.** `preview_text` came back null and the API has
-no field for it. The lines are in this file to paste in by hand.
+The API cannot attach the LMNTARY Template to a broadcast it creates
+(*"Starting-point email template cannot be combined with explicit content"*), so
+each rebuilt one shows as "Text only" until the template is switched by hand.
+The styling is inline so it renders correctly regardless. `preview_text` also
+has no API field.
