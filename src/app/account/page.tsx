@@ -54,8 +54,8 @@ export default async function AccountPage() {
       <Section id="membership" label="Membership">
         <p>
           {member.tier === 'pro'
-            ? 'Pro. You join the four module workshops live, the weekly drop-in call and the WhatsApp community, and you can reach Chris directly there.'
-            : 'Core. You have the journal, the weekly digests, every chapter masterclass and the recording of each module workshop. The weekly drop-in call, the WhatsApp community and the live workshops are Pro only.'}
+            ? 'Pro. You join the four module workshops live, the drop-in call in every chapter week, and the WhatsApp community, and you can reach Chris directly there.'
+            : 'Core. You have the journal, the weekly digests, every chapter masterclass and the recording of each module workshop. The drop-in calls, the WhatsApp community and the live workshops are Pro only.'}
         </p>
         {member.tier === 'core' ? (
           <p className="!text-ink-56 text-[0.8125rem]">

@@ -500,3 +500,41 @@ Chris
 ```
 
 ---
+
+## Created in Kit
+
+All sixteen scheduled on 30 August 2026, sending as `chris@lmntaryperformance.com`
+to tags 21915934 and 22298774.
+
+| Week | Broadcast ID | send_at (UTC) | Local |
+|---|---|---|---|
+| 1 | 25672108 | 2026-08-30T15:30:00Z | Sun 30 Aug 16:30 BST |
+| 2 | 25672113 | 2026-09-06T15:30:00Z | Sun 6 Sep 16:30 BST |
+| 3 | 25672114 | 2026-09-13T15:30:00Z | Sun 13 Sep 16:30 BST |
+| 4 | 25672116 | 2026-09-20T15:30:00Z | Sun 20 Sep 16:30 BST |
+| 5 | 25672115 | 2026-09-27T15:30:00Z | Sun 27 Sep 16:30 BST |
+| 6 | 25672117 | 2026-10-04T15:30:00Z | Sun 4 Oct 16:30 BST |
+| 7 | 25672118 | 2026-10-11T15:30:00Z | Sun 11 Oct 16:30 BST |
+| 8 | 25672119 | 2026-10-18T15:30:00Z | Sun 18 Oct 16:30 BST |
+| 9 | 25672127 | 2026-10-25T16:30:00Z | Sun 25 Oct 16:30 GMT |
+| 10 | 25672126 | 2026-11-01T16:30:00Z | Sun 1 Nov 16:30 GMT |
+| 11 | 25672129 | 2026-11-08T16:30:00Z | Sun 8 Nov 16:30 GMT |
+| 12 | 25672128 | 2026-11-15T16:30:00Z | Sun 15 Nov 16:30 GMT |
+| 13 | 25672132 | 2026-11-22T16:30:00Z | Sun 22 Nov 16:30 GMT |
+| 14 | 25672131 | 2026-11-29T16:30:00Z | Sun 29 Nov 16:30 GMT |
+| 15 | 25672130 | 2026-12-06T16:30:00Z | Sun 6 Dec 16:30 GMT |
+| 16 | 25672133 | 2026-12-13T16:30:00Z | Sun 13 Dec 16:30 GMT |
+
+### Two things the API could not do
+
+1. **The LMNTARY Template is not applied.** Kit rejects a "Starting point"
+   template combined with API-supplied content: *"Starting-point email template
+   cannot be combined with explicit content."* All sixteen therefore use the
+   default Classic template, "Text only" (2641074). The chapter banner still
+   renders, because it is an image inside the content rather than part of the
+   template. The surrounding brand chrome is not there.
+2. **Preview text is not set.** `preview_text` came back null on all sixteen.
+   The API has no field for it. The lines are in this file if you want to paste
+   them in by hand.
+
+Both are fixable in the Kit editor. Worth doing on week 1 before it sends.

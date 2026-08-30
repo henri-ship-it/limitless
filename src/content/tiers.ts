@@ -7,7 +7,7 @@ export const tierComparison: TierRow[] = [
   { feature: 'Group onboarding call and recording', core: true, pro: true },
   { feature: 'Module workshop recordings', core: true, pro: true },
   { feature: 'Live monthly module workshops', core: false, pro: true },
-  { feature: 'Weekly group drop-in calls', core: false, pro: true },
+  { feature: 'Group drop-in call each chapter week', core: false, pro: true },
   { feature: 'WhatsApp community', core: false, pro: true },
   { feature: 'Ongoing 1:1 support from Chris', core: false, pro: true },
 ]

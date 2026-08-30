@@ -39,8 +39,8 @@ export const checklist: ChecklistItem[] = [
   },
   {
     key: 'drop-in',
-    label: `Put the weekly drop-in in your diary: ${COHORT.dropIn.short}`,
-    detail: `${COHORT.dropIn.day}s, ${COHORT.dropIn.time}. Half an hour, every week of the programme.`,
+    label: `Put the drop-in call in your diary: ${COHORT.dropIn.short}`,
+    detail: `${COHORT.dropIn.day}s, ${COHORT.dropIn.time}. Half an hour, ${COHORT.dropIn.when} — not the deload week, which has the workshop.`,
     tier: 'pro',
   },
 ]

@@ -42,11 +42,16 @@ export const COHORT = {
   },
   /** Digests are released ahead of each week. */
   digestDay: 'Sunday evening',
-  /** The standing Pro group call. Every week, same slot. */
+  /*
+   * The Pro group call. Same slot in each of the three chapter weeks of a
+   * module; the deload week that closes the module has the live workshop
+   * instead, so there is no drop-in that week.
+   */
   dropIn: {
     day: 'Wednesday',
     time: '11:30 to 12:00 BST',
     short: 'Wednesdays, 11:30 BST',
+    when: 'in the three chapter weeks of each module',
   },
   assessmentUrl: 'https://unlock.lmntaryperformance.com/know-thyself',
   postAssessmentUrl: 'https://unlock.lmntaryperformance.com/post-assessment',

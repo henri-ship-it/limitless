@@ -35,9 +35,10 @@ export default async function ProPage() {
         )}
       </Section>
 
-      <Section label="Weekly drop-in call">
+      <Section label="Drop-in call">
         <p>
-          {COHORT.dropIn.day}s, {COHORT.dropIn.time}. Half an hour, every week of the programme.
+          {COHORT.dropIn.day}s, {COHORT.dropIn.time}. Half an hour, {COHORT.dropIn.when}. The
+          deload week that closes each module has the workshop instead.
         </p>
       </Section>
 
