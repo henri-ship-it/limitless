@@ -501,50 +501,33 @@ Chris
 
 ---
 
-## Created in Kit
+## In Kit
 
-Sending as `chris@lmntaryperformance.com` to tags 21915934 (Core 4.0) and
-22298774 (Pro 4.0). Thirteen people.
+Only **week 1** exists as a broadcast: `25672495`, "Know Thyself (Week 1)",
+LMNTARY Template, sending 30 August 16:30 to tags 21915934 and 22298774.
 
-### Format, as corrected by Henri
+Weeks 2 to 16 were built through the API and then removed. The API version was
+not close enough to the house style, so those are being built by hand in Kit.
+The copy for each is above, and in
+[emails-weekly-digest.md](emails-weekly-digest.md).
 
-Reference: broadcast 25672495, "Know Thyself (Week 1)".
+### The format to follow
 
-- **Subject:** `<Chapter> (Week N)`. Deloads are `Module 0N — Deload (Week N)`.
-- **Banner:** left alone. The Kit-hosted image from the reference is used on
-  every one, and Henri swaps each per week by hand.
-- **Links:** a button, not a pasted URL. `#0F6973`, 16px, 4px radius, with the
-  Outlook fallback table.
+Taken from week 1 as corrected:
+
+- **Subject:** `<Chapter> (Week N)`. Deloads read `Module 0N — Deload (Week N)`.
+- **Banner:** the chapter artwork for that week.
+- **Links:** a button rather than a pasted URL. `#0F6973`, white 16px label.
 - **No sign-off line.** The template carries it.
+- **Audience:** Core 4.0 and Pro 4.0 together. Not `Limitless Member 4.0`, which
+  also contains Luke, who is on Elite.
+- **Send:** Sunday 16:30. First 30 August, last 13 December. Weeks 9 to 16 fall
+  after the clocks go back on 25 October.
 
-### Current state
+### Why the API could not finish the job
 
-| Week | Broadcast | send_at (UTC) | Format |
-|---|---|---|---|
-| 1 | 25672495 | 2026-08-30T15:30:00Z | Corrected by Henri |
-| 2 | 25672479 | 2026-09-06T15:30:00Z | **Old** |
-| 3 | 25672114 | 2026-09-13T15:30:00Z | **Old** |
-| 4 | 25672116 | 2026-09-20T15:30:00Z | **Old** |
-| 5 | 25672115 | 2026-09-27T15:30:00Z | **Old** |
-| 6 | 25672117 | 2026-10-04T15:30:00Z | **Old** |
-| 7 | 25672118 | 2026-10-11T15:30:00Z | **Old** |
-| 8 | 25672119 | 2026-10-18T15:30:00Z | **Old** |
-| 9 | 25672127 | 2026-10-25T16:30:00Z | **Old** |
-| 10 | 25672126 | 2026-11-01T16:30:00Z | **Old** |
-| 11 | 25672129 | 2026-11-08T16:30:00Z | **Old** |
-| 12 | 25672604 | 2026-11-15T16:30:00Z | Corrected |
-| 13 | 25672606 | 2026-11-22T16:30:00Z | Corrected |
-| 14 | 25672618 | 2026-11-29T16:30:00Z | Corrected |
-| 15 | 25672619 | 2026-12-06T16:30:00Z | Corrected |
-| 16 | 25672617 | 2026-12-13T16:30:00Z | Corrected |
-
-Weeks 2 to 11 are still the earlier format: `Week N is open - Chapter` subjects,
-pasted URLs rather than buttons, and the platform chapter artwork as the banner.
-
-### Still manual in Kit
-
-The API cannot attach the LMNTARY Template to a broadcast it creates
+Kit refuses to attach a starting-point template to API-supplied content
 (*"Starting-point email template cannot be combined with explicit content"*), so
-each rebuilt one shows as "Text only" until the template is switched by hand.
-The styling is inline so it renders correctly regardless. `preview_text` also
-has no API field.
+anything created this way lands on "Text only" and has to have its template
+switched by hand. `preview_text` has no API field either. Between those two and
+the styling, building these in the Kit editor is the faster path.

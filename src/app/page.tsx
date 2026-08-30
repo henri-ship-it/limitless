@@ -71,15 +71,13 @@ export default async function StartGuide() {
         />
       </Section>
 
-      {settingUp ? (
-        <GetStarted items={items} completed={[...progress.completedItems]}>
-          <WhereYouAre week={Math.max(1, active)} />
-        </GetStarted>
-      ) : (
-        <Section id="get-started" label="Where you are">
-          <WhereYouAre week={Math.max(1, active)} />
-        </Section>
-      )}
+      <GetStarted
+        items={items}
+        completed={[...progress.completedItems]}
+        settingUp={settingUp}
+      >
+        <WhereYouAre week={Math.max(1, active)} />
+      </GetStarted>
 
       <Section id="how-it-works" label="How it works">
         <p>

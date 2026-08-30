@@ -108,7 +108,7 @@ export default async function JournalPage() {
                               </p>
                             ))}
                             {entry.fields.length ? (
-                              <ul className="mt-2 space-y-1.5">
+                              <ul className="mt-3 space-y-1.5">
                                 {entry.fields.map((field, i) => (
                                   <li key={i} className="text-[0.875rem] leading-relaxed text-ink-72">
                                     {field.kind === 'note' ? field.text : field.label}
@@ -119,7 +119,7 @@ export default async function JournalPage() {
                             <JournalVisual
                               visual={entry.visual}
                               caption={entry.caption}
-                              className="mt-8 max-w-sm border border-line"
+                              className="mt-12 max-w-sm border border-line"
                             />
                             <p className="mt-6">
                               <Link href={`/journal/${entry.n}`} className="label hover:!text-ink">
