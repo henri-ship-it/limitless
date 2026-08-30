@@ -65,7 +65,7 @@ export const entryOverrides: Record<number, EntryOverride> = {
     },
   },
   5: { title: 'Expand your Range' },
-  6: { title: 'Where Focus Goes', hideExercise: true },
+  6: { title: 'Tendency, not Destiny', hideExercise: true },
   // The picker sets up its own fields, so the printed line repeating that below
   // them said the same thing twice.
   8: { hideVisual: true, exercise: { fields: [], outro: [] } },
