@@ -508,8 +508,8 @@ to tags 21915934 and 22298774.
 
 | Week | Broadcast ID | send_at (UTC) | Local |
 |---|---|---|---|
-| 1 | 25672108 | 2026-08-30T15:30:00Z | Sun 30 Aug 16:30 BST |
-| 2 | 25672113 | 2026-09-06T15:30:00Z | Sun 6 Sep 16:30 BST |
+| 1 | 25672463 | 2026-08-30T15:30:00Z | Sun 30 Aug 16:30 BST |
+| 2 | 25672479 | 2026-09-06T15:30:00Z | Sun 6 Sep 16:30 BST |
 | 3 | 25672114 | 2026-09-13T15:30:00Z | Sun 13 Sep 16:30 BST |
 | 4 | 25672116 | 2026-09-20T15:30:00Z | Sun 20 Sep 16:30 BST |
 | 5 | 25672115 | 2026-09-27T15:30:00Z | Sun 27 Sep 16:30 BST |
@@ -525,16 +525,21 @@ to tags 21915934 and 22298774.
 | 15 | 25672130 | 2026-12-06T16:30:00Z | Sun 6 Dec 16:30 GMT |
 | 16 | 25672133 | 2026-12-13T16:30:00Z | Sun 13 Dec 16:30 GMT |
 
-### Two things the API could not do
+### Styling
 
-1. **The LMNTARY Template is not applied.** Kit rejects a "Starting point"
-   template combined with API-supplied content: *"Starting-point email template
-   cannot be combined with explicit content."* All sixteen therefore use the
-   default Classic template, "Text only" (2641074). The chapter banner still
-   renders, because it is an image inside the content rather than part of the
-   template. The surrounding brand chrome is not there.
-2. **Preview text is not set.** `preview_text` came back null on all sixteen.
-   The API has no field for it. The lines are in this file if you want to paste
-   them in by hand.
+Kit refuses to attach a "Starting point" template to API-supplied content:
+*"Starting-point email template cannot be combined with explicit content."* So
+the LMNTARY Template cannot be selected through the API.
 
-Both are fixable in the Kit editor. Worth doing on week 1 before it sends.
+The way round it is the one Henri suggested: take an existing digest and rebuild
+from it. The Kit editor bakes all its styling inline, so lifting the markup off
+"Beyond The Ordinary (Week 15)" (broadcast 24150240) reproduces the look without
+needing the template selected. Every rebuilt email carries the same 640px
+sections, 36px padding, `-apple-system` at 18px in `#353535`, the banner figure
+and the Kit unsubscribe footer.
+
+Broadcast IDs above are the rebuilt ones. The originals were deleted as each
+replacement was created, so nothing sends twice.
+
+**Preview text is still not set.** `preview_text` came back null and the API has
+no field for it. The lines are in this file to paste in by hand.

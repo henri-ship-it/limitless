@@ -54,7 +54,15 @@ export function currentWeek(now: Date = new Date()): number {
  */
 export function unlockedThrough(now: Date = new Date()): number {
   if (unlockAllWeeks) return weeks.length
-  return currentWeek(now)
+
+  /*
+   * Week 1 is open from the day the platform goes live, rather than waiting
+   * for its release on the Sunday. Members arriving on launch day should find
+   * a chapter rather than a locked door, and by Sunday afternoon it would have
+   * opened anyway. Every week after this follows the schedule: 16:00 UK on the
+   * day before it begins.
+   */
+  return Math.max(1, currentWeek(now))
 }
 
 /** Weeks ahead of release stay visible in the nav but locked. */
