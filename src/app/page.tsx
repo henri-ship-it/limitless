@@ -137,13 +137,13 @@ export default async function StartGuide() {
 
       <Section id="rhythm" label="The weekly rhythm">
         <p>
-          Each week opens at 4pm on the day before it begins, so the chapter is there when the
+          Each week opens on the Sunday before it begins, so the chapter is here waiting when the
           digest reaches you.
         </p>
         <ul className="!list-none !pl-0 !mb-0">
           <li className="flex gap-5 border-t border-line py-3">
             <span className="label w-24 shrink-0 pt-0.5">Sunday</span>
-            <span>The week ahead opens at 4pm, by email and here.</span>
+            <span>The week ahead opens here, and the digest follows by email.</span>
           </li>
           <li className="flex gap-5 border-t border-line py-3">
             <span className="label w-24 shrink-0 pt-0.5">Daily</span>

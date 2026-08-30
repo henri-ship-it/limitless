@@ -51,7 +51,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
         />
         <Section label="Not yet">
           <p>
-            This week opens on {formatWeekRelease(n)}, when the digest lands in your inbox. The
+            This week opens on {formatWeekRelease(n)}, alongside the digest in your inbox. The
             programme is released a week at a time.
           </p>
           {open >= 1 && open <= weeks.length ? (

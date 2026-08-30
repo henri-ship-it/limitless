@@ -93,23 +93,20 @@ export function formatWeekStart(week: number): string {
   })
 }
 
-/** Reads as "Sunday 30 August at 4pm". */
+/**
+ * Reads as "Sunday 30 August".
+ *
+ * Deliberately without an hour. The chapter opens at four and the digest goes
+ * out at half past, so naming one time beside the other promised whichever was
+ * wrong, and the day is what anyone is actually asking.
+ */
 export function formatWeekRelease(week: number): string {
-  const date = weekReleaseDate(week)
-  const day = date.toLocaleDateString('en-GB', {
+  return weekReleaseDate(week).toLocaleDateString('en-GB', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
     timeZone: 'Europe/London',
   })
-  const time = date
-    .toLocaleTimeString('en-GB', {
-      hour: 'numeric',
-      hour12: true,
-      timeZone: 'Europe/London',
-    })
-    .replace(/\s/g, '')
-  return `${day} at ${time}`
 }
 
 /**
