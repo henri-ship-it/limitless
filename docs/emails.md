@@ -24,3 +24,9 @@ on this device.</p>
 
 `{{ .Data.first_name }}` reads from the user's metadata. Set it when importing
 members, or drop the name and open with "Hi,".
+
+## Digest emails
+
+The Sunday weekly send for Core and Pro is in
+[emails-weekly-digest.md](emails-weekly-digest.md). The monthly Elite send is in
+[emails-monthly-elite.md](emails-monthly-elite.md).

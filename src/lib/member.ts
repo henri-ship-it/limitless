@@ -55,13 +55,16 @@ export const getMember = cache(async (): Promise<Member | null> => {
     .single()
 
   /*
-   * Record that they were here, at most four times an hour. Not awaited: a
-   * page should not wait on bookkeeping, and if it fails the worst outcome is
-   * a slightly stale figure on the admin view.
+   * Record that they were here, at most four times an hour.
+   *
+   * Awaited, unlike the first version. A promise left running when a server
+   * render finishes is abandoned rather than completed, so the write never
+   * happened and every member read as never seen. Once every fifteen minutes
+   * is worth the round trip.
    */
   const seen = profile?.last_seen_at ? new Date(profile.last_seen_at).getTime() : 0
   if (Date.now() - seen > SEEN_EVERY_MS) {
-    void supabase.rpc('touch_last_seen')
+    await supabase.rpc('touch_last_seen')
   }
 
   return {

@@ -97,6 +97,7 @@ function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>)
       '',
       `Know Thyself: they lead with ${style.name}. ${style.reads}`,
       `Writing to them: ${STYLE_NOTES[style.name] ?? style.respondsTo}`,
+      'This is the strongest steer you have. Let it set the length and the shape of the message, without ever naming it.',
     )
     const scores = Object.entries(assessment.scorecard?.scores ?? {})
       .sort((a, b) => b[1] - a[1])

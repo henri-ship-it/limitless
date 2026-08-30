@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { Shell } from '@/components/Shell'
+import { COHORT } from '@/content/programme'
 import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
 import { assets } from '@/content/assets'
@@ -35,9 +36,8 @@ export default async function ProPage() {
       </Section>
 
       <Section label="Weekly drop-in call">
-        <p className="text-ink-56">
-          A standing group call every week of the programme. The time is confirmed on the onboarding
-          call.
+        <p>
+          {COHORT.dropIn.day}s, {COHORT.dropIn.time}. Half an hour, every week of the programme.
         </p>
       </Section>
 

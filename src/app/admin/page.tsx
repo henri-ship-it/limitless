@@ -36,7 +36,6 @@ export default async function AdminPage() {
       <PageHeader
         eyebrow="Admin only"
         title="Cohort admin"
-        lede="Everyone on Limitless 4.0, quietest first."
         pills={
           <>
             <span className="pill">{cohort.members.length} members</span>

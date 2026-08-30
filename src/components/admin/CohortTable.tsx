@@ -32,10 +32,19 @@ export function CohortTable({ members }: { members: MemberRow[] }) {
   const [tier, setTier] = useState<'all' | 'pro' | 'core'>('all')
   const [search, setSearch] = useState('')
 
+  /*
+   * Which cohort is on show. Everyone is 4.0 today, so this is one tab and
+   * stays out of the way; it earns its place the moment an earlier cohort is
+   * imported, which is the whole reason the column exists.
+   */
+  const cohorts = [...new Set(members.map((m) => m.cohort))].sort().reverse()
+  const [cohort, setCohort] = useState(cohorts[0] ?? '4.0')
+
   const rows = useMemo(() => {
     const term = search.trim().toLowerCase()
 
     const filtered = members.filter((m) => {
+      if (m.cohort !== cohort) return false
       if (tier !== 'all' && m.tier !== tier) return false
       if (!term) return true
       return `${m.firstName ?? ''} ${m.email}`.toLowerCase().includes(term)
@@ -58,7 +67,7 @@ export function CohortTable({ members }: { members: MemberRow[] }) {
         typeof x === 'string' ? String(x).localeCompare(String(y)) : Number(x) - Number(y)
       return ascending ? order : -order
     })
-  }, [members, sort, ascending, tier, search])
+  }, [members, sort, ascending, tier, search, cohort])
 
   function choose(key: Key) {
     if (key === sort) {
@@ -72,6 +81,22 @@ export function CohortTable({ members }: { members: MemberRow[] }) {
 
   return (
     <div>
+      <div className="mb-5 flex flex-wrap gap-x-5 gap-y-2 border-b border-line">
+        {cohorts.map((option) => (
+          <button
+            key={option}
+            type="button"
+            onClick={() => setCohort(option)}
+            aria-selected={cohort === option}
+            className={`label -mb-px border-b-2 pb-2.5 ${
+              cohort === option ? '!border-ink !text-ink' : 'border-transparent hover:!text-ink'
+            }`}
+          >
+            Limitless {option}
+          </button>
+        ))}
+      </div>
+
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <input
           value={search}

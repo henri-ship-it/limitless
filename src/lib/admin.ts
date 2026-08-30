@@ -11,6 +11,7 @@ export { since, readable } from './format'
 export type MemberRow = {
   id: string
   email: string
+  cohort: string
   firstName: string | null
   phone: string | null
   tier: Tier
@@ -72,7 +73,7 @@ export async function getCohort(): Promise<CohortSummary> {
     await Promise.all([
       supabase
         .from('profiles')
-        .select('id, email, first_name, phone, tier, is_admin, personalised_nudges, last_seen_at'),
+        .select('id, email, first_name, phone, tier, cohort, is_admin, personalised_nudges, last_seen_at'),
       supabase.from('member_progress').select('member_id, week_number'),
       supabase.from('member_journal').select('member_id, updated_at'),
       supabase.from('member_time').select('member_id, seconds'),
@@ -112,6 +113,7 @@ export async function getCohort(): Promise<CohortSummary> {
     .map((p) => ({
       id: p.id,
       email: p.email,
+      cohort: p.cohort ?? '4.0',
       firstName: p.first_name,
       phone: p.phone,
       tier: p.tier as Tier,

@@ -42,6 +42,12 @@ export const COHORT = {
   },
   /** Digests are released ahead of each week. */
   digestDay: 'Sunday evening',
+  /** The standing Pro group call. Every week, same slot. */
+  dropIn: {
+    day: 'Wednesday',
+    time: '11:30 to 12:00 BST',
+    short: 'Wednesdays, 11:30 BST',
+  },
   assessmentUrl: 'https://unlock.lmntaryperformance.com/know-thyself',
   postAssessmentUrl: 'https://unlock.lmntaryperformance.com/post-assessment',
 } as const

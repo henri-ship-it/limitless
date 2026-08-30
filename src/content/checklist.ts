@@ -1,4 +1,4 @@
-import type { Tier } from './programme'
+import { COHORT, type Tier } from './programme'
 
 export type ChecklistItem = {
   key: string
@@ -39,8 +39,8 @@ export const checklist: ChecklistItem[] = [
   },
   {
     key: 'drop-in',
-    label: 'Note your weekly drop-in call time',
-    detail: 'A standing group call, every week of the programme.',
+    label: `Put the weekly drop-in in your diary: ${COHORT.dropIn.short}`,
+    detail: `${COHORT.dropIn.day}s, ${COHORT.dropIn.time}. Half an hour, every week of the programme.`,
     tier: 'pro',
   },
 ]

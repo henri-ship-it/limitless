@@ -119,9 +119,9 @@ export default async function JournalPage() {
                             <JournalVisual
                               visual={entry.visual}
                               caption={entry.caption}
-                              className="mt-4 max-w-sm border border-line"
+                              className="mt-8 max-w-sm border border-line"
                             />
-                            <p className="mt-4">
+                            <p className="mt-6">
                               <Link href={`/journal/${entry.n}`} className="label hover:!text-ink">
                                 Open entry →
                               </Link>
