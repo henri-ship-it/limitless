@@ -47,10 +47,31 @@ export function PhotographEntry({
   const [stage, setStage] = useState<Stage>('closed')
   const [problem, setProblem] = useState('')
   const [step, setStep] = useState(0)
-  const video = useRef<HTMLVideoElement>(null)
+  const video = useRef<HTMLVideoElement | null>(null)
   const frame = useRef<HTMLDivElement>(null)
   const stage_ = useRef<HTMLDivElement>(null)
   const stream = useRef<MediaStream | null>(null)
+
+  /*
+   * Attaches the camera the moment the element exists, rather than a frame after
+   * asking for it.
+   *
+   * This used to set srcObject inside a requestAnimationFrame after setting the
+   * stage, which is a race: React commits when it is ready, and the frame can
+   * arrive first, leaving the ref null and the viewfinder black. It only showed
+   * up behind the permission prompt, where the timing differs - cancel and
+   * reopen and it worked, which is the tell.
+   *
+   * A callback ref cannot lose that race. It runs when the node is attached,
+   * with the stream already in hand.
+   */
+  const attach = useCallback((el: HTMLVideoElement | null) => {
+    video.current = el
+    if (!el || !stream.current) return
+    el.srcObject = stream.current
+    // Rejects if something interrupts it, which is not worth surfacing.
+    void el.play().catch(() => {})
+  }, [])
 
   const stop = useCallback(() => {
     stream.current?.getTracks().forEach((track) => track.stop())
@@ -80,15 +101,9 @@ export function PhotographEntry({
         video: { facingMode: { ideal: 'environment' }, width: { ideal: 2400 } },
         audio: false,
       })
+      // Held before the stage changes, so it is waiting when the element mounts.
       stream.current = media
       setStage('framing')
-      // The element only exists once the framing view has rendered.
-      requestAnimationFrame(() => {
-        if (video.current) {
-          video.current.srcObject = media
-          void video.current.play()
-        }
-      })
     } catch {
       stop()
       setStage('problem')
@@ -201,7 +216,7 @@ export function PhotographEntry({
       <div ref={stage_} className="relative min-h-0 flex-1 overflow-hidden">
         {stage === 'framing' ? (
           <video
-            ref={video}
+            ref={attach}
             playsInline
             muted
             autoPlay
