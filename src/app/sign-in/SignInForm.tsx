@@ -18,6 +18,14 @@ import { createClient } from '@/lib/supabase/client'
  * anybody the link fails for has a way through that does not depend on us
  * guessing which mail provider they are on.
  */
+/*
+ * How long a code is comes from Supabase, where it is a setting rather than a
+ * constant, so nothing here names a number. Anything shorter than the minimum
+ * cannot be a whole code, and anything past the maximum is a paste gone wrong.
+ */
+const MIN_CODE = 6
+const MAX_CODE = 10
+
 export function SignInForm() {
   const params = useSearchParams()
   const next = params.get('next') ?? '/'
@@ -79,23 +87,11 @@ export function SignInForm() {
     setChecking(true)
     setCodeProblem('')
 
-    const supabase = createClient()
-    const address = email.trim()
-
-    /*
-     * Which type a code verifies under depends on how the email was sent, and
-     * that is not worth reasoning about from here. Try both; only one of them
-     * can be right, and being wrong costs a round trip rather than the code.
-     */
-    let error = (await supabase.auth.verifyOtp({ email: address, token: code, type: 'email' })).error
-    if (error) {
-      const second = await supabase.auth.verifyOtp({
-        email: address,
-        token: code,
-        type: 'magiclink',
-      })
-      if (!second.error) error = null
-    }
+    const { error } = await createClient().auth.verifyOtp({
+      email: email.trim(),
+      token: code,
+      type: 'email',
+    })
 
     if (!error) {
       // A full load rather than a client route, so the server sees the cookie.
@@ -105,7 +101,7 @@ export function SignInForm() {
 
     setChecking(false)
     setCodeProblem(
-      'That code did not work. Check you have the newest email, and that all six digits are in.',
+      'That code did not work. Check you are using the newest email, and that every digit is in.',
     )
   }
 
@@ -128,14 +124,13 @@ export function SignInForm() {
             id="code"
             inputMode="numeric"
             autoComplete="one-time-code"
-            placeholder="000000"
             value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, MAX_CODE))}
             className="mt-3 w-full border border-line bg-surface px-3 py-2.5 text-[1.125rem] tracking-[0.3em] outline-none focus:border-ink"
           />
           <button
             type="submit"
-            disabled={code.length < 6 || checking}
+            disabled={code.length < MIN_CODE || checking}
             className="label !text-white mt-4 w-full bg-ink px-4 py-3 hover:bg-ink-72 disabled:opacity-40"
           >
             {checking ? 'Checking' : 'Sign me in'}
@@ -165,8 +160,8 @@ export function SignInForm() {
       {failed ? (
         <p className="!mb-5 border border-line bg-ink-3 p-4 text-[0.875rem] leading-relaxed text-ink">
           That link has already been used, or it has expired. Some mail apps open links to check
-          them before you do, which uses them up. Ask for a fresh one below, then type in the six
-          digit code from the email rather than opening the link.
+          them before you do, which uses them up. Ask for a fresh one below, then type in the code
+          from the email rather than opening the link.
         </p>
       ) : null}
       <label htmlFor="email" className="label">
