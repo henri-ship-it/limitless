@@ -7,6 +7,7 @@ const PUBLIC_PATHS = [
   '/auth/confirm',
   '/auth/callback',
   '/auth/sign-out',
+  '/offline.html',
   '/privacy',
   '/terms',
   // Webhooks carry a shared secret rather than a member session.
