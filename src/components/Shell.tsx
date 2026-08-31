@@ -1,5 +1,5 @@
 import { getMember, getProgress } from '@/lib/member'
-import { currentWeek, resumeHref, unlockedThrough } from '@/lib/cohort'
+import { currentWeek, unlockedThrough } from '@/lib/cohort'
 import { TopBar } from './TopBar'
 import { Sidebar } from './Sidebar'
 import { OnThisPage, type TocItem } from './OnThisPage'
@@ -21,13 +21,11 @@ export async function Shell({
   const active = currentWeek()
   const openThrough = unlockedThrough()
   const completed = [...progress.completedWeeks]
-  const resume = resumeHref(progress.completedWeeks, openThrough)
 
   return (
     <div className="min-h-screen bg-bg">
       {member ? <TimeOnPage /> : null}
       <TopBar
-        resumeHref={resume}
         tier={tier}
         isAdmin={member?.isAdmin ?? false}
         currentWeek={active}

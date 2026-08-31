@@ -8,7 +8,6 @@ import { ChevronIcon, LockIcon, NowIndicator, TickIcon } from './icons'
 
 type Props = {
   /** The wordmark returns a member to whatever they were last working on. */
-  resumeHref: string
   tier: Tier
   currentWeek: number
   openThrough: number
@@ -17,7 +16,6 @@ type Props = {
 }
 
 export function TopBar({
-  resumeHref,
   tier,
   isAdmin,
   currentWeek,
@@ -51,7 +49,7 @@ export function TopBar({
     <header className="sticky top-0 z-40 border-b border-line bg-surface/85 backdrop-blur">
       <div className="flex h-14 items-center gap-6 px-5">
         <Link
-          href={resumeHref}
+          href="/"
           className="font-mono text-[0.8125rem] font-medium tracking-[0.16em] uppercase"
         >
           Limitless

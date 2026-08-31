@@ -8,7 +8,7 @@ import { entriesForWeek } from '@/content/journal'
 import { resolveEntry } from '@/lib/entry'
 import { JournalVisual } from '@/components/JournalVisual'
 import Link from 'next/link'
-import { isUnlocked } from '@/lib/cohort'
+import { currentWeek, isUnlocked } from '@/lib/cohort'
 
 const TOC = modules.map((m) => ({
   id: `module-${m.number}`,
@@ -20,6 +20,7 @@ const TOC = modules.map((m) => ({
 }))
 
 export default async function JournalPage() {
+  const active = currentWeek()
 
   return (
     <Shell toc={TOC}>
@@ -75,6 +76,13 @@ export default async function JournalPage() {
                 <div className="mb-6 flex flex-wrap items-center gap-2">
                   <span className="pill">Week {String(n).padStart(2, '0')}</span>
                   <h2 className="text-[1.25rem] font-medium tracking-[-0.015em]">{week.title}</h2>
+                  {/* The chapter in hand, marked the same way as in the sidebar. */}
+                  {n === active ? (
+                    <span className="ml-1 flex items-center gap-2">
+                      <span className="radar" aria-hidden />
+                      <span className="label !text-accent">Now</span>
+                    </span>
+                  ) : null}
                   {!unlocked ? (
                     <span className="pill ml-auto">
                       <LockIcon /> Locked

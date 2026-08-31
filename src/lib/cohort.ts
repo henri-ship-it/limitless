@@ -84,6 +84,21 @@ export function weekReleaseDate(week: number): Date {
   return new Date(midnightUk.getTime() - (24 - RELEASE_HOUR_UK) * MS_PER_HOUR)
 }
 
+/**
+ * The entry a member should be on today, within a given week.
+ *
+ * Seven entries to a week, one a day from the Monday. Clamped at both ends: a
+ * week opened early lands on its first entry rather than one before it, and a
+ * week being caught up on lands on its last.
+ */
+export function entryForToday(week: number, now: Date = new Date()): number {
+  const first = weeks.find((w) => w.number === week)?.firstEntry
+  if (!first) return 1
+
+  const days = Math.floor((now.getTime() - weekStartDate(week).getTime()) / (24 * 60 * 60 * 1000))
+  return first + Math.min(6, Math.max(0, days))
+}
+
 export function formatWeekStart(week: number): string {
   return weekStartDate(week).toLocaleDateString('en-GB', {
     day: 'numeric',
@@ -107,24 +122,4 @@ export function formatWeekRelease(week: number): string {
     month: 'long',
     timeZone: 'Europe/London',
   })
-}
-
-/**
- * Where the wordmark takes a member: back to whatever they were last working
- * on. During onboarding, before week 1 is released, that is the Start Guide.
- * After that it is the first week they have not marked complete, which for a
- * Pro member is capped at the week they have been released.
- */
-export function resumeHref(
-  completedWeeks: Set<number> | number[],
-  openThrough: number,
-  now: Date = new Date(),
-): string {
-  if (currentWeek(now) === 0) return '/'
-
-  const done = completedWeeks instanceof Set ? completedWeeks : new Set(completedWeeks)
-  for (let week = 1; week <= openThrough; week += 1) {
-    if (!done.has(week)) return `/week/${week}`
-  }
-  return `/week/${Math.max(1, openThrough)}`
 }

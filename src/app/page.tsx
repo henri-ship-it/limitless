@@ -11,7 +11,8 @@ import { checklistFor } from '@/content/checklist'
 import { COHORT, modules, weeks } from '@/content/programme'
 import { SUPPORT_EMAIL } from '@/content/assets'
 import { getMember, getProgress } from '@/lib/member'
-import { currentWeek, unlockedThrough } from '@/lib/cohort'
+import { currentWeek, entryForToday, unlockedThrough } from '@/lib/cohort'
+import { resolveEntry } from '@/lib/entry'
 
 function tocFor(setUp: boolean) {
   return [
@@ -199,6 +200,8 @@ function WhereYouAre({ week }: { week: number }) {
   }
 
   const module = modules.find((m) => m.weeks.includes(week))!
+  const entry = entryForToday(week)
+  const today = resolveEntry(entry)
 
   return (
     <div className="border border-line p-6">
@@ -213,9 +216,31 @@ function WhereYouAre({ week }: { week: number }) {
         {chapter.title}
       </p>
       {chapter.topic ? <span className="pill">{chapter.topic}</span> : null}
-      <p className="mt-5 !mb-0">
-        <Link href={`/week/${week}`}>Open this week</Link>
-      </p>
+
+      {/*
+        Today's entry leads, because on all but one day of the week that is what
+        somebody came here to do. The chapter sits beside it for the reading,
+        the masterclass and the digest.
+      */}
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <Link
+          href={`/journal/${entry}`}
+          className="label !text-white !no-underline bg-ink px-4 py-3 hover:bg-ink-72"
+        >
+          {today?.huddle ? "Open this week's huddle" : "Open today's entry"}
+        </Link>
+        <Link
+          href={`/week/${week}`}
+          className="label !no-underline border border-line px-4 py-3 hover:border-ink hover:!text-ink"
+        >
+          Read the chapter
+        </Link>
+      </div>
+      {today ? (
+        <p className="mt-3 !mb-0 !text-ink-56 text-[0.8125rem]">
+          Entry {entry} of 112 · {today.title}
+        </p>
+      ) : null}
     </div>
   )
 }
