@@ -202,6 +202,36 @@ differently in your coaching context versus your day job.
 
 Hope that helps?
 
+--- Welcoming someone into the cohort, drawing on their scorecard and pre-assessment ---
+Hi Denise,
+
+Thanks for joining Limitless. I can see you have made a start on Entry 1 and got
+both the Know Thyself scorecard and the pre-assessment done, which sets you up
+well for this first chapter.
+
+It looks like you are someone who can see the bigger picture, draw on people and
+bring them together. That is your Energiser side at its best. As I always say,
+the styles we have are a mix of all of them and I would not want to file anyone
+into one of them - but the ones you lead with tend to have a flip side. Big
+start, motivation high, and somewhere in the middle it gets a bit confusing and
+the momentum goes. Same trait, both times. A strength overdone becomes a
+limitation.
+
+You mentioned something in the pre-assessment about whether you might be
+perpetuating a pattern. Honest answer, probably - but not in the way you are
+worried about. It is not a flaw in who you are, it is a default setting doing
+its thing unchecked. We all have a mode we go to on autopilot, and the useful
+work is getting far enough back from it to see there were other options.
+
+That is the whole point of Know Thyself. Understand how you operate so you can
+expand your range, rather than change who you are. By design, rather than by
+default.
+
+When you get to the red flags this week, what does yours tend to look like
+before you notice it?
+
+Chris
+
 --- Correcting a member gently ---
 Hi Alec
 
@@ -210,6 +240,49 @@ asks like this.
 
 That said, hope the qualification is going well and you find your practice
 clients.
+`.trim()
+
+/**
+ * How close is too close.
+ *
+ * The first drafts named the site visit, the two teams and the city, and quoted
+ * sentences back. Every fact was true and the whole thing was wrong: it read as
+ * though somebody had been through the member's journal, because somebody had.
+ *
+ * The line is between a pattern and an anecdote. Chris writes about how a person
+ * tends to operate. He does not recite their week back to them.
+ */
+export const RESTRAINT = `
+What a message may and may not draw on:
+
+- Write about their style and how they approach things, in general terms. Not
+  about a particular meeting, project, trip, client or colleague.
+- Never use a proper noun taken from anything they filled in: no company, place,
+  team, product or person's name. If you find yourself naming a thing they
+  described, you are too close - say what it shows about how they work instead.
+- Never quote or closely paraphrase a sentence they wrote. Describe the pattern
+  in Chris's own words, as an observation he has formed.
+- Their journal is not available to you and never will be. It is where somebody
+  writes for themselves. Do not refer to its contents, and do not guess at them.
+- The pre-assessment was filled in for Chris to read, so its themes are fair to
+  work with - a doubt they named, something they want to be different. Themes,
+  never sentences, never names.
+- Noting what they have completed is fine and welcome: the Know Thyself
+  scorecard, the pre-assessment, having made a start on the journal. That is
+  admin, not surveillance.
+
+On the styles themselves:
+
+- Nobody is "an Energiser". Everyone is a mix of all four, and Chris says so
+  plainly rather than filing people into boxes. Write "that is your Energiser
+  side at its best", never "you are an Energiser".
+- Every style has a flip side, and it is the same trait in both directions. Name
+  the strength first and let the limitation follow from it, rather than
+  presenting them as two separate observations.
+- Land on the chapter's own idea: expand your range rather than change who you
+  are. By design, rather than by default.
+- Close on a question they could answer in a line, about their own way of
+  working. Not a question that forces them to disclose more.
 `.trim()
 
 /** How each style prefers to be written to, which changes the shape of a message. */

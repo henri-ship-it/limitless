@@ -1,13 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getMemberDetail, requireAdmin } from '@/lib/admin'
 import { since } from '@/lib/format'
-import { resolveEntry } from '@/lib/entry'
 import { currentWeek } from '@/lib/cohort'
 import { getWeek, weeks } from '@/content/programme'
-import { HUDDLE_QUESTIONS } from '@/content/entry-fields'
-import type { EntryData } from '@/content/journal-fields'
 import { leadStyle } from '@/content/know-thyself'
-import { CHRIS, EXAMPLES, LANGUAGE, RULES, STYLE_NOTES } from '@/content/voice'
+import { CHRIS, EXAMPLES, LANGUAGE, RESTRAINT, RULES, STYLE_NOTES } from '@/content/voice'
 
 /**
  * Drafts a message to one member, in Chris's voice.
@@ -26,43 +23,6 @@ const MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-opus-5'
 const ENDPOINT = 'https://api.anthropic.com/v1/messages'
 
 type Body = { channel?: 'whatsapp' | 'email'; intent?: string }
-
-/** Only what they filled in, labelled by what was asked. */
-function answersFor(n: number, data: EntryData): string[] {
-  const entry = resolveEntry(n)
-  const rows: string[] = []
-
-  const intentions = (data.intentions ?? []).filter(Boolean)
-  if (intentions.length) rows.push(`Intentions: ${intentions.join('; ')}`)
-
-  const achievements = (data.achievements ?? []).filter(Boolean)
-  if (achievements.length) rows.push(`Achievements: ${achievements.join('; ')}`)
-
-  for (const [key, label] of [
-    ['win', 'One win'],
-    ['mind', 'On their mind'],
-    ['grateful', 'Grateful for'],
-  ] as const) {
-    if (data[key]) rows.push(`${label}: ${data[key]}`)
-  }
-
-  ;(data.huddle ?? []).forEach((answer, i) => {
-    if (answer) rows.push(`${HUDDLE_QUESTIONS[i] ?? 'Huddle'}: ${answer}`)
-  })
-
-  if (data.values?.length) rows.push(`Values chosen: ${data.values.join(', ')}`)
-
-  for (const [key, value] of Object.entries(data.fields ?? {})) {
-    if (!value) continue
-    const index = Number(key)
-    const field = Number.isInteger(index) ? entry?.fields[index] : undefined
-    const label = field && field.kind !== 'note' && field.kind !== 'group' ? field.label : 'Answer'
-    const text = Array.isArray(value) ? value.filter(Boolean).join('; ') : value
-    if (text) rows.push(`${label}: ${text}`)
-  }
-
-  return rows
-}
 
 function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>): string {
   const { profile, entries, weeksComplete, secondsSpent, arrivals } = detail
@@ -131,20 +91,22 @@ function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>)
     )
   }
 
+  /*
+   * Which entries they have been in, and nothing of what is in them.
+   *
+   * The journal is where somebody writes for themselves. Feeding it to a model
+   * produced messages that named the meeting, the colleague and the city, and
+   * read as though their diary had been read over their shoulder - which it
+   * had. Chris can open an entry himself when he wants to; a draft does not
+   * need it, and the message is better without it.
+   */
   if (entries.length) {
-    lines.push('', 'What they have written most recently:')
-    for (const row of entries.slice(-6)) {
-      const entry = resolveEntry(row.n)
-      const rows = answersFor(row.n, row.data as EntryData)
-      if (!rows.length) continue
-      lines.push(
-        `- Entry ${row.n}${entry ? `, ${entry.title}` : ''} (${since(row.updatedAt)}): ${rows.join(' | ')}`,
-      )
-    }
-  }
-
-  if (arrivals.length) {
-    lines.push('', `They last came in from ${arrivals[0].source} ${since(arrivals[0].at)}.`)
+    const numbers = entries.map((row) => row.n).join(', ')
+    lines.push(
+      '',
+      `They have worked on ${entries.length === 1 ? 'entry' : 'entries'} ${numbers}.`,
+      'What they wrote in them is private and is deliberately not here. Do not guess at it.',
+    )
   }
 
   return lines.join('\n')
@@ -186,7 +148,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ mem
       ? 'This is a WhatsApp message. Keep it to four to six lines, no subject line, no sign-off.'
       : 'This is an email. Slightly longer is fine, up to about ten lines. Give it a short subject line on the first line, prefixed "Subject: ", then a blank line, then the message, ending with "Chris" on its own line.'
 
-  const system = [CHRIS, RULES, LANGUAGE, EXAMPLES].join('\n\n')
+  const system = [CHRIS, RULES, RESTRAINT, LANGUAGE, EXAMPLES].join('\n\n')
 
   const prompt = [
     'Here is what is known about the member. Everything in it is real; anything not in it, you do not know.',
