@@ -7,6 +7,13 @@ const PUBLIC_PATHS = [
   '/auth/confirm',
   '/auth/callback',
   '/auth/sign-out',
+  /*
+   * The installable bits, which the browser fetches on its own and often while
+   * signed out. A service worker that answers with a redirect to the sign-in
+   * page does not register at all, which quietly takes the whole thing down.
+   */
+  '/sw.js',
+  '/manifest.webmanifest',
   '/offline.html',
   '/privacy',
   '/terms',
