@@ -12,8 +12,8 @@ export default function SignInPage() {
           Sign in
         </h1>
         <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-56">
-          Enter the email address you used to join. We will send you a link. No password to
-          remember.
+          Enter the email address you used to join. We will send you a link, and a code you can
+          type in instead. No password to remember.
         </p>
         <Suspense>
           <SignInForm />

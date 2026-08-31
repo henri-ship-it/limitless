@@ -40,7 +40,9 @@ that requested it. So this is not optional. Use Resend.
    - Site URL: the live domain
    - Redirect URLs: add `https://<domain>/auth/callback`
 5. Authentication → Email templates → Magic Link. Replace the body with
-   `docs/magic-link-email.html`.
+   `docs/magic-link-email.html`. It carries both a link and a six digit code:
+   the code is not optional, because mail filters open links to scan them and a
+   sign-in link works only once, so for some members the link arrives spent.
 6. Authentication → Sessions: set the session length to 30 days, so a member
    stays signed in on that device.
 
