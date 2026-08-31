@@ -32,7 +32,7 @@ const SPREAD_RATIO = 297 / 210
  */
 const LONGEST_EDGE = 2200
 
-type Stage = 'closed' | 'starting' | 'framing' | 'reading' | 'problem'
+type Stage = 'closed' | 'starting' | 'framing' | 'captured' | 'reading' | 'problem'
 
 /** What is actually happening, in order, while a page is being read. */
 const STAGES = ['Analysing your journal', 'Matching it to the entry', 'Checking the answers']
@@ -47,6 +47,8 @@ export function PhotographEntry({
   const [stage, setStage] = useState<Stage>('closed')
   const [problem, setProblem] = useState('')
   const [step, setStep] = useState(0)
+  /* The shot itself, held so it can be shown back rather than a black screen. */
+  const [shot, setShot] = useState<string | null>(null)
   const video = useRef<HTMLVideoElement | null>(null)
   const frame = useRef<HTMLDivElement>(null)
   const stage_ = useRef<HTMLDivElement>(null)
@@ -115,6 +117,8 @@ export function PhotographEntry({
 
   function close() {
     stop()
+    if (shot) URL.revokeObjectURL(shot)
+    setShot(null)
     setStage('closed')
   }
 
@@ -156,8 +160,23 @@ export function PhotographEntry({
   }
 
   async function send(blob: Blob) {
-    setStage('reading')
+    /*
+     * Show the shot back before anything else happens.
+     *
+     * Going straight from viewfinder to a progress bar left people holding the
+     * phone over the page, still trying to keep it steady, with no idea whether
+     * it had been taken. The photograph is already on the device by this point:
+     * say so, then get on with reading it.
+     */
     stop()
+    const preview = URL.createObjectURL(blob)
+    setShot((old) => {
+      if (old) URL.revokeObjectURL(old)
+      return preview
+    })
+    setStage('captured')
+    setTimeout(() => setStage((s) => (s === 'captured' ? 'reading' : s)), 1100)
+
     try {
       const base64 = await asBase64(blob)
       const response = await fetch(`/api/journal/${entry}/read`, {
@@ -224,9 +243,24 @@ export function PhotographEntry({
           />
         ) : null}
 
+        {/* What was actually taken, so the screen is the page rather than black. */}
+        {shot && (stage === 'captured' || stage === 'reading') ? (
+          <img
+            src={shot}
+            alt=""
+            className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-500 ${
+              stage === 'reading' ? 'opacity-30' : 'opacity-100'
+            }`}
+          />
+        ) : null}
+
         {/* The frame. Dimmed all round by a very large shadow rather than four
             separate panels, so the hole is always exactly the crop. */}
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center p-6">
+        <div
+          className={`pointer-events-none absolute inset-0 flex-col items-center justify-center p-6 ${
+            stage === 'captured' || stage === 'reading' ? 'hidden' : 'flex'
+          }`}
+        >
           {/*
             Sized by width, capped so the height it implies still fits. A fixed
             height with a max width instead would go out of shape on a phone
@@ -257,8 +291,30 @@ export function PhotographEntry({
           </div>
         </div>
 
+        {/* Taken. Said plainly, before anything starts working on it. */}
+        {stage === 'captured' ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-accent-ink">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-8 w-8"
+                fill="none"
+                stroke="white"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M4 12.5 9.5 18 20 7" />
+              </svg>
+            </span>
+            <p className="label !text-white">Got it</p>
+            <p className="text-[0.9375rem] text-white/70">You can put the phone down.</p>
+          </div>
+        ) : null}
+
         {stage === 'reading' ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/80">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/60">
             <p className="label !text-white">{STAGES[step]}</p>
             <div className="h-[3px] w-52 overflow-hidden rounded-full bg-white/15">
               <span
@@ -288,7 +344,9 @@ export function PhotographEntry({
           </p>
         ) : (
           <p className="!mb-5 text-center text-[0.8125rem] text-white/50">
-            Both pages in the frame, spine on the line, flat and evenly lit.
+            {stage === 'captured' || stage === 'reading'
+              ? 'Nothing is saved until you have read it back.'
+              : 'Both pages in the frame, spine on the line, flat and evenly lit.'}
           </p>
         )}
 

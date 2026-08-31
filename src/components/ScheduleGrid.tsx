@@ -78,21 +78,60 @@ export function ScheduleGrid({ blocks, onChange }: Props) {
     const ceiling = ceilingFor(start)
     setDraft({ start, end: start, label: '' })
 
+    /*
+     * Scrolling the page starts with a finger on this grid as often as not, and
+     * an hour was being blocked out every time somebody scrolled past. Two
+     * things say a touch was meant for the page rather than for the schedule:
+     * the browser taking the gesture over to pan, which arrives as a
+     * pointercancel, and the finger travelling at all.
+     */
+    const from = { x: event.clientX, y: event.clientY }
+    let scrolling = false
+
+    const done = () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointercancel', abandon)
+    }
+
+    const abandon = () => {
+      done()
+      setDraft(null)
+    }
+
     const move = (e: PointerEvent) => {
-      if (!drawable) return
+      if (!drawable) {
+        const travelled = Math.hypot(e.clientX - from.x, e.clientY - from.y)
+        if (travelled > 8) {
+          scrolling = true
+          abandon()
+        }
+        return
+      }
       const end = Math.min(ceiling, Math.max(start, rowAt(e.clientY)))
       setDraft({ start, end, label: '' })
     }
+
     const up = (e: PointerEvent) => {
-      window.removeEventListener('pointermove', move)
-      window.removeEventListener('pointerup', up)
-      const end = drawable ? Math.min(ceiling, Math.max(start, rowAt(e.clientY))) : start
+      done()
       setDraft(null)
+      if (scrolling) return
+
+      const end = drawable ? Math.min(ceiling, Math.max(start, rowAt(e.clientY))) : start
       onChange([...blocks, { start, end, label: '' }])
-      setFocusOn(start)
+
+      /*
+       * Only a mouse gets the cursor put in the new block. On a phone that
+       * opens the keyboard, and closing it again sends the page back to
+       * whatever was focused - which is how tapping a button somewhere else
+       * entirely ended up scrolling to the schedule.
+       */
+      if (drawable) setFocusOn(start)
     }
+
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', up)
+    window.addEventListener('pointercancel', abandon)
   }
 
   function startResize(event: React.PointerEvent, index: number) {
