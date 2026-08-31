@@ -33,7 +33,7 @@ function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>)
   const lines: string[] = [
     `Name: ${name}`,
     `Tier: ${profile.tier === 'pro' ? 'Pro (has the group calls and direct access to Chris)' : 'Core (journal, digests and masterclasses, no group calls)'}`,
-    `The cohort is in week ${week} of ${weeks.length}${chapter ? `, the ${chapter.title} chapter` : ''}.`,
+    `The cohort is in week ${week} of ${weeks.length}${chapter ? `, the ${chapter.title} chapter` : ''}, and that week is open to them now.`,
     `They have marked ${weeksComplete.length} weeks complete and written ${entries.length} journal entries.`,
     `Last seen on the platform: ${since(profile.last_seen_at)}.`,
     `Time on the platform all told: about ${Math.max(1, Math.round(secondsSpent / 60))} minutes.`,
@@ -201,12 +201,23 @@ export async function POST(request: Request, { params }: { params: Promise<{ mem
     try {
       const parsed = JSON.parse(text.slice(start, end + 1)) as { angle?: string; message?: string }
       if (parsed.message) {
-        return NextResponse.json({ message: parsed.message.trim(), angle: parsed.angle ?? '' })
+        return NextResponse.json({ message: plainDashes(parsed.message.trim()), angle: parsed.angle ?? '' })
       }
     } catch {
       // Fall through and hand back whatever came out.
     }
   }
 
-  return NextResponse.json({ message: text, angle: '' })
+  return NextResponse.json({ message: plainDashes(text), angle: '' })
+}
+
+/**
+ * Takes the em and en dashes out, whatever the draft came back with.
+ *
+ * The rule is in the voice guide, and a model will still reach for one now and
+ * then. Asking twice is cheaper than a dash going out over Chris's name, so
+ * this is the belt to that braces.
+ */
+function plainDashes(text: string): string {
+  return text.replace(/\s*[—–]\s*/g, ' - ')
 }

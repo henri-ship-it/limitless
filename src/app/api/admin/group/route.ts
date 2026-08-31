@@ -3,7 +3,7 @@ import { getCohort, requireAdmin } from '@/lib/admin'
 import { currentWeek } from '@/lib/cohort'
 import { getWeek, modules, weeks } from '@/content/programme'
 import { digests } from '@/content/digests'
-import { CHRIS, GROUP_EXAMPLES, GROUP_RULES, LANGUAGE, RULES } from '@/content/voice'
+import { CHRIS, GROUP_EXAMPLES, GROUP_RULES, LANGUAGE, RESTRAINT, RULES } from '@/content/voice'
 
 /**
  * Drafts the Pro group message that opens or closes a week.
@@ -117,7 +117,7 @@ export async function POST(request: Request) {
     body: JSON.stringify({
       model: MODEL,
       max_tokens: 1500,
-      system: [CHRIS, RULES, GROUP_RULES, LANGUAGE, GROUP_EXAMPLES].join('\n\n'),
+      system: [CHRIS, RULES, RESTRAINT, GROUP_RULES, LANGUAGE, GROUP_EXAMPLES].join('\n\n'),
       messages: [{ role: 'user', content: prompt }],
     }),
   })
@@ -143,12 +143,20 @@ export async function POST(request: Request) {
     try {
       const parsed = JSON.parse(text.slice(start, end + 1)) as { angle?: string; message?: string }
       if (parsed.message) {
-        return NextResponse.json({ message: parsed.message.trim(), angle: parsed.angle ?? '' })
+        return NextResponse.json({
+          message: plainDashes(parsed.message.trim()),
+          angle: parsed.angle ?? '',
+        })
       }
     } catch {
       // Fall through and hand back whatever came out.
     }
   }
 
-  return NextResponse.json({ message: text, angle: '' })
+  return NextResponse.json({ message: plainDashes(text), angle: '' })
+}
+
+/** Em and en dashes never go out over Chris's name, however the draft returns. */
+function plainDashes(text: string): string {
+  return text.replace(/\s*[—–]\s*/g, ' - ')
 }
