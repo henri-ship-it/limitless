@@ -11,6 +11,16 @@ export function SignInForm() {
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [message, setMessage] = useState('')
 
+  /*
+   * A link that did not work sent people back here to an ordinary empty form,
+   * which reads as the site having forgotten them rather than as the link
+   * having failed - so they try the same dead link again. Say what happened.
+   *
+   * A sign-in link works once. Tapping it twice, or a mail provider that opens
+   * links to scan them before you do, spends it.
+   */
+  const failed = params.get('error') === 'link'
+
   async function submit(event: React.FormEvent) {
     event.preventDefault()
     setState('sending')
@@ -59,6 +69,13 @@ export function SignInForm() {
 
   return (
     <form onSubmit={submit} className="mt-6 border-t border-line pt-6">
+      {failed ? (
+        <p className="!mb-5 border border-line bg-ink-3 p-4 text-[0.875rem] leading-relaxed text-ink">
+          That link has already been used, or it has expired. They only work once, and some mail
+          apps open them to check them before you do. Ask for a fresh one below and open it from
+          your inbox on this device.
+        </p>
+      ) : null}
       <label htmlFor="email" className="label">
         Email address
       </label>
