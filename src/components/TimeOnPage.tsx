@@ -29,7 +29,15 @@ export function TimeOnPage() {
   useEffect(() => {
     if (!from || noted.current) return
     noted.current = true
-    void createClient().rpc('record_arrival', { source: from, page: pathname })
+    /*
+     * .then() is not decoration. A Supabase query builder is a lazy thenable:
+     * it holds the request and only sends it when something awaits it. Written
+     * as `void client.rpc(...)` it is built, discarded, and never sent - which
+     * is why no arrival and no second of reading time was ever recorded.
+     */
+    createClient()
+      .rpc('record_arrival', { source: from, page: pathname })
+      .then(() => {}, () => {})
   }, [from, pathname])
 
   useEffect(() => {
@@ -39,7 +47,10 @@ export function TimeOnPage() {
 
     const send = () => {
       const amount = dwell.flush(here())
-      if (amount) void supabase.rpc('add_time', { page: pathname, amount })
+      // See the note above: without .then() the request is never sent.
+      if (amount) {
+        supabase.rpc('add_time', { page: pathname, amount }).then(() => {}, () => {})
+      }
     }
 
     const onVisibility = () => {
