@@ -150,6 +150,27 @@ function latest(a: string | null, b: string | null): string | null {
 }
 
 /** One member, with everything they have written. */
+/**
+ * What was learned from talking to somebody, distilled once and kept.
+ *
+ * `notes` is null until the transcript has been read, so every field here is
+ * optional: a conversation that failed to distil is still worth having.
+ */
+export type ConversationNotes = {
+  motivation?: string
+  communication?: string
+  goals?: string[]
+  life?: string[]
+  quotes?: string[]
+}
+
+export type Conversation = {
+  id: string
+  happened_on: string
+  transcript: string
+  notes: ConversationNotes | null
+}
+
 export async function getMemberDetail(id: string) {
   if (!supabaseConfigured) return null
 
@@ -182,6 +203,12 @@ export async function getMemberDetail(id: string) {
     .order('at', { ascending: false })
     .limit(20)
 
+  const { data: conversations } = await supabase
+    .from('member_conversations')
+    .select('id, happened_on, transcript, notes')
+    .eq('member_id', id)
+    .order('happened_on', { ascending: false })
+
   if (!profile) return null
 
   const signedIn = users.data?.users.find((u) => u.id === id)?.last_sign_in_at ?? null
@@ -190,6 +217,7 @@ export async function getMemberDetail(id: string) {
     profile: { ...profile, last_seen_at: latest(profile.last_seen_at, signedIn) },
     time: (time ?? []).sort((a, b) => b.seconds - a.seconds),
     arrivals: arrivals ?? [],
+    conversations: (conversations ?? []) as Conversation[],
     secondsSpent: (time ?? []).reduce((sum, row) => sum + row.seconds, 0),
     weeksComplete: (progress ?? []).map((p) => p.week_number).sort((a, b) => a - b),
     entries: (journal ?? []).map((row) => ({

@@ -25,7 +25,7 @@ const ENDPOINT = 'https://api.anthropic.com/v1/messages'
 type Body = { channel?: 'whatsapp' | 'email'; intent?: string }
 
 function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>): string {
-  const { profile, entries, weeksComplete, secondsSpent, arrivals } = detail
+  const { profile, entries, weeksComplete, secondsSpent, arrivals, conversations } = detail
   const name = profile.first_name ?? profile.email.split('@')[0]
   const week = currentWeek()
   const chapter = getWeek(week)
@@ -106,6 +106,30 @@ function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>)
       '',
       `They have worked on ${entries.length === 1 ? 'entry' : 'entries'} ${numbers}.`,
       'What they wrote in them is private and is deliberately not here. Do not guess at it.',
+    )
+  }
+
+  /*
+   * The 1:1s, which sit on the opposite side of the line from the journal.
+   *
+   * The journal is somebody writing to themselves, and quoting it back reads as
+   * having been watched. A call is a conversation Chris was actually in, so
+   * remembering it is the ordinary courtesy of having listened. It is the one
+   * personal thing in this brief, and the most useful.
+   */
+  const call = conversations[0]
+  if (call?.notes) {
+    const { motivation, communication, goals, life, quotes } = call.notes
+    lines.push('', `From the 1:1 on ${call.happened_on}:`)
+    if (motivation) lines.push(`What moves them: ${motivation}`)
+    if (communication) lines.push(`How to talk to them: ${communication}`)
+    if (goals?.length) lines.push(`Working towards: ${goals.join('; ')}.`)
+    if (life?.length) lines.push(`Worth remembering: ${life.join('; ')}.`)
+    if (quotes?.length) lines.push(`Things they said: ${quotes.map((q) => `"${q}"`).join(' ')}`)
+    lines.push(
+      'Use this. It is the difference between a message to a member and a message to a person.',
+      'At most one reference to their own life, dropped in as an aside rather than made the subject. Asking after the daughter by name once is warm; building the message around her is not.',
+      'Never quote the call back at them, and never say that Chris made notes on it.',
     )
   }
 

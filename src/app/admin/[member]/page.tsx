@@ -15,6 +15,7 @@ import {
   type AssessmentData,
 } from '@/components/admin/Assessments'
 import { MemberTabs } from '@/components/admin/MemberTabs'
+import { Conversations } from '@/components/admin/Conversations'
 import { AltEmail } from '@/components/admin/AltEmail'
 import { DraftMessage } from '@/components/admin/DraftMessage'
 
@@ -28,7 +29,8 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
   const detail = await getMemberDetail(id)
   if (!detail) notFound()
 
-  const { profile, weeksComplete, entries, totalWeeks, time, secondsSpent, arrivals } = detail
+  const { profile, weeksComplete, entries, totalWeeks, time, secondsSpent, arrivals, conversations } =
+    detail
   const name = profile.first_name ?? profile.email.split('@')[0]
   const assessment = (profile.assessment ?? {}) as AssessmentData
 
@@ -112,6 +114,14 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
               label: 'What they have written',
               note: entries.length ? String(entries.length) : undefined,
               panel: <Written entries={entries} />,
+            },
+            {
+              key: 'calls',
+              label: 'The 1:1s',
+              note: conversations.length ? String(conversations.length) : undefined,
+              panel: (
+                <Conversations memberId={profile.id} name={name} conversations={conversations} />
+              ),
             },
             {
               key: 'activity',
