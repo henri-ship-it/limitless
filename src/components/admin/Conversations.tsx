@@ -27,6 +27,7 @@ export function Conversations({
   const [working, setWorking] = useState(false)
   const [problem, setProblem] = useState('')
   const [adding, setAdding] = useState(false)
+  const [rereading, setRereading] = useState('')
 
   async function save() {
     setWorking(true)
@@ -57,6 +58,24 @@ export function Conversations({
     router.refresh()
   }
 
+  async function reread(id: string) {
+    setRereading(id)
+    setProblem('')
+    try {
+      const response = await fetch(`/api/admin/${memberId}/conversation?id=${id}`, {
+        method: 'PATCH',
+      })
+      if (!response.ok) {
+        const payload = await response.json()
+        setProblem(payload.error ?? 'That did not work.')
+        return
+      }
+      router.refresh()
+    } finally {
+      setRereading('')
+    }
+  }
+
   return (
     <div>
       {conversations.length === 0 && !adding ? (
@@ -72,8 +91,16 @@ export function Conversations({
             <span className="pill !text-ink">{formatDay(conversation.happened_on)}</span>
             <button
               type="button"
+              onClick={() => reread(conversation.id)}
+              disabled={rereading === conversation.id}
+              className="label !text-ink-40 ml-auto hover:!text-ink disabled:opacity-50"
+            >
+              {rereading === conversation.id ? 'Reading it again' : 'Read it again'}
+            </button>
+            <button
+              type="button"
               onClick={() => remove(conversation.id)}
-              className="label !text-ink-40 ml-auto hover:!text-ink"
+              className="label !text-ink-40 hover:!text-ink"
             >
               Remove
             </button>
@@ -86,6 +113,8 @@ export function Conversations({
               This one was saved but could not be read into notes. The transcript is below.
             </p>
           )}
+
+          {problem ? <p className="mt-4 !mb-0 text-[0.875rem] text-ink">{problem}</p> : null}
 
           <details className="mt-5">
             <summary className="label cursor-pointer hover:!text-ink">The whole transcript</summary>

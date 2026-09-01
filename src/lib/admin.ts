@@ -5,6 +5,7 @@ import { getMember } from './member'
 import { currentWeek } from './cohort'
 import { weeks, type Tier } from '@/content/programme'
 import { journalEntries } from '@/content/journal'
+import type { ConversationNotes } from './distil'
 
 export { since, readable } from './format'
 
@@ -151,18 +152,12 @@ function latest(a: string | null, b: string | null): string | null {
 
 /** One member, with everything they have written. */
 /**
- * What was learned from talking to somebody, distilled once and kept.
+ * What was learned from talking to somebody, read once and kept.
  *
- * `notes` is null until the transcript has been read, so every field here is
- * optional: a conversation that failed to distil is still worth having.
+ * `notes` is null when the reading failed, which does not lose anything: the
+ * transcript is still there and can be read again.
  */
-export type ConversationNotes = {
-  motivation?: string
-  communication?: string
-  goals?: string[]
-  life?: string[]
-  quotes?: string[]
-}
+export type { ConversationNotes } from './distil'
 
 export type Conversation = {
   id: string
