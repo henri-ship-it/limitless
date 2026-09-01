@@ -17,6 +17,11 @@ const PUBLIC_PATHS = [
   '/offline.html',
   '/privacy',
   '/terms',
+  /*
+   * Vercel's scheduler arrives with no session at all. The route checks its
+   * own secret; being sent to the sign-in page would just make it a no-op.
+   */
+  '/api/cron/',
   // Webhooks carry a shared secret rather than a member session.
   '/api/webhooks',
 ]
