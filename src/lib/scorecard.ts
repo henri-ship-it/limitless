@@ -11,7 +11,11 @@ import { createClient } from '@supabase/supabase-js'
  * they are completed rather than on a poll.
  *
  * Two slots, one per scorecard, so the behavioural style and the survey sit
- * side by side on a profile rather than overwriting each other. The Core and
+ * side by side on a profile rather than overwriting each other. A third key,
+ * `blueprint`, is written into the same column by the blueprint generator: the
+ * merge below is key by key, so it survives every write made here. Keep it that
+ * way — replacing `assessment` wholesale would silently drop somebody's
+ * blueprint. The Core and
  * Pro pre-assessments are separate scorecards in ScoreApp but the same slot
  * here: the tier is already known from the member's own record.
  */

@@ -2,9 +2,16 @@
  * The Limitless Pro Blueprint.
  *
  * Written from somebody's pre-assessment and their welcome call, then
- * published to `profiles.blueprint` by the generator in
- * ~/Downloads/limitless-blueprints. The shape here is the contract between
- * the two: change it and change `publish.py` in the same breath.
+ * published by the generator in ~/Downloads/limitless-blueprints. The shape
+ * here is the contract between the two: change it and change `publish.py` in
+ * the same breath.
+ *
+ * It is filed under `assessment.blueprint` rather than in a column of its own.
+ * A column would say more clearly that this is written rather than received,
+ * but adding one needs DDL and the only hand that can run DDL here is somebody
+ * in the SQL editor. `assessment` is already there, and the scorecard webhook
+ * merges into it key by key, so a blueprint sitting alongside the two scorecard
+ * slots survives every write the webhook makes. See the note in lib/scorecard.
  *
  * The print version is deliberately tighter than this, because A4 is a fixed
  * budget and the generator refuses copy that would overflow it. Nothing here
@@ -53,9 +60,21 @@ export type Blueprint = {
   issuedAt?: string
 }
 
-/** Where the print version sits in the private `member-files` bucket. */
+/** The slot inside `profiles.assessment` that a blueprint is filed under. */
+export const BLUEPRINT_SLOT = 'blueprint'
+
+/**
+ * The print version's home: a bucket of its own, with no select policy on it.
+ *
+ * member-files lets any signed-in member read the whole bucket, which was right
+ * while everything in it was the same journal PDF. A blueprint is per-member,
+ * so it lives somewhere no member token can read at all, and the only way in is
+ * a signed URL minted by /blueprint/download from the caller's own session.
+ */
+export const BLUEPRINT_BUCKET = 'member-blueprints'
+
 export function blueprintPdfPath(memberId: string) {
-  return `blueprints/${memberId}.pdf`
+  return `${memberId}.pdf`
 }
 
 /**

@@ -6,7 +6,12 @@ import { getMember } from '@/lib/member'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseConfigured } from '@/lib/env'
 import { SUPPORT_EMAIL } from '@/content/assets'
-import { isBlueprint, PREVIEW_BLUEPRINT, type Blueprint } from '@/content/blueprint'
+import {
+  BLUEPRINT_SLOT,
+  isBlueprint,
+  PREVIEW_BLUEPRINT,
+  type Blueprint,
+} from '@/content/blueprint'
 import { STYLES } from '@/content/know-thyself'
 
 export const metadata = { title: 'Your blueprint · Limitless' }
@@ -163,18 +168,22 @@ async function readBlueprint(
   const supabase = await createClient()
   const { data } = await supabase
     .from('profiles')
-    .select('blueprint, assessment')
+    .select('assessment')
     .eq('id', memberId)
     .single()
 
   /*
-   * The style scores are read from the profile rather than copied onto the
-   * blueprint. They are already there, filed by the scorecard webhook, and
-   * reading them here means a retaken scorecard shows without republishing.
+   * Both halves come out of the same column. The style scores are the
+   * scorecard's own, so a retaken scorecard shows here without the blueprint
+   * being republished.
    */
-  const assessment = data?.assessment as { scorecard?: { scores?: Record<string, number> } } | null
+  const assessment = data?.assessment as {
+    scorecard?: { scores?: Record<string, number> }
+    blueprint?: unknown
+  } | null
+  const held = assessment?.[BLUEPRINT_SLOT]
   return {
-    blueprint: isBlueprint(data?.blueprint) ? data.blueprint : null,
+    blueprint: isBlueprint(held) ? held : null,
     scores: assessment?.scorecard?.scores ?? {},
   }
 }
