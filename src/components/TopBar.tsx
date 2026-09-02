@@ -80,6 +80,16 @@ export function TopBar({
                 <Link href="/journal" onClick={() => setOpen(false)} className="label hover:!text-ink">
                   Journal
                 </Link>
+                {/* Pro only, exactly as in the sidebar: Core never sees it. */}
+                {tier === 'pro' ? (
+                  <Link
+                    href="/blueprint"
+                    onClick={() => setOpen(false)}
+                    className="label hover:!text-ink"
+                  >
+                    Blueprint
+                  </Link>
+                ) : null}
                 {isAdmin ? (
                   <Link
                     href="/admin"
