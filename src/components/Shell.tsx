@@ -1,4 +1,5 @@
 import { getMember, getProgress } from '@/lib/member'
+import { supabaseConfigured } from '@/lib/env'
 import { currentWeek, unlockedThrough } from '@/lib/cohort'
 import { TopBar } from './TopBar'
 import { Sidebar } from './Sidebar'
@@ -24,7 +25,8 @@ export async function Shell({
 
   return (
     <div className="min-h-screen bg-bg">
-      {member ? <TimeOnPage /> : null}
+      {/* Preview mode has a stub member but no client to report to. */}
+      {member && supabaseConfigured ? <TimeOnPage /> : null}
       <TopBar
         tier={tier}
         isAdmin={member?.isAdmin ?? false}

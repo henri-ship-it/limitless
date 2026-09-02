@@ -11,6 +11,7 @@ import {
   LockIcon,
   NowIndicator,
   ProIcon,
+  BlueprintIcon,
   TickIcon,
 } from './icons'
 
@@ -45,7 +46,15 @@ export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro, isAdm
             active={pathname.startsWith('/journal')}
           />
           {isPro ? (
-            <TopLink href="/pro" label="Pro" icon={<ProIcon />} active={pathname === '/pro'} />
+            <>
+              <TopLink href="/pro" label="Pro" icon={<ProIcon />} active={pathname === '/pro'} />
+              <TopLink
+                href="/blueprint"
+                label="Blueprint"
+                icon={<BlueprintIcon />}
+                active={pathname === '/blueprint'}
+              />
+            </>
           ) : null}
           {isAdmin ? (
             <TopLink

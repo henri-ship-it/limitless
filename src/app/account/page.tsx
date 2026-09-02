@@ -14,12 +14,16 @@ import { COHORT } from '@/content/programme'
 
 export const metadata = { title: 'Your account · Limitless' }
 
-const TOC = [
-  { id: 'membership', label: 'Membership' },
-  { id: 'messages', label: 'Messages' },
-  { id: 'entries', label: 'Your entries' },
-  { id: 'support', label: 'Support' },
-]
+/** Blueprint is Pro only, so the rail is built per member rather than fixed. */
+function tocFor(tier: string) {
+  return [
+    { id: 'membership', label: 'Membership' },
+    ...(tier === 'pro' ? [{ id: 'blueprint', label: 'Blueprint' }] : []),
+    { id: 'messages', label: 'Messages' },
+    { id: 'entries', label: 'Your entries' },
+    { id: 'support', label: 'Support' },
+  ]
+}
 
 export default async function AccountPage() {
   const member = await getMember()
@@ -36,7 +40,7 @@ export default async function AccountPage() {
   }
 
   return (
-    <Shell toc={TOC}>
+    <Shell toc={tocFor(member.tier)}>
       <PageHeader
         eyebrow="Your account"
         title={member.firstName ?? 'Your account'}
@@ -63,6 +67,19 @@ export default async function AccountPage() {
           </p>
         ) : null}
       </Section>
+
+      {member.tier === 'pro' ? (
+        <Section id="blueprint" label="Blueprint">
+          <p>
+            Your blueprint is the read Chris writes from your pre-assessment and your welcome
+            call: the territory you are crossing, where you tend to get stuck, and what the four
+            stages are for in your case.
+          </p>
+          <p className="!mb-0">
+            <Link href="/blueprint">Read your blueprint</Link>
+          </p>
+        </Section>
+      ) : null}
 
       <Section id="messages" label="Messages">
         <p>

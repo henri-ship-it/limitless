@@ -105,6 +105,16 @@ export function ProIcon({ className = '' }: NavIcon) {
   )
 }
 
+/** Blueprint. A folded map, because it is a read on where you are. */
+export function BlueprintIcon({ className = '' }: NavIcon) {
+  return (
+    <svg {...nav} className={`h-4 w-4 ${className}`} aria-hidden>
+      <path d="M1.9 3.9L5.6 2.4l4.8 1.7 3.7-1.5v9.9l-3.7 1.5-4.8-1.7-3.7 1.5z" />
+      <path d="M5.6 2.4v9.9M10.4 4.1V14" />
+    </svg>
+  )
+}
+
 /** Admin. Two people, since the view is the cohort. */
 export function AdminIcon({ className = '' }: NavIcon) {
   return (
