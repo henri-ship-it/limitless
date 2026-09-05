@@ -242,7 +242,15 @@ export function StyleRadar({
                     >
                       {Math.round(score)}
                     </span>
-                    {yours ? <span className="pill !text-accent-ink shrink-0">Yours</span> : null}
+                    {/*
+                      * Always present, so every bar is drawn on a track of the
+                      * same width. Rendered only on the rows that need it, the
+                      * marked row lost the pill's width from its own track and
+                      * a sixty-seven came out no longer than a fifty.
+                      */}
+                    <span className="w-14 shrink-0 text-right">
+                      {yours ? <span className="pill !text-accent-ink">Yours</span> : null}
+                    </span>
                   </button>
                 </li>
               )
