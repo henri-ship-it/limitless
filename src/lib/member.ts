@@ -110,3 +110,43 @@ export const getJournalEntry = cache(async (memberId: string, entry: number) => 
 
   return (data?.data ?? null) as Record<string, unknown> | null
 })
+
+/**
+ * The member's own Know Thyself scores.
+ *
+ * Kept apart from getMember rather than folded into it. Almost no page needs
+ * these, and getMember runs on every request, so the read belongs with the two
+ * pages that draw the four styles rather than on the whole platform's critical
+ * path.
+ */
+export const getMyScores = cache(async (): Promise<Record<string, number>> => {
+  if (!supabaseConfigured) {
+    return { Dynamo: 78, Energiser: 71, Caretaker: 64, Analyst: 55 }
+  }
+
+  const supabase = await createClient()
+  const { data: claims } = await supabase.auth.getClaims()
+  const id = claims?.claims?.sub as string | undefined
+  if (!id) return {}
+
+  const { data } = await supabase.from('profiles').select('assessment').eq('id', id).single()
+  const assessment = (data?.assessment ?? {}) as {
+    scorecard?: { scores?: Record<string, number> }
+  }
+  return assessment.scorecard?.scores ?? {}
+})
+
+/**
+ * Days in a row, counting back from today.
+ *
+ * Zero covers both "not been in for a while" and "the table cannot be read",
+ * which is right: a streak is an encouragement, and one that cannot be counted
+ * is better shown as nothing than as an error.
+ */
+export const getStreak = cache(async (): Promise<number> => {
+  if (!supabaseConfigured) return 0
+
+  const supabase = await createClient()
+  const { data } = await supabase.rpc('my_streak')
+  return typeof data === 'number' ? data : 0
+})

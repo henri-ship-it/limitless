@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
 import { getMemberDetail, readable, requireAdmin, since } from '@/lib/admin'
 import { resolveEntry } from '@/lib/entry'
+import { whatsappHref } from '@/lib/whatsapp'
 import { getWeek } from '@/content/programme'
 import { HUDDLE_QUESTIONS } from '@/content/entry-fields'
 import { SITE } from '@/content/site'
@@ -16,6 +17,7 @@ import {
 } from '@/components/admin/Assessments'
 import { MemberTabs } from '@/components/admin/MemberTabs'
 import { Conversations } from '@/components/admin/Conversations'
+import { EntryList } from '@/components/admin/EntryList'
 import { AltEmail } from '@/components/admin/AltEmail'
 import { DraftMessage } from '@/components/admin/DraftMessage'
 
@@ -66,7 +68,7 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
           </a>
           {profile.phone ? (
             <a
-              href={`https://wa.me/${profile.phone.replace(/[^0-9]/g, '')}`}
+              href={whatsappHref({ phone: profile.phone })}
               target="_blank"
               rel="noreferrer"
               className="label !no-underline border border-line px-4 py-2.5 hover:border-ink hover:!text-ink"
@@ -143,7 +145,13 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
 
 type Detail = NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>
 
-/** Everything they have put in the digital journal, newest week last. */
+/**
+ * Everything they have put in the digital journal, newest first.
+ *
+ * The answers are rendered here rather than in the list, so the one place that
+ * knows how to read an entry stays on the server and the list only has to know
+ * how to open and shut.
+ */
 function Written({ entries }: { entries: Detail['entries'] }) {
   if (!entries.length) {
     return (
@@ -154,27 +162,20 @@ function Written({ entries }: { entries: Detail['entries'] }) {
     )
   }
 
-  return (
-    <div className="space-y-8">
-      {entries.map((row) => {
-        const entry = resolveEntry(row.n)
-        const week = getWeek(row.week)
-        return (
-          <div key={row.n} className="border-t border-line pt-5">
-            <div className="mb-3 flex flex-wrap items-center gap-2">
-              <span className="pill">Entry {row.n}</span>
-              {week ? <span className="pill">Week {row.week}</span> : null}
-              <span className="label ml-auto">{since(row.updatedAt)}</span>
-            </div>
-            <p className="!mb-3 text-[1rem] font-medium text-ink">
-              {entry?.title ?? `Entry ${row.n}`}
-            </p>
-            <Answers entry={entry} data={row.data as EntryData} />
-          </div>
-        )
-      })}
-    </div>
-  )
+  const items = [...entries]
+    .sort((a, b) => b.n - a.n)
+    .map((row) => {
+      const entry = resolveEntry(row.n)
+      return {
+        n: row.n,
+        week: getWeek(row.week) ? row.week : 0,
+        title: entry?.title ?? `Entry ${row.n}`,
+        when: since(row.updatedAt),
+        body: <Answers entry={entry} data={row.data as EntryData} />,
+      }
+    })
+
+  return <EntryList items={items} />
 }
 
 /** Where they came from and where the time went. */

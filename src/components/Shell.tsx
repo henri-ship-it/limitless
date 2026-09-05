@@ -1,4 +1,4 @@
-import { getMember, getProgress } from '@/lib/member'
+import { getMember, getProgress, getStreak } from '@/lib/member'
 import { supabaseConfigured } from '@/lib/env'
 import { currentWeek, unlockedThrough } from '@/lib/cohort'
 import { TopBar } from './TopBar'
@@ -19,6 +19,7 @@ export async function Shell({
     ? await getProgress(member.id)
     : { completedWeeks: new Set<number>(), completedItems: new Set<string>() }
   const tier = member?.tier ?? 'core'
+  const streak = member ? await getStreak() : 0
   const active = currentWeek()
   const openThrough = unlockedThrough()
   const completed = [...progress.completedWeeks]
@@ -33,6 +34,7 @@ export async function Shell({
         currentWeek={active}
         openThrough={openThrough}
         completedWeeks={completed}
+        streak={streak}
       />
 
       <div className="mx-auto flex max-w-[var(--container)] items-stretch">

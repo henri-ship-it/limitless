@@ -12,7 +12,8 @@ import {
   PREVIEW_BLUEPRINT,
   type Blueprint,
 } from '@/content/blueprint'
-import { STYLES } from '@/content/know-thyself'
+import { leadStyle, STYLES } from '@/content/know-thyself'
+import { StyleGuide } from '@/components/StyleGuide'
 
 export const metadata = { title: 'Your blueprint · Limitless' }
 
@@ -25,11 +26,17 @@ const TOC = [
 
 export default async function BlueprintPage() {
   const member = await getMember()
-  // Core members get a 404 rather than a locked page, the same way /pro does.
-  // Nothing about the blueprint reaches their HTML.
-  if (member?.tier !== 'pro') notFound()
+  if (!member) notFound()
 
   const { blueprint, scores } = await readBlueprint(member.id)
+
+  /*
+   * Core gets the half of this that is theirs: their own scorecard and what
+   * the four styles mean. The blueprint itself is written from a welcome call
+   * they have not had, so none of it reaches their HTML.
+   */
+  if (member.tier !== 'pro') return <HowYoureWired scores={scores} />
+
   if (!blueprint) return <NotYet />
 
   const { territory, resistance, journey, integration } = blueprint
@@ -39,7 +46,7 @@ export default async function BlueprintPage() {
       <PageHeader
         eyebrow="Limitless Pro"
         title="Your blueprint"
-        lede="Written from your pre-assessment and your welcome call. It is a read on how you are wired to perform, and where the next twelve months will ask something different of you."
+        lede="Written from your pre-assessment and your welcome call. It is a read on how you are wired to perform, and where the programme will ask something different of you."
         pills={
           <>
             <span className="tier-tag" data-tier="pro">
@@ -254,6 +261,18 @@ function StyleBand({ scores }: { scores: Record<string, number> }) {
           </div>
         ))}
       </dl>
+
+      {/*
+        * The scores say where you sit. This says what sitting there costs, which
+        * is the part worth reading once rather than every time, so it is shut
+        * until asked for.
+        */}
+      <details className="mt-7">
+        <summary className="label cursor-pointer hover:!text-ink">
+          What each style involves
+        </summary>
+        <StyleGuide className="mt-5" scores={scores} lead={ranked[0]?.style.name} />
+      </details>
     </div>
   )
 }
@@ -316,5 +335,62 @@ function Arrow({ className = '' }: { className?: string }) {
     >
       <path d="M3.5 8.5 8.5 3.5M4.5 3.5h4v4" />
     </svg>
+  )
+}
+
+/**
+ * What Core gets in place of the blueprint: their own scorecard, and what the
+ * four styles actually mean.
+ *
+ * The blueprint proper is written out of a welcome call, so there is nothing
+ * honest to show somebody who has not had one. The scorecard is theirs either
+ * way, and on its own it is only four numbers, so the reading of the styles is
+ * the part that makes it worth a page.
+ */
+function HowYoureWired({ scores }: { scores: Record<string, number> }) {
+  const lead = leadStyle(scores)
+
+  return (
+    <Shell>
+      <PageHeader
+        eyebrow="Limitless Core"
+        title="How you&rsquo;re wired"
+        lede={
+          lead
+            ? `Your Know Thyself scorecard, and what each style means in practice. You lead with ${lead.name}.`
+            : 'Your Know Thyself scorecard, and what each style means in practice.'
+        }
+        pills={
+          <span className="tier-tag" data-tier="core">
+            core
+          </span>
+        }
+      />
+
+      {lead ? (
+        <>
+          <StyleBand scores={scores} />
+          <Section label="What this is for">
+            <p className="!mb-0">
+              None of these is better than the others, and nobody is only one of them. The useful
+              part is knowing which way you lean by default, so you can tell the difference between
+              a situation that suits you and one that is asking you to work against the grain.
+            </p>
+          </Section>
+        </>
+      ) : (
+        <Section label="Not here yet">
+          <p>
+            This fills in from your Know Thyself scorecard. If you have completed it and this still
+            looks empty, it may have been answered from a different email address. Email{' '}
+            <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> and it will be put right.
+          </p>
+          <div className="mt-8">
+            <p className="label !mb-5">The four styles</p>
+            <StyleGuide />
+          </div>
+        </Section>
+      )}
+    </Shell>
   )
 }

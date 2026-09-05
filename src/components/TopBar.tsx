@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { modules, weeks, type Tier } from '@/content/programme'
-import { ChevronIcon, LockIcon, NowIndicator, TickIcon } from './icons'
+import { AccountIcon, ChevronIcon, LockIcon, NowIndicator, TickIcon } from './icons'
 
 type Props = {
   /** The wordmark returns a member to whatever they were last working on. */
@@ -13,6 +13,8 @@ type Props = {
   openThrough: number
   isAdmin: boolean
   completedWeeks: number[]
+  /** Days in a row. Hidden at zero rather than shown as a nought. */
+  streak: number
 }
 
 export function TopBar({
@@ -21,6 +23,7 @@ export function TopBar({
   currentWeek,
   openThrough,
   completedWeeks,
+  streak,
 }: Props) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
@@ -80,16 +83,14 @@ export function TopBar({
                 <Link href="/journal" onClick={() => setOpen(false)} className="label hover:!text-ink">
                   Journal
                 </Link>
-                {/* Pro only, exactly as in the sidebar: Core never sees it. */}
-                {tier === 'pro' ? (
-                  <Link
-                    href="/blueprint"
-                    onClick={() => setOpen(false)}
-                    className="label hover:!text-ink"
-                  >
-                    Blueprint
-                  </Link>
-                ) : null}
+                {/* Named as in the sidebar: a blueprint for Pro, their scorecard for Core. */}
+                <Link
+                  href="/blueprint"
+                  onClick={() => setOpen(false)}
+                  className="label hover:!text-ink"
+                >
+                  {tier === 'pro' ? 'Blueprint' : "How you're wired"}
+                </Link>
                 {isAdmin ? (
                   <Link
                     href="/admin"
@@ -165,14 +166,33 @@ export function TopBar({
           ) : null}
         </div>
 
-        <div className="ml-auto flex items-center gap-4">
+        <div className="ml-auto flex items-center gap-2">
+          {/*
+            * Shown from the first day and not before. A nought is not a streak,
+            * and putting one in the corner of the screen tells somebody who has
+            * just joined that they are already behind.
+            */}
+          {streak > 0 ? (
+            <span
+              className="label hidden items-center gap-2 rounded-full border border-line bg-ink-3 px-3 py-1.5 sm:flex"
+              title={`You have been in ${streak} ${streak === 1 ? 'day' : 'days'} running`}
+            >
+              <TickIcon className="text-accent-ink" />
+              {streak} day{streak === 1 ? '' : 's'} running
+            </span>
+          ) : null}
           <Link
             href="/account"
-            className="tier-tag !no-underline"
-            data-tier={isAdmin ? 'admin' : tier}
+            /*
+             * A person rather than the word "admin", which read as a warning
+             * about where you were rather than a way to your own account.
+             */
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-line !text-ink-72 hover:border-line-strong hover:!text-ink"
             aria-label="Your account"
+            title="Your account"
+            data-tier={isAdmin ? 'admin' : tier}
           >
-            {isAdmin ? 'admin' : tier}
+            <AccountIcon />
           </Link>
         </div>
       </div>

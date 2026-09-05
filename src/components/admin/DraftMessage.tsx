@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { whatsappHref } from '@/lib/whatsapp'
 
 type Channel = 'whatsapp' | 'email'
 
@@ -69,7 +70,7 @@ export function DraftMessage({
 
   const sendHref =
     channel === 'whatsapp' && phone
-      ? `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(draft)}`
+      ? whatsappHref({ phone, text: draft })
       : `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 
   return (

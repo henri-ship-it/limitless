@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { modules, weeks } from '@/content/programme'
 import {
-  AccountIcon,
   AdminIcon,
   GuideIcon,
   JournalIcon,
@@ -46,16 +45,20 @@ export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro, isAdm
             active={pathname.startsWith('/journal')}
           />
           {isPro ? (
-            <>
-              <TopLink href="/pro" label="Pro" icon={<ProIcon />} active={pathname === '/pro'} />
-              <TopLink
-                href="/blueprint"
-                label="Blueprint"
-                icon={<BlueprintIcon />}
-                active={pathname === '/blueprint'}
-              />
-            </>
+            <TopLink href="/pro" label="Pro" icon={<ProIcon />} active={pathname === '/pro'} />
           ) : null}
+          {/*
+            * The same page for both tiers, and not the same thing. Pro reads a
+            * blueprint written out of their welcome call; Core reads their own
+            * scorecard and what the four styles mean. Naming it Blueprint for
+            * Core would promise something they have not been given.
+            */}
+          <TopLink
+            href="/blueprint"
+            label={isPro ? 'Blueprint' : "How you're wired"}
+            icon={<BlueprintIcon />}
+            active={pathname === '/blueprint'}
+          />
           {isAdmin ? (
             <TopLink
               href="/admin"
@@ -64,12 +67,6 @@ export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro, isAdm
               active={pathname.startsWith('/admin')}
             />
           ) : null}
-          <TopLink
-            href="/account"
-            label="Your account"
-            icon={<AccountIcon />}
-            active={pathname === '/account'}
-          />
         </ul>
 
         {modules.map((m) => (

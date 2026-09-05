@@ -8,19 +8,27 @@ import { ChapterVisual } from '@/components/ChapterVisual'
 import { VideoEmbed } from '@/components/VideoEmbed'
 import { DriveEmbed } from '@/components/DriveEmbed'
 import { DigestBody } from '@/components/DigestBody'
+import { StyleGuide } from '@/components/StyleGuide'
 import { MarkWeekDone } from '@/components/MarkWeekDone'
 import { LockIcon } from '@/components/icons'
 import type { TocItem } from '@/components/OnThisPage'
 import { getWeek, moduleForWeek, weeks, COHORT } from '@/content/programme'
 import { getDigest } from '@/content/digests'
+import { leadStyle } from '@/content/know-thyself'
 import { entriesForWeek } from '@/content/journal'
 import { workshopRecordings } from '@/content/assets'
-import { getMember, getProgress } from '@/lib/member'
+import { getMember, getMyScores, getProgress } from '@/lib/member'
 import { currentWeek, formatWeekRelease, formatWeekStart, isUnlocked } from '@/lib/cohort'
 
 export function generateStaticParams() {
   return weeks.map((w) => ({ week: String(w.number) }))
 }
+
+/*
+ * The chapter that teaches the behavioural styles, and the only one that
+ * prints the four cards under its digest.
+ */
+const STYLES_WEEK = 1
 
 export default async function WeekPage({ params }: { params: Promise<{ week: string }> }) {
   const { week: weekParam } = await params
@@ -65,6 +73,11 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
   }
 
   const digest = getDigest(n)
+  /*
+   * The four styles are printed with the Know Thyself chapter and nowhere else,
+   * so the scores are only read on the one week that draws them.
+   */
+  const scores = n === STYLES_WEEK ? await getMyScores() : {}
   const entries = entriesForWeek(n)
   const recording = workshopRecordings[n]
   const quote = digest?.quote
@@ -158,6 +171,15 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
               completedItems={[...progress.completedItems]}
             />
             <p className="label !mt-8">Chris</p>
+            {n === STYLES_WEEK ? (
+              <div className="!mt-10">
+                <p className="label !mb-1">The four styles</p>
+                <p className="!mb-5 text-[0.9375rem] !text-ink-56">
+                  Open one to see where it wins, what it hides, and what it costs at scale.
+                </p>
+                <StyleGuide scores={scores} lead={leadStyle(scores)?.name} />
+              </div>
+            ) : null}
           </>
         ) : (
           <p className="!text-ink-56">

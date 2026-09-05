@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { assets } from '@/content/assets'
+import { whatsappHref } from '@/lib/whatsapp'
 import { COHORT } from '@/content/programme'
 
 type Moment = 'open' | 'close'
@@ -125,7 +126,7 @@ export function GroupMessage({
           />
           <div className="mt-3 flex flex-wrap gap-3">
             <a
-              href={`https://wa.me/?text=${encodeURIComponent(draft)}`}
+              href={whatsappHref({ text: draft })}
               target="_blank"
               rel="noreferrer"
               className="label !text-white bg-ink px-4 py-2.5 !no-underline hover:bg-ink-72"
