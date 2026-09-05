@@ -206,7 +206,13 @@ export function StyleRadar({
             </p>
           ) : null}
 
-          <ul className="!mb-0 flex flex-col gap-1">
+          {/*
+            * The list markers and indent are turned off here rather than left
+            * to the page. This sits inside the digest's prose styling on one
+            * page and outside it on another, and a row that is a button with
+            * an icon has no use for a bullet in either.
+            */}
+          <ul className="!mb-0 !list-none !pl-0 flex flex-col gap-1">
             {(has ? ranked : scored).map(({ style, score }, i) => {
               /*
                 * Only ever the row somebody picked. Marking the lead as well
