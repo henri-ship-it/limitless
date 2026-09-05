@@ -174,11 +174,13 @@ export function TopBar({
             */}
           {streak > 0 ? (
             <span
-              className="label hidden items-center gap-2 rounded-full border border-line bg-ink-3 px-3 py-1.5 sm:flex"
+              className="label flex items-center gap-2 rounded-full border border-line bg-ink-3 px-3 py-1.5"
               title={`You have been in ${streak} ${streak === 1 ? 'day' : 'days'} running`}
             >
               <TickIcon className="text-accent-ink" />
-              {streak} day{streak === 1 ? '' : 's'} running
+              {streak} day{streak === 1 ? '' : 's'}
+              {/* Dropped on a narrow screen, where the top bar has no room for it. */}
+              <span className="hidden sm:inline">running</span>
             </span>
           ) : null}
           <Link
