@@ -56,8 +56,19 @@ export function StyleRadar({
   lead?: string
   className?: string
 }) {
-  const [active, setActive] = useState<string | null>(null)
-  const shown = STYLES.find((s) => s.name === (active ?? lead)) ?? STYLES[0]
+  /*
+   * Two states rather than one. Hovering is a look, clicking is a decision, and
+   * a look must not undo a decision: reading the panel means moving the pointer
+   * off whatever you clicked, and a single state sent it straight back to the
+   * lead the moment you did.
+   *
+   * So a hover shows on top of a pin, and letting go of the hover falls back to
+   * the pin rather than to the beginning.
+   */
+  const [pinned, setPinned] = useState<string | null>(null)
+  const [hovered, setHovered] = useState<string | null>(null)
+  const chosen = hovered ?? pinned
+  const shown = STYLES.find((s) => s.name === (chosen ?? lead)) ?? STYLES[0]
 
   const scored = STYLES.map((style) => ({
     style,
@@ -74,7 +85,7 @@ export function StyleRadar({
   }).join(' ')
 
   return (
-    <div className={className} onMouseLeave={() => setActive(null)}>
+    <div className={className} onMouseLeave={() => setHovered(null)}>
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,20rem)_1fr] lg:gap-12">
         <div className="relative mx-auto w-full max-w-[20rem]">
           <svg viewBox="0 0 344 344" className="w-full" role="img" aria-label="Your four scores">
@@ -151,9 +162,9 @@ export function StyleRadar({
               <button
                 key={style.key}
                 type="button"
-                onMouseEnter={() => setActive(style.name)}
-                onFocus={() => setActive(style.name)}
-                onClick={() => setActive(style.name)}
+                onMouseEnter={() => setHovered(style.name)}
+                onFocus={() => setHovered(style.name)}
+                onClick={() => setPinned(style.name)}
                 aria-pressed={on}
                 className={`pill absolute flex items-center gap-1.5 ${
                   on ? '!border-accent !bg-accent-soft !text-ink' : 'bg-surface hover:!text-ink'
@@ -197,15 +208,19 @@ export function StyleRadar({
 
           <ul className="!mb-0 flex flex-col gap-1">
             {(has ? ranked : scored).map(({ style, score }, i) => {
-              const on = style.name === shown.name
+              /*
+                * Only ever the row somebody picked. Marking the lead as well
+                * said the same thing twice, and the Yours pill says it better.
+                */
+              const on = style.name === chosen
               const yours = has && (i === 0 || (close && i === 1))
               return (
                 <li key={style.key}>
                   <button
                     type="button"
-                    onMouseEnter={() => setActive(style.name)}
-                    onFocus={() => setActive(style.name)}
-                    onClick={() => setActive(style.name)}
+                    onMouseEnter={() => setHovered(style.name)}
+                    onFocus={() => setHovered(style.name)}
+                    onClick={() => setPinned(style.name)}
                     aria-pressed={on}
                     className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left ${
                       on ? 'bg-ink-3' : 'hover:bg-ink-3'
@@ -281,7 +296,7 @@ export function StyleRadar({
         </dl>
 
         <p className="mt-5 !mb-0 text-[0.8125rem] !text-ink-40">
-          Hover a style, or tap one, to read another.
+          Hover a style to read it. Click one to keep it there.
         </p>
       </div>
     </div>
