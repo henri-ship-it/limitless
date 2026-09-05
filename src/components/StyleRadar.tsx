@@ -1,29 +1,33 @@
 'use client'
 
 import { useState } from 'react'
-import { STYLES, type Style } from '@/content/know-thyself'
+import { STYLES } from '@/content/know-thyself'
 
 /**
- * The four styles as the journal draws them.
+ * The four styles: the shape, and the order.
  *
- * Same figure as the printed page: four diagonal axes, rings every ten to a
- * hundred, Dynamo and Analyst on the right, Energiser and Caretaker on the
- * left. Somebody who has the journal open beside the screen should be looking
- * at one shape, not two.
+ * The figure is the one the journal prints, so somebody with the book open
+ * beside the screen is looking at the same thing twice. What it is not is a
+ * way of reading which style is theirs. Most people come out fairly even, and
+ * on a four point diagonal a seventeen point lead is about twenty pixels of
+ * radius: the outline reads as a slightly lopsided square, and the eye cannot
+ * rank four directions at once anyway.
  *
- * The scores are a shape rather than four numbers because the shape is the
- * point. A wide even pentagon and a long spike in one direction are different
- * people, and a list of four figures hides that.
+ * So the ranking is said in words and drawn as bars beside it, where the gaps
+ * are on one axis and legible, and the figure is left to do the thing it is
+ * good at: showing the overall spread, wide and even against long and spiked.
  *
- * Hovering a corner brings that style forward and tells you what it wins and
- * what it costs. Hover is not available on a phone, so a tap does the same
- * thing, and the reader's own style is what is showing before anybody touches
- * anything.
+ * Where the top two are within a few points, saying somebody leads with one of
+ * them would be inventing a difference that is not there, so it says that
+ * instead.
  */
 
 const R = 124
 const C = 172
 const RINGS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+
+/** Inside this, first and second are not meaningfully apart. */
+const TOO_CLOSE = 5
 
 /** Where each style sits, as a unit vector. SVG's y runs downwards. */
 const DIRECTION: Record<string, { x: number; y: number }> = {
@@ -60,6 +64,8 @@ export function StyleRadar({
     score: Number.isFinite(scores[style.name]) ? scores[style.name] : 0,
   }))
   const has = scored.some((row) => row.score > 0)
+  const ranked = [...scored].sort((a, b) => b.score - a.score)
+  const close = has && ranked[0].score - ranked[1].score <= TOO_CLOSE
 
   const outline = ORDER.map((key) => {
     const row = scored.find((r) => r.style.key === key)
@@ -68,9 +74,9 @@ export function StyleRadar({
   }).join(' ')
 
   return (
-    <div className={className}>
-      <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,22rem)_1fr] lg:gap-12">
-        <div className="relative mx-auto w-full max-w-[22rem]">
+    <div className={className} onMouseLeave={() => setActive(null)}>
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,20rem)_1fr] lg:gap-12">
+        <div className="relative mx-auto w-full max-w-[20rem]">
           <svg viewBox="0 0 344 344" className="w-full" role="img" aria-label="Your four scores">
             {RINGS.map((ring) => (
               <circle
@@ -118,9 +124,7 @@ export function StyleRadar({
               const on = style.name === shown.name
               return (
                 <g key={style.key}>
-                  {on ? (
-                    <circle cx={p.x} cy={p.y} r="11" fill="var(--color-accent-soft)" />
-                  ) : null}
+                  {on ? <circle cx={p.x} cy={p.y} r="11" fill="var(--color-accent-soft)" /> : null}
                   <circle
                     cx={p.x}
                     cy={p.y}
@@ -135,9 +139,10 @@ export function StyleRadar({
           </svg>
 
           {/*
-            * Set in HTML over the figure rather than as SVG text, so a corner
-            * is a real button: focusable, tappable, and the same pill used
-            * everywhere else on the platform.
+            * Anchored to the corners of the square rather than measured along
+            * the diagonal. The circle fills most of the box, so anything placed
+            * by angle lands on top of the outer rings; the corners are the only
+            * space the figure leaves free, and where the printed page puts them.
             */}
           {STYLES.map((style) => {
             const dir = DIRECTION[style.key]
@@ -150,13 +155,6 @@ export function StyleRadar({
                 onFocus={() => setActive(style.name)}
                 onClick={() => setActive(style.name)}
                 aria-pressed={on}
-                /*
-                  * Anchored to the corners of the square rather than measured
-                  * along the diagonal. The circle fills most of the box, so
-                  * anything placed by angle lands on top of the outer rings;
-                  * the corners are the only space the figure leaves free, and
-                  * they are where the printed page puts them.
-                  */
                 className={`pill absolute flex items-center gap-1.5 ${
                   on ? '!border-accent !bg-accent-soft !text-ink' : 'bg-surface hover:!text-ink'
                 }`}
@@ -173,39 +171,110 @@ export function StyleRadar({
                   className={`h-3.5 w-3.5 object-contain ${on ? '' : 'opacity-40'}`}
                 />
                 {style.name}
-                <span className={on ? '!text-ink' : '!text-ink-40'}>
-                  {Math.round(scores[style.name] ?? 0)}
-                </span>
               </button>
             )
           })}
         </div>
 
-        <div onMouseLeave={() => setActive(null)}>
-          <div className="!mb-4 flex items-center gap-3">
-            <img
-              src={shown.icon}
-              alt=""
-              width={36}
-              height={36}
-              className="h-9 w-9 shrink-0 object-contain"
-            />
-            <div>
-              <p className="!mb-0 text-[1.125rem] font-medium text-ink">The {shown.name}</p>
-              <p className="!mb-0 text-[0.9375rem] !text-ink-56">{shown.overview}</p>
-            </div>
-          </div>
+        <div>
+          {has ? (
+            <p className="!mb-5 text-[1.0625rem] leading-relaxed text-ink">
+              {close ? (
+                <>
+                  You sit almost level between the{' '}
+                  <strong className="font-medium">{ranked[0].style.name}</strong> and the{' '}
+                  <strong className="font-medium">{ranked[1].style.name}</strong>, so read both.
+                </>
+              ) : (
+                <>
+                  You lead with the{' '}
+                  <strong className="font-medium">{ranked[0].style.name}</strong>, ahead of the{' '}
+                  {ranked[1].style.name} by {Math.round(ranked[0].score - ranked[1].score)}.
+                </>
+              )}
+            </p>
+          ) : null}
 
-          <dl className="!mb-0 grid gap-4 sm:grid-cols-3 lg:grid-cols-1 lg:gap-3">
-            <Field label="Differentiator" text={shown.differentiator} />
-            <Field label="Blindspot" text={shown.blindspot} />
-            <Field label="Bottleneck" text={shown.bottleneck} />
-          </dl>
+          <ul className="!mb-0 flex flex-col gap-1">
+            {(has ? ranked : scored).map(({ style, score }, i) => {
+              const on = style.name === shown.name
+              const yours = has && (i === 0 || (close && i === 1))
+              return (
+                <li key={style.key}>
+                  <button
+                    type="button"
+                    onMouseEnter={() => setActive(style.name)}
+                    onFocus={() => setActive(style.name)}
+                    onClick={() => setActive(style.name)}
+                    aria-pressed={on}
+                    className={`flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left ${
+                      on ? 'bg-ink-3' : 'hover:bg-ink-3'
+                    }`}
+                  >
+                    <img
+                      src={style.icon}
+                      alt=""
+                      width={20}
+                      height={20}
+                      className={`h-5 w-5 shrink-0 object-contain ${on || yours ? '' : 'opacity-40'}`}
+                    />
+                    <span
+                      className={`w-24 shrink-0 text-[0.9375rem] ${on || yours ? 'font-medium text-ink' : 'text-ink-72'}`}
+                    >
+                      {style.name}
+                    </span>
 
-          <p className="mt-5 !mb-0 text-[0.8125rem] !text-ink-40">
-            Hover a corner, or tap one, to read another.
-          </p>
+                    {/*
+                      * The gaps on one axis, where four points apart is four
+                      * points apart rather than a barely tilted corner.
+                      */}
+                    <span className="h-1.5 min-w-0 flex-1 rounded-full bg-ink-8">
+                      <span
+                        className="block h-1.5 rounded-full bg-accent"
+                        style={{ width: `${Math.max(2, Math.min(100, score))}%` }}
+                      />
+                    </span>
+
+                    <span
+                      className={`w-8 shrink-0 text-right text-[1rem] tabular-nums ${
+                        yours ? 'font-medium text-ink' : 'text-ink-56'
+                      }`}
+                    >
+                      {Math.round(score)}
+                    </span>
+                    {yours ? <span className="pill !text-accent-ink shrink-0">Yours</span> : null}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
         </div>
+      </div>
+
+      <div className="mt-8 border-t border-line pt-6">
+        <div className="!mb-4 flex items-center gap-3">
+          <img
+            src={shown.icon}
+            alt=""
+            width={32}
+            height={32}
+            className="h-8 w-8 shrink-0 object-contain"
+          />
+          <div>
+            <p className="!mb-0 text-[1.0625rem] font-medium text-ink">The {shown.name}</p>
+            <p className="!mb-0 text-[0.9375rem] !text-ink-56">{shown.overview}</p>
+          </div>
+        </div>
+
+        <dl className="!mb-0 grid gap-4 sm:grid-cols-3">
+          <Field label="Differentiator" text={shown.differentiator} />
+          <Field label="Blindspot" text={shown.blindspot} />
+          <Field label="Bottleneck" text={shown.bottleneck} />
+        </dl>
+
+        <p className="mt-5 !mb-0 text-[0.8125rem] !text-ink-40">
+          Hover a style, or tap one, to read another.
+        </p>
       </div>
     </div>
   )
