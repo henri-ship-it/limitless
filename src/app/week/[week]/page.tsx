@@ -175,7 +175,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
               <div className="!mt-10">
                 <p className="label !mb-1">The four styles</p>
                 <p className="!mb-5 text-[0.9375rem] !text-ink-56">
-                  Open one to see where it wins, what it hides, and what it costs at scale.
+                  Where you came out, on the same figure the journal prints.
                 </p>
                 <StyleRadar scores={scores} lead={leadStyle(scores)?.name} />
               </div>
