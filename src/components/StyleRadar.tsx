@@ -21,7 +21,7 @@ import { STYLES, type Style } from '@/content/know-thyself'
  * anything.
  */
 
-const R = 132
+const R = 124
 const C = 172
 const RINGS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 
@@ -69,8 +69,8 @@ export function StyleRadar({
 
   return (
     <div className={className}>
-      <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,20rem)_1fr] lg:gap-12">
-        <div className="relative mx-auto w-full max-w-[20rem]">
+      <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,22rem)_1fr] lg:gap-12">
+        <div className="relative mx-auto w-full max-w-[22rem]">
           <svg viewBox="0 0 344 344" className="w-full" role="img" aria-label="Your four scores">
             {RINGS.map((ring) => (
               <circle
@@ -150,12 +150,19 @@ export function StyleRadar({
                 onFocus={() => setActive(style.name)}
                 onClick={() => setActive(style.name)}
                 aria-pressed={on}
-                className={`pill absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 ${
+                /*
+                  * Anchored to the corners of the square rather than measured
+                  * along the diagonal. The circle fills most of the box, so
+                  * anything placed by angle lands on top of the outer rings;
+                  * the corners are the only space the figure leaves free, and
+                  * they are where the printed page puts them.
+                  */
+                className={`pill absolute flex items-center gap-1.5 ${
                   on ? '!border-accent !bg-accent-soft !text-ink' : 'bg-surface hover:!text-ink'
                 }`}
                 style={{
-                  left: `${50 + dir.x * 46}%`,
-                  top: `${50 + dir.y * 46}%`,
+                  [dir.x < 0 ? 'left' : 'right']: 0,
+                  [dir.y < 0 ? 'top' : 'bottom']: 0,
                 }}
               >
                 <img
