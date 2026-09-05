@@ -294,7 +294,7 @@ export function PhotographEntry({
         {/* Taken. Said plainly, before anything starts working on it. */}
         {stage === 'captured' ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-accent-ink">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-accent">
               <svg
                 viewBox="0 0 24 24"
                 className="h-8 w-8"

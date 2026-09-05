@@ -145,3 +145,15 @@ export function CameraIcon({ className = '' }: NavIcon) {
     </svg>
   )
 }
+
+/**
+ * The streak. A flame, because that is what everybody expects a streak to be,
+ * and the one place on the platform that is not the brand green.
+ */
+export function FlameIcon({ className = '' }: NavIcon) {
+  return (
+    <svg viewBox="0 0 16 16" fill="currentColor" className={`h-3.5 w-3.5 ${className}`} aria-hidden>
+      <path d="M8.6 1.2c.2 1.9-.5 3-1.4 3.9-1 1-2.3 2-2.3 4.1a3.1 3.1 0 0 0 1.6 2.8c-.3-.5-.4-1-.3-1.5.2-1 1.1-1.6 1.6-2.4.3.9 1 1.3 1.5 2 .4.6.5 1.3.2 2a3.4 3.4 0 0 0 1.9-3c0-1.3-.6-2.3-1.2-3.1.1.5 0 1-.3 1.3-.2-1.7-.6-3.4-1.3-4.6a7 7 0 0 0-.5-.8 5 5 0 0 0-.6-.7z" />
+    </svg>
+  )
+}

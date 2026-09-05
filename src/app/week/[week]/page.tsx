@@ -8,7 +8,7 @@ import { ChapterVisual } from '@/components/ChapterVisual'
 import { VideoEmbed } from '@/components/VideoEmbed'
 import { DriveEmbed } from '@/components/DriveEmbed'
 import { DigestBody } from '@/components/DigestBody'
-import { StyleGuide } from '@/components/StyleGuide'
+import { StyleRadar } from '@/components/StyleRadar'
 import { MarkWeekDone } from '@/components/MarkWeekDone'
 import { LockIcon } from '@/components/icons'
 import type { TocItem } from '@/components/OnThisPage'
@@ -177,7 +177,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
                 <p className="!mb-5 text-[0.9375rem] !text-ink-56">
                   Open one to see where it wins, what it hides, and what it costs at scale.
                 </p>
-                <StyleGuide scores={scores} lead={leadStyle(scores)?.name} />
+                <StyleRadar scores={scores} lead={leadStyle(scores)?.name} />
               </div>
             ) : null}
           </>

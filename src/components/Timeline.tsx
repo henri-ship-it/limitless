@@ -39,7 +39,7 @@ export function Timeline({
 
       <div className="mb-8 h-1 w-full bg-ink-8">
         <div
-          className="h-full bg-accent-ink transition-[width] duration-500"
+          className="h-full bg-accent transition-[width] duration-500"
           style={{ width: `${percent}%` }}
         />
       </div>
@@ -114,7 +114,7 @@ function Marker({
 }) {
   const tone =
     state === 'done'
-      ? 'border-accent-ink bg-accent-soft text-accent-ink'
+      ? 'border-accent bg-accent-soft text-accent-ink'
       : state === 'now'
         ? 'border-ink bg-ink text-white'
         : state === 'locked'

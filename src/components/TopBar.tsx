@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { modules, weeks, type Tier } from '@/content/programme'
-import { AccountIcon, ChevronIcon, LockIcon, NowIndicator, TickIcon } from './icons'
+import { AccountIcon, ChevronIcon, FlameIcon, LockIcon, NowIndicator, TickIcon } from './icons'
 
 type Props = {
   /** The wordmark returns a member to whatever they were last working on. */
@@ -174,13 +174,18 @@ export function TopBar({
             */}
           {streak > 0 ? (
             <span
-              className="label flex items-center gap-2 rounded-full border border-line bg-ink-3 px-3 py-1.5"
-              title={`You have been in ${streak} ${streak === 1 ? 'day' : 'days'} running`}
+              className="label flex items-center gap-1.5 rounded-full border px-3 py-1.5"
+              style={{
+                borderColor: 'var(--color-flame)',
+                background: 'var(--color-flame-soft)',
+                color: 'var(--color-flame)',
+              }}
+              title={`${streak} ${streak === 1 ? 'day' : 'days'} in a row`}
             >
-              <TickIcon className="text-accent-ink" />
+              <FlameIcon />
               {streak} day{streak === 1 ? '' : 's'}
               {/* Dropped on a narrow screen, where the top bar has no room for it. */}
-              <span className="hidden sm:inline">running</span>
+              <span className="hidden sm:inline">streak</span>
             </span>
           ) : null}
           <Link

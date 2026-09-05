@@ -113,7 +113,7 @@ export function CohortTable({ members }: { members: MemberRow[] }) {
               aria-pressed={tier === option}
               className={`pill ${
                 tier === option
-                  ? '!border-accent-ink !bg-accent-soft !text-ink'
+                  ? '!border-accent !bg-accent-soft !text-ink'
                   : 'hover:!border-line-strong hover:!text-ink'
               }`}
             >

@@ -85,7 +85,7 @@ export function DraftMessage({
             aria-pressed={channel === option}
             className={`pill disabled:cursor-not-allowed disabled:opacity-40 ${
               channel === option
-                ? '!border-accent-ink !bg-accent-soft !text-ink'
+                ? '!border-accent !bg-accent-soft !text-ink'
                 : 'hover:!border-line-strong hover:!text-ink'
             }`}
           >

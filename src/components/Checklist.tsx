@@ -60,7 +60,7 @@ export function Checklist({
                 aria-hidden
                 className={`flex h-5 w-5 items-center justify-center rounded-full border ${
                   checked
-                    ? 'border-accent-ink bg-accent-ink text-white'
+                    ? 'border-accent bg-accent text-ink'
                     : 'border-line-strong bg-surface text-transparent hover:border-ink'
                 }`}
               >

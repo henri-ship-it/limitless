@@ -40,7 +40,7 @@ export function EntryList({ items }: { items: EntryItem[] }) {
             aria-pressed={oldestFirst === option.key}
             className={`pill ${
               oldestFirst === option.key
-                ? '!border-accent-ink !bg-accent-soft !text-ink'
+                ? '!border-accent !bg-accent-soft !text-ink'
                 : 'hover:!border-line-strong hover:!text-ink'
             }`}
           >

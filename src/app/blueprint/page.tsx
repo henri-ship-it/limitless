@@ -12,8 +12,8 @@ import {
   PREVIEW_BLUEPRINT,
   type Blueprint,
 } from '@/content/blueprint'
-import { leadStyle, STYLES } from '@/content/know-thyself'
-import { StyleGuide } from '@/components/StyleGuide'
+import { leadStyle } from '@/content/know-thyself'
+import { StyleRadar } from '@/components/StyleRadar'
 
 export const metadata = { title: 'Your blueprint · Limitless' }
 
@@ -228,51 +228,13 @@ function NotYet() {
  * entirely for anybody who has not taken the scorecard.
  */
 function StyleBand({ scores }: { scores: Record<string, number> }) {
-  const ranked = STYLES.map((style) => ({ style, score: scores[style.name] }))
-    .filter((row): row is { style: (typeof STYLES)[number]; score: number } =>
-      Number.isFinite(row.score),
-    )
-    .sort((a, b) => b.score - a.score)
-
-  if (!ranked.length) return null
+  const lead = leadStyle(scores)
+  if (!lead) return null
 
   return (
     <div className="border-b border-line px-6 py-8 sm:px-10">
-      <p className="label mb-5">How you&rsquo;re wired</p>
-      <dl className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
-        {ranked.map(({ style, score }, i) => (
-          <div key={style.key} className="flex items-center gap-3">
-            <img
-              src={style.icon}
-              alt=""
-              width={32}
-              height={32}
-              className={`h-8 w-8 shrink-0 object-contain ${i ? 'opacity-30' : ''}`}
-            />
-            <div>
-              <dd
-                className={`text-[1.375rem] leading-none font-medium ${i ? 'text-ink' : ''}`}
-                style={i ? undefined : { color: 'var(--color-accent-ink)' }}
-              >
-                {Math.round(score)}
-              </dd>
-              <dt className="label mt-1">{style.name}</dt>
-            </div>
-          </div>
-        ))}
-      </dl>
-
-      {/*
-        * The scores say where you sit. This says what sitting there costs, which
-        * is the part worth reading once rather than every time, so it is shut
-        * until asked for.
-        */}
-      <details className="mt-7">
-        <summary className="label cursor-pointer hover:!text-ink">
-          What each style involves
-        </summary>
-        <StyleGuide className="mt-5" scores={scores} lead={ranked[0]?.style.name} />
-      </details>
+      <p className="label mb-6">How you&rsquo;re wired</p>
+      <StyleRadar scores={scores} lead={lead.name} />
     </div>
   )
 }
@@ -387,7 +349,7 @@ function HowYoureWired({ scores }: { scores: Record<string, number> }) {
           </p>
           <div className="mt-8">
             <p className="label !mb-5">The four styles</p>
-            <StyleGuide />
+            <StyleRadar scores={{}} />
           </div>
         </Section>
       )}

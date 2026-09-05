@@ -87,7 +87,7 @@ export function GroupMessage({
             aria-pressed={moment === option.key}
             className={`pill ${
               moment === option.key
-                ? '!border-accent-ink !bg-accent-soft !text-ink'
+                ? '!border-accent !bg-accent-soft !text-ink'
                 : 'hover:!border-line-strong hover:!text-ink'
             }`}
           >

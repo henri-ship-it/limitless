@@ -193,13 +193,13 @@ export function ScheduleGrid({ blocks, onChange }: Props) {
         {draft ? (
           <Block
             block={draft}
-            className="border-accent-ink/40 bg-accent-soft"
+            className="border-accent/60 bg-accent-soft"
             style={{ pointerEvents: 'none' }}
           />
         ) : null}
 
         {sorted.map((block, i) => (
-          <Block key={`${block.start}-${i}`} block={block} className="border-accent-ink bg-accent-soft">
+          <Block key={`${block.start}-${i}`} block={block} className="border-accent bg-accent-soft">
             <input
               ref={focusOn === block.start ? justCreated : null}
               value={block.label}

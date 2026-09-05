@@ -32,11 +32,24 @@
   --color-line: #ededed;
   --color-line-strong: #e0e0e0;
 
-  /* The only colour in the system. Live week indicator and completed ticks. */
+  /*
+   * The brand green, and the only colour in the system besides the streak.
+   * Used at full strength wherever it has something to sit on: a pale pill, a
+   * filled control, a line or a shape.
+   */
   --color-accent: #04dfbf;
   --color-accent-soft: #04dfbf1f;
-  /* Ticks need to hold up on white, where the accent alone is too light. */
+  /*
+   * The same green, darkened for the one case it cannot handle: small text
+   * directly on white, where the brand alone comes in under three to one and
+   * stops being readable. Anywhere a pale pill can be put behind it instead,
+   * that is the better answer and the brand goes back to full strength.
+   */
   --color-accent-ink: #04a68e;
+
+  /* The streak, and nothing else. */
+  --color-flame: #ff0000;
+  --color-flame-soft: #ff00000f;
 
   --font-sans: var(--font-geist-sans), -apple-system, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', Menlo, monospace;
@@ -93,7 +106,7 @@ body {
 
 .tier-tag[data-tier='pro'] {
   background: var(--color-accent-soft);
-  border-color: var(--color-accent-ink);
+  border-color: var(--color-accent);
   color: var(--color-accent-ink);
 }
 

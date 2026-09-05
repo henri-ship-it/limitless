@@ -413,7 +413,7 @@ function Line({
       aria-hidden
       className={`flex h-[1.125rem] w-[1.125rem] shrink-0 items-center justify-center rounded-[3px] border ${
         tick.checked
-          ? 'border-accent-ink bg-accent-ink text-white'
+          ? 'border-accent bg-accent text-ink'
           : 'border-line-strong bg-surface text-transparent'
       }`}
     >
@@ -474,7 +474,7 @@ function ValuePicker({
               aria-pressed={on}
               className={`pill !normal-case transition-colors ${
                 on
-                  ? '!border-accent-ink !bg-accent-soft !text-ink'
+                  ? '!border-accent !bg-accent-soft !text-ink'
                   : 'hover:!border-line-strong hover:!text-ink'
               }`}
             >

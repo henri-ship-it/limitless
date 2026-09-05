@@ -187,7 +187,7 @@ export function Dictate({ onText, label }: { onText: (text: string) => void; lab
                 <span
                   key={i}
                   className={`flex-1 rounded-full transition-[height] duration-100 ${
-                    live ? 'bg-accent-ink' : 'bg-ink-20'
+                    live ? 'bg-accent' : 'bg-ink-20'
                   }`}
                   style={{ height: `${Math.max(8, level * 100)}%` }}
                 />
