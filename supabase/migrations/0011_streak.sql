@@ -50,6 +50,9 @@ $$;
  * backwards from the anchor, a day is part of that run exactly while it equals
  * the anchor minus its own position; once a gap is crossed every later day
  * falls further behind and no later day can match again.
+ *
+ * The cast on that position is not decoration. row_number() is a bigint, and
+ * Postgres has no date minus bigint, so without it the function will not build.
  */
 create or replace function my_streak()
   returns int
@@ -74,7 +77,7 @@ as $$
       from mine, anchor
       where anchor.day is not null and mine.day <= anchor.day
     ) run, anchor
-    where run.day = anchor.day - (run.n - 1)
+    where run.day = anchor.day - (run.n - 1)::int
   ), 0);
 $$;
 
