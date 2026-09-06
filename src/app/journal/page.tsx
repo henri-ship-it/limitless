@@ -9,6 +9,7 @@ import { resolveEntry } from '@/lib/entry'
 import { JournalVisual } from '@/components/JournalVisual'
 import Link from 'next/link'
 import { currentWeek, isUnlocked } from '@/lib/cohort'
+import { getMember } from '@/lib/member'
 
 const TOC = modules.map((m) => ({
   id: `module-${m.number}`,
@@ -21,6 +22,7 @@ const TOC = modules.map((m) => ({
 
 export default async function JournalPage() {
   const active = currentWeek()
+  const isAdmin = (await getMember())?.isAdmin ?? false
 
   return (
     <Shell toc={TOC}>
@@ -65,7 +67,7 @@ export default async function JournalPage() {
           {m.weeks.map((n) => {
             const week = weeks.find((w) => w.number === n)!
             const entries = entriesForWeek(n)
-            const unlocked = isUnlocked(n)
+            const unlocked = isUnlocked(n, isAdmin)
 
             return (
               <section

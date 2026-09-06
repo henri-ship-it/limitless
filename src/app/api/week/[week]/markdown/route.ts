@@ -28,7 +28,7 @@ export async function GET(
 
   const member = await getMember()
   if (!member) return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
-  if (!isUnlocked(weekNumber)) {
+  if (!isUnlocked(weekNumber, member?.isAdmin ?? false)) {
     return NextResponse.json({ error: 'That week has not opened yet' }, { status: 403 })
   }
 

@@ -33,7 +33,7 @@ export default async function StartGuide() {
   const tier = member?.tier ?? 'core'
   const items = checklistFor(tier)
   const active = currentWeek()
-  const openThrough = unlockedThrough()
+  const openThrough = unlockedThrough(new Date(), member?.isAdmin ?? false)
 
   /*
    * Setting up matters for a day and never again. The list stays while there

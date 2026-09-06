@@ -49,10 +49,26 @@ export function currentWeek(now: Date = new Date()): number {
 }
 
 /**
- * How far through the programme a member can read. The same for both tiers:
- * the programme is released a week at a time, in step with the digests.
+ * How far ahead of release the people running the programme may read.
+ *
+ * One week, which is the week they are about to open. Chris cannot check a
+ * chapter on the Sunday afternoon it goes out if he first sees it at the same
+ * moment everybody else does, and the alternative was ungating a week by hand
+ * every Sunday. Further ahead than that is not offered on purpose: later
+ * chapters are still being written, and a preview of an unfinished one is
+ * worse than no preview.
  */
-export function unlockedThrough(now: Date = new Date()): number {
+const ADMIN_LOOKAHEAD = 1
+
+/**
+ * How far through the programme somebody can read. The same for both tiers:
+ * the programme is released a week at a time, in step with the digests.
+ *
+ * Admins get the next one as well. This is a read of what the caller is
+ * allowed to see rather than something the caller can ask for, so it is passed
+ * in from the session rather than guessed at here.
+ */
+export function unlockedThrough(now: Date = new Date(), isAdmin = false): number {
   if (unlockAllWeeks) return weeks.length
 
   /*
@@ -62,12 +78,13 @@ export function unlockedThrough(now: Date = new Date()): number {
    * opened anyway. Every week after this follows the schedule: 16:00 UK on the
    * day before it begins.
    */
-  return Math.max(1, currentWeek(now))
+  const open = Math.max(1, currentWeek(now))
+  return isAdmin ? Math.min(weeks.length, open + ADMIN_LOOKAHEAD) : open
 }
 
 /** Weeks ahead of release stay visible in the nav but locked. */
-export function isUnlocked(week: number, now: Date = new Date()): boolean {
-  return week <= unlockedThrough(now)
+export function isUnlocked(week: number, isAdmin = false, now: Date = new Date()): boolean {
+  return week <= unlockedThrough(now, isAdmin)
 }
 
 /** Monday that a given week begins. */

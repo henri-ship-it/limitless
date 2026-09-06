@@ -43,8 +43,9 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
     : { completedWeeks: new Set<number>(), completedItems: new Set<string>() }
 
   const tier = member?.tier ?? 'core'
+  const isAdmin = member?.isAdmin ?? false
 
-  if (!isUnlocked(n)) {
+  if (!isUnlocked(n, isAdmin)) {
     const open = currentWeek()
     return (
       <Shell>
@@ -82,7 +83,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
   const recording = workshopRecordings[n]
   const quote = digest?.quote
   const prev = n > 1 ? getWeek(n - 1) : undefined
-  const next = n < weeks.length && isUnlocked(n + 1) ? getWeek(n + 1) : undefined
+  const next = n < weeks.length && isUnlocked(n + 1, isAdmin) ? getWeek(n + 1) : undefined
 
   const toc: TocItem[] = [
     { id: 'overview', label: 'Overview' },

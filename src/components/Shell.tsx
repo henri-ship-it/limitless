@@ -21,7 +21,8 @@ export async function Shell({
   const tier = member?.tier ?? 'core'
   const streak = member ? await getStreak() : 0
   const active = currentWeek()
-  const openThrough = unlockedThrough()
+  const isAdmin = member?.isAdmin ?? false
+  const openThrough = unlockedThrough(new Date(), isAdmin)
   const completed = [...progress.completedWeeks]
 
   return (
@@ -30,7 +31,7 @@ export async function Shell({
       {member && supabaseConfigured ? <TimeOnPage /> : null}
       <TopBar
         tier={tier}
-        isAdmin={member?.isAdmin ?? false}
+        isAdmin={isAdmin}
         currentWeek={active}
         openThrough={openThrough}
         completedWeeks={completed}
@@ -43,7 +44,7 @@ export async function Shell({
           openThrough={openThrough}
           completedWeeks={completed}
           isPro={tier === 'pro'}
-          isAdmin={member?.isAdmin ?? false}
+          isAdmin={isAdmin}
         />
         <main className="guides min-w-0 flex-1 bg-surface">
           {children}
