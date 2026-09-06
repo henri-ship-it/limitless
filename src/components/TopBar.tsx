@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { modules, weeks, type Tier } from '@/content/programme'
-import { AccountIcon, ChevronIcon, FlameIcon, LockIcon, NowIndicator, TickIcon } from './icons'
+import { AccountIcon, ChevronIcon, LockIcon, NowIndicator, TickIcon } from './icons'
+import { Streak } from './Streak'
 
 type Props = {
   /** The wordmark returns a member to whatever they were last working on. */
@@ -50,7 +51,7 @@ export function TopBar({
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-surface/85 backdrop-blur">
-      <div className="flex h-14 items-center gap-6 px-5">
+      <div className="flex h-14 items-center gap-3 px-4 sm:gap-6 sm:px-5">
         <Link
           href="/"
           className="font-mono text-[0.8125rem] font-medium tracking-[0.16em] uppercase"
@@ -91,11 +92,17 @@ export function TopBar({
                 >
                   {tier === 'pro' ? 'Blueprint' : "How you're wired"}
                 </Link>
+                {/*
+                  * In here rather than in the bar. A streak is worth seeing
+                  * when you go looking for where you are, and a number that
+                  * sits in the corner of every page all day is a nag.
+                  */}
+                <Streak days={streak} className="ml-auto" />
                 {isAdmin ? (
                   <Link
                     href="/admin"
                     onClick={() => setOpen(false)}
-                    className="tier-tag !no-underline ml-auto"
+                    className="tier-tag !no-underline"
                     data-tier="admin"
                   >
                     Admin
@@ -104,13 +111,13 @@ export function TopBar({
                   <Link
                     href="/pro"
                     onClick={() => setOpen(false)}
-                    className="tier-tag !no-underline ml-auto"
+                    className="tier-tag !no-underline"
                     data-tier="pro"
                   >
                     Pro
                   </Link>
                 ) : (
-                  <span className="tier-tag ml-auto" data-tier="core">
+                  <span className="tier-tag" data-tier="core">
                     Core
                   </span>
                 )}
@@ -167,27 +174,6 @@ export function TopBar({
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          {/*
-            * Shown from the first day and not before. A nought is not a streak,
-            * and putting one in the corner of the screen tells somebody who has
-            * just joined that they are already behind.
-            */}
-          {streak > 0 ? (
-            <span
-              className="label flex items-center gap-1.5 rounded-full border px-3 py-1.5"
-              style={{
-                borderColor: 'var(--color-flame)',
-                background: 'var(--color-flame-soft)',
-                color: 'var(--color-flame)',
-              }}
-              title={`${streak} ${streak === 1 ? 'day' : 'days'} in a row`}
-            >
-              <FlameIcon />
-              {streak} day{streak === 1 ? '' : 's'}
-              {/* Dropped on a narrow screen, where the top bar has no room for it. */}
-              <span className="hidden sm:inline">streak</span>
-            </span>
-          ) : null}
           <Link
             href="/account"
             /*

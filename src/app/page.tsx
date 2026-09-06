@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Shell } from '@/components/Shell'
 import { PageHeader } from '@/components/PageHeader'
+import { Streak } from '@/components/Streak'
 import { Section } from '@/components/Section'
 import { GetStarted } from '@/components/GetStarted'
 import { Timeline } from '@/components/Timeline'
@@ -10,7 +11,7 @@ import { Workshops } from '@/components/Workshops'
 import { checklistFor } from '@/content/checklist'
 import { COHORT, modules, weeks } from '@/content/programme'
 import { SUPPORT_EMAIL } from '@/content/assets'
-import { getMember, getProgress } from '@/lib/member'
+import { getMember, getProgress, getStreak } from '@/lib/member'
 import { currentWeek, entryForToday, unlockedThrough } from '@/lib/cohort'
 import { resolveEntry } from '@/lib/entry'
 
@@ -34,6 +35,7 @@ export default async function StartGuide() {
   const items = checklistFor(tier)
   const active = currentWeek()
   const openThrough = unlockedThrough(new Date(), member?.isAdmin ?? false)
+  const streak = member ? await getStreak() : 0
 
   /*
    * Setting up matters for a day and never again. The list stays while there
@@ -51,6 +53,7 @@ export default async function StartGuide() {
         lede="Sixteen weeks, four modules, one journal. This page covers how the programme runs and where you are in it."
         pills={
           <>
+            <Streak days={streak} />
             <span className="pill">{tier}</span>
             {active === 0 ? (
               <span className="pill">
