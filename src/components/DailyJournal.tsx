@@ -139,7 +139,7 @@ export function DailyJournal({
             'Saving'
           ) : state === 'saved' ? (
             <>
-              <TickIcon className="text-accent-ink" /> Saved
+              <TickIcon className="text-accent" /> Saved
             </>
           ) : persist === 'local' ? (
             'Saved on this device'

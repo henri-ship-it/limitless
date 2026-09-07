@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { modules, weeks, type Tier } from '@/content/programme'
-import { AccountIcon, ChevronIcon, LockIcon, NowIndicator, TickIcon } from './icons'
+import { AccountIcon, ChevronIcon, NowIndicator } from './icons'
 import { Streak } from './Streak'
+import { WeekMarker } from './WeekMarker'
 
 type Props = {
   /** The wordmark returns a member to whatever they were last working on. */
@@ -140,13 +141,7 @@ export function TopBar({
                               <span className="label w-4 shrink-0">{String(n).padStart(2, '0')}</span>
                               <span className="truncate text-[0.875rem]">{week.title}</span>
                             </span>
-                            {done.has(n) ? (
-                              <TickIcon className="shrink-0 text-accent-ink" />
-                            ) : n === currentWeek ? (
-                              <span className="radar shrink-0" aria-hidden />
-                            ) : locked ? (
-                              <LockIcon className="shrink-0 text-ink-20" />
-                            ) : null}
+                            <WeekMarker done={done.has(n)} now={n === currentWeek} locked={locked} />
                           </span>
                         )
                         return (

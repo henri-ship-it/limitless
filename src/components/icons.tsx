@@ -18,10 +18,11 @@ export function TickIcon({ className = '' }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 12 12"
-      className={`h-3 w-3 ${className}`}
+      className={`h-3.5 w-3.5 ${className}`}
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.5"
+      /* Heavier than the nav icons: it carries the brand green, which is pale. */
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden

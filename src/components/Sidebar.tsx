@@ -3,16 +3,8 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { modules, weeks } from '@/content/programme'
-import {
-  AdminIcon,
-  GuideIcon,
-  JournalIcon,
-  LockIcon,
-  NowIndicator,
-  ProIcon,
-  BlueprintIcon,
-  TickIcon,
-} from './icons'
+import { AdminIcon, GuideIcon, JournalIcon, NowIndicator, ProIcon, BlueprintIcon } from './icons'
+import { WeekMarker } from './WeekMarker'
 
 type Props = {
   currentWeek: number
@@ -87,13 +79,7 @@ export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro, isAdm
                 const inner = (
                   <span className="flex items-center justify-between gap-2">
                     <span className="truncate">{week.title}</span>
-                    {done.has(n) ? (
-                      <TickIcon className="shrink-0 text-accent-ink" />
-                    ) : n === currentWeek ? (
-                      <span className="radar shrink-0" aria-hidden />
-                    ) : locked ? (
-                      <LockIcon className="shrink-0 text-ink-20" />
-                    ) : null}
+                    <WeekMarker done={done.has(n)} now={n === currentWeek} locked={locked} />
                   </span>
                 )
                 const base = '-ml-px block border-l py-1.5 pl-4 pr-1 text-[0.875rem]'
