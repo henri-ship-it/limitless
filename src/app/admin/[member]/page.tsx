@@ -18,6 +18,8 @@ import {
 import { MemberTabs } from '@/components/admin/MemberTabs'
 import { Conversations } from '@/components/admin/Conversations'
 import { EntryList } from '@/components/admin/EntryList'
+import { TheirBlueprint } from '@/components/admin/TheirBlueprint'
+import { BLUEPRINT_SLOT } from '@/content/blueprint'
 import { AltEmail } from '@/components/admin/AltEmail'
 import { DraftMessage } from '@/components/admin/DraftMessage'
 
@@ -109,7 +111,15 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
             {
               key: 'told',
               label: 'What they told us',
-              panel: <PreAssessment filled={assessment.preAssessment} />,
+              panel: (
+                <>
+                  <PreAssessment filled={assessment.preAssessment} />
+                  <TheirBlueprint
+                    filled={(profile.assessment as Record<string, unknown>)?.[BLUEPRINT_SLOT]}
+                    tier={profile.tier}
+                  />
+                </>
+              ),
             },
             {
               key: 'written',

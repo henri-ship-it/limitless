@@ -4,6 +4,9 @@ import { since } from '@/lib/format'
 import { currentWeek } from '@/lib/cohort'
 import { getWeek, weeks } from '@/content/programme'
 import { leadStyle } from '@/content/know-thyself'
+import { coreValues, exerciseAnswers } from '@/lib/entry-text'
+import { resolveEntry } from '@/lib/entry'
+import type { EntryData } from '@/content/journal-fields'
 import { CHRIS, EXAMPLES, LANGUAGE, RESTRAINT, RULES, STYLE_NOTES } from '@/content/voice'
 
 /**
@@ -19,10 +22,48 @@ import { CHRIS, EXAMPLES, LANGUAGE, RESTRAINT, RULES, STYLE_NOTES } from '@/cont
  * does not get is permission to invent anything - see RULES in content/voice.
  */
 
+/*
+ * How far back to read. Enough for a thread to show, few enough that this week
+ * is not buried under sixteen. A check in is about where somebody is now.
+ */
+const RECENT_ENTRIES = 12
+
+/** Where the two values are settled on. */
+const VALUES_ENTRY = 8
+
 const MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-opus-5'
 const ENDPOINT = 'https://api.anthropic.com/v1/messages'
 
-type Body = { channel?: 'whatsapp' | 'email'; intent?: string }
+type Length = 'short' | 'standard' | 'long'
+
+type Body = {
+  channel?: 'whatsapp' | 'email'
+  intent?: string
+  length?: Length
+  /** The draft on screen, when Chris wants it changed rather than replaced. */
+  current?: string
+  /** What he wants changed about it. */
+  change?: string
+}
+
+/*
+ * Length as a range rather than a number of words. A message told to be exactly
+ * eighty words pads to eighty; a message told to be short is short.
+ */
+const LENGTHS: Record<Length, { whatsapp: string; email: string }> = {
+  short: {
+    whatsapp: 'Two or three lines. One thought, said once.',
+    email: 'Four or five lines. One thought, said once.',
+  },
+  standard: {
+    whatsapp: 'Four to six lines.',
+    email: 'Up to about ten lines.',
+  },
+  long: {
+    whatsapp: 'Eight to twelve lines. Still a message, not an essay.',
+    email: 'Up to about eighteen lines. Room for two thoughts, not five.',
+  },
+}
 
 function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>): string {
   const { profile, entries, weeksComplete, secondsSpent, arrivals, conversations } = detail
@@ -92,21 +133,39 @@ function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>)
   }
 
   /*
-   * Which entries they have been in, and nothing of what is in them.
-   *
-   * The journal is where somebody writes for themselves. Feeding it to a model
-   * produced messages that named the meeting, the colleague and the city, and
-   * read as though their diary had been read over their shoulder - which it
-   * had. Chris can open an entry himself when he wants to; a draft does not
-   * need it, and the message is better without it.
+   * The values they settled on, which is the one answer most likely to be
+   * quoted back and so the one that must not be wrong. Read from the two they
+   * narrowed to, never from the long list they ticked on the way there.
    */
-  if (entries.length) {
-    const numbers = entries.map((row) => row.n).join(', ')
-    lines.push(
-      '',
-      `They have worked on ${entries.length === 1 ? 'entry' : 'entries'} ${numbers}.`,
-      'What they wrote in them is private and is deliberately not here. Do not guess at it.',
-    )
+  const valuesRow = entries.find((row) => row.n === VALUES_ENTRY)
+  const values = valuesRow ? coreValues(valuesRow.data as EntryData) : []
+  if (values.length) {
+    lines.push('', `The values they chose for themselves: ${values.join(' and ')}.`)
+  }
+
+  /*
+   * What they have written, newest first, and only the exercise.
+   *
+   * Withholding this produced the opposite of the restraint it was meant to
+   * buy. With nothing real to work from the model invented, and told a member
+   * his values were two words he had never chosen. A draft has to be built on
+   * what somebody actually said or it is fiction, however carefully worded.
+   *
+   * What was wrong before was reciting it back. That is a rule about how to use
+   * this, not a reason to withhold it, and the rule lives in content/voice.
+   */
+  const recent = [...entries].sort((a, b) => b.n - a.n).slice(0, RECENT_ENTRIES)
+  if (recent.length) {
+    lines.push('', 'What they have written, newest first. This matters more than anything else here.')
+    for (const row of recent) {
+      const answers = exerciseAnswers(row.n, row.data as EntryData)
+      if (!answers.length) continue
+      const entry = resolveEntry(row.n)
+      lines.push('', `Entry ${row.n}${entry?.title ? `, ${entry.title}` : ''}:`)
+      for (const answer of answers) lines.push(`- ${answer.label}: ${answer.text}`)
+    }
+    const older = entries.length - recent.length
+    if (older > 0) lines.push('', `There are ${older} earlier entries not shown here.`)
   }
 
   /*
@@ -165,24 +224,55 @@ export async function POST(request: Request, { params }: { params: Promise<{ mem
     )
   }
 
-  const { channel = 'whatsapp', intent = '' }: Body = await request.json().catch(() => ({}))
+  const {
+    channel = 'whatsapp',
+    intent = '',
+    length = 'standard',
+    current = '',
+    change = '',
+  }: Body = await request.json().catch(() => ({}))
 
+  const size = LENGTHS[length] ?? LENGTHS.standard
   const shape =
     channel === 'whatsapp'
-      ? 'This is a WhatsApp message. Keep it to four to six lines, no subject line, no sign-off.'
-      : 'This is an email. Slightly longer is fine, up to about ten lines. Give it a short subject line on the first line, prefixed "Subject: ", then a blank line, then the message, ending with "Chris" on its own line.'
+      ? `This is a WhatsApp message. ${size.whatsapp} No subject line, no sign-off.`
+      : `This is an email. ${size.email} Give it a short subject line on the first line, prefixed "Subject: ", then a blank line, then the message, ending with "Chris" on its own line.`
 
   const system = [CHRIS, RULES, RESTRAINT, LANGUAGE, EXAMPLES].join('\n\n')
+
+  /*
+   * Revising is a different job from writing, and asking for a rewrite with an
+   * extra instruction gets a different message rather than the same one with a
+   * change made. Chris has usually already edited the draft by hand by this
+   * point, so anything he did not ask about has to survive untouched.
+   */
+  const revising = Boolean(current.trim() && change.trim())
+
+  const task = revising
+    ? [
+        'Chris has a draft in front of him and wants one thing about it changed.',
+        '',
+        'The draft as it stands:',
+        current.trim(),
+        '',
+        `What he wants different: ${change.trim()}`,
+        '',
+        'Return the same message with that change made and nothing else altered. Keep every line he has not asked about word for word, including any edits of his own. Do not take the opportunity to improve anything else.',
+        shape,
+      ].join('\n')
+    : [
+        shape,
+        intent.trim()
+          ? `Chris wants this message to do the following: ${intent.trim()}`
+          : 'Chris has not said what he wants the message to do. Pick the one thing most worth saying to this person this week, based on the brief.',
+      ].join('\n')
 
   const prompt = [
     'Here is what is known about the member. Everything in it is real; anything not in it, you do not know.',
     '',
     brief(detail),
     '',
-    shape,
-    intent.trim()
-      ? `Chris wants this message to do the following: ${intent.trim()}`
-      : 'Chris has not said what he wants the message to do. Pick the one thing most worth saying to this person this week, based on the brief.',
+    task,
     '',
     'Reply with JSON only, no other text, in this shape:',
     '{"angle": "one short line telling Chris why you took this approach", "message": "the message itself"}',
