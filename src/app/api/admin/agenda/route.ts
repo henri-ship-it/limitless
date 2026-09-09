@@ -63,9 +63,16 @@ export async function POST(request: Request) {
   const { data: people } = await supabase
     .from('profiles')
     .select('id, first_name, tier, is_admin, assessment')
-  const cohort = (people ?? []).filter(
-    (p) => !p.is_admin && (audience === 'all' || p.tier === 'pro'),
-  )
+  /*
+   * Elite is never in a sixteen week call. Their entries are numbered against
+   * a different journal running to three hundred and thirty six, so an agenda
+   * that swept them in would be reading someone else's month against this
+   * week's chapter and reporting the mismatch as a member falling behind.
+   */
+  const cohort = (people ?? []).filter((p) => {
+    if (p.is_admin || p.tier === 'elite') return false
+    return audience === 'all' || p.tier === 'pro'
+  })
   const ids = cohort.map((p) => p.id)
   if (!ids.length) return NextResponse.json({ error: 'Nobody in that group yet.' }, { status: 400 })
 
