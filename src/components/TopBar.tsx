@@ -83,7 +83,13 @@ export function TopBar({
                * two thirds of the way across ran it off the right edge.
                */
               className="fixed inset-x-2 top-[3.5rem] z-50 max-h-[calc(100vh-4.5rem)] overflow-y-auto overscroll-contain border border-line bg-surface shadow-[0_12px_40px_-12px_rgba(0,0,0,0.18)] sm:absolute sm:inset-x-auto sm:left-0 sm:top-[calc(100%+0.5rem)] sm:max-h-[calc(100vh-5rem)] sm:w-[min(92vw,42rem)]">
-              <div className="sticky top-0 z-10 flex flex-wrap gap-x-6 gap-y-2 border-b border-line bg-surface px-4 py-3">
+              {/*
+                 * items-center, because this row mixes bare text links with
+                 * pills. Left to stretch, a link fills the row's height and
+                 * sets its text at the top of it while a pill centres its own,
+                 * so the two sat on different lines by a few pixels.
+                 */}
+              <div className="sticky top-0 z-10 flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-line bg-surface px-4 py-3">
                 <Link href="/" onClick={() => setOpen(false)} className="label hover:!text-ink">
                   Start Guide
                 </Link>
