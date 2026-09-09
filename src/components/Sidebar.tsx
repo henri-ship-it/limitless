@@ -3,10 +3,13 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { modules, weeks } from '@/content/programme'
+import { currentEliteMonth, eliteMonths } from '@/content/elite'
 import { AdminIcon, GuideIcon, JournalIcon, NowIndicator, ProIcon, BlueprintIcon } from './icons'
 import { WeekMarker } from './WeekMarker'
 
 type Props = {
+  /** Elite replaces the week list with its twelve months. */
+  mode?: 'limitless' | 'elite'
   currentWeek: number
   openThrough: number
   completedWeeks: number[]
@@ -14,7 +17,14 @@ type Props = {
   isAdmin: boolean
 }
 
-export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro, isAdmin }: Props) {
+export function Sidebar({
+  mode = 'limitless',
+  currentWeek,
+  openThrough,
+  completedWeeks,
+  isPro,
+  isAdmin,
+}: Props) {
   const pathname = usePathname()
   const done = new Set(completedWeeks)
 
@@ -23,10 +33,10 @@ export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro, isAdm
       <div className="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto px-5 py-8">
         <ul className="mb-8 space-y-0.5">
           <TopLink
-            href="/"
-            label="Start Guide"
+            href={mode === 'elite' ? '/elite' : '/'}
+            label={mode === 'elite' ? 'The year' : 'Start Guide'}
             icon={<GuideIcon />}
-            active={pathname === '/'}
+            active={mode === 'elite' ? pathname.startsWith('/elite') : pathname === '/'}
             marker={currentWeek === 0 ? <span className="radar" aria-hidden /> : null}
           />
           <TopLink
@@ -61,7 +71,29 @@ export function Sidebar({ currentWeek, openThrough, completedWeeks, isPro, isAdm
           ) : null}
         </ul>
 
-        {modules.map((m) => (
+        {mode === 'elite'
+          ? eliteMonths.map((month) => {
+              const active = pathname === `/elite/month/${month.n}`
+              return (
+                <Link
+                  key={month.n}
+                  href={`/elite/month/${month.n}`}
+                  className={`-ml-px flex items-center justify-between gap-2 border-l py-1.5 pr-1 pl-4 text-[0.875rem] ${
+                    active
+                      ? 'border-ink font-medium text-ink'
+                      : 'border-transparent text-ink-72 hover:border-line-strong hover:text-ink'
+                  }`}
+                >
+                  <span className="truncate">{month.title}</span>
+                  {month.n === currentEliteMonth() ? (
+                    <span className="radar shrink-0" aria-hidden />
+                  ) : null}
+                </Link>
+              )
+            })
+          : null}
+
+        {mode === 'elite' ? null : modules.map((m) => (
           <div key={m.number} className="mb-7">
             <Link
               href={`/module/${m.number}`}

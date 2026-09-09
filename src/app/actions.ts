@@ -1,8 +1,11 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { MODE_COOKIE } from '@/lib/programme-mode'
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseConfigured } from '@/lib/env'
+import { getMember } from '@/lib/member'
 
 async function requireMember() {
   if (!supabaseConfigured) return null
@@ -137,4 +140,27 @@ export async function setAltEmail(memberId: string, email: string) {
 
   revalidatePath(`/admin/${memberId}`)
   return { error: null }
+}
+
+/**
+ * Switches the platform between the sixteen week programme and Elite.
+ *
+ * A cookie rather than anything on their record: this is a way of looking at
+ * the platform, not a fact about the person, and it should not follow them
+ * around once they have looked. Admin only, checked here rather than trusted
+ * from the button, since a cookie anybody can set is not a permission.
+ */
+export async function setProgrammeMode(mode: 'limitless' | 'elite') {
+  const member = await getMember()
+  if (!member?.isAdmin) return
+
+  const jar = await cookies()
+  jar.set(MODE_COOKIE, mode, {
+    path: '/',
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 30,
+  })
+
+  revalidatePath('/', 'layout')
 }

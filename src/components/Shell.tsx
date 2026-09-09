@@ -1,6 +1,7 @@
 import { getMember, getProgress, getStreak } from '@/lib/member'
 import { supabaseConfigured } from '@/lib/env'
 import { currentWeek, unlockedThrough } from '@/lib/cohort'
+import { getMode } from '@/lib/programme-mode'
 import { TopBar } from './TopBar'
 import { Sidebar } from './Sidebar'
 import { OnThisPage, type TocItem } from './OnThisPage'
@@ -22,6 +23,7 @@ export async function Shell({
   const streak = member ? await getStreak() : 0
   const active = currentWeek()
   const isAdmin = member?.isAdmin ?? false
+  const mode = isAdmin ? await getMode() : 'limitless'
   const openThrough = unlockedThrough(new Date(), isAdmin)
   const completed = [...progress.completedWeeks]
 
@@ -36,10 +38,12 @@ export async function Shell({
         openThrough={openThrough}
         completedWeeks={completed}
         streak={streak}
+        mode={mode}
       />
 
       <div className="mx-auto flex max-w-[var(--container)] items-stretch">
         <Sidebar
+          mode={mode}
           currentWeek={active}
           openThrough={openThrough}
           completedWeeks={completed}

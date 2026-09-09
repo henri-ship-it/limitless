@@ -6,6 +6,8 @@ import { usePathname } from 'next/navigation'
 import { modules, weeks, type Tier } from '@/content/programme'
 import { AccountIcon, ChevronIcon, NowIndicator } from './icons'
 import { Streak } from './Streak'
+import { ProgrammeToggle } from './ProgrammeToggle'
+import type { Mode } from '@/lib/programme-mode'
 import { WeekMarker } from './WeekMarker'
 
 type Props = {
@@ -17,6 +19,8 @@ type Props = {
   completedWeeks: number[]
   /** Days in a row. Hidden at zero rather than shown as a nought. */
   streak: number
+  /** Which programme is being shown. Only admins can change it. */
+  mode: Mode
 }
 
 export function TopBar({
@@ -26,6 +30,7 @@ export function TopBar({
   openThrough,
   completedWeeks,
   streak,
+  mode,
 }: Props) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
@@ -169,6 +174,8 @@ export function TopBar({
         </div>
 
         <div className="ml-auto flex items-center gap-2">
+          {/* Beside the account icon, the way a theme switch sits. */}
+          {isAdmin ? <ProgrammeToggle mode={mode} /> : null}
           <Link
             href="/account"
             /*
