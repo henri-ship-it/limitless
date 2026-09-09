@@ -115,6 +115,17 @@ body {
   color: #ffffff;
 }
 
+/*
+ * Elite is a different programme rather than a rung above Pro, so it reads as
+ * its own thing rather than as a brighter version of the Pro tag.
+ */
+.tier-tag[data-tier='elite'] {
+  background: transparent;
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+  letter-spacing: 0.14em;
+}
+
 .tier-tag[data-tier='admin'] {
   background: transparent;
   border-color: var(--color-ink);

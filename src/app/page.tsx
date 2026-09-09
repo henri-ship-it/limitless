@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { Shell } from '@/components/Shell'
 import { PageHeader } from '@/components/PageHeader'
 import { Streak } from '@/components/Streak'
@@ -28,6 +29,8 @@ function tocFor(setUp: boolean) {
 
 export default async function StartGuide() {
   const member = await getMember()
+  // Elite runs to its own clock and has its own front door.
+  if (member?.tier === 'elite') redirect('/elite')
   const progress = member
     ? await getProgress(member.id)
     : { completedItems: new Set<string>(), completedWeeks: new Set<number>() }

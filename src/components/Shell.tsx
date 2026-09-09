@@ -23,7 +23,7 @@ export async function Shell({
   const streak = member ? await getStreak() : 0
   const active = currentWeek()
   const isAdmin = member?.isAdmin ?? false
-  const mode = isAdmin ? await getMode() : 'limitless'
+  const mode = await getMode(tier, isAdmin)
   const openThrough = unlockedThrough(new Date(), isAdmin)
   const completed = [...progress.completedWeeks]
 

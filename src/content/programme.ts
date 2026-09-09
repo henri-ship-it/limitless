@@ -2,7 +2,12 @@
 // Chapter copy is taken from LP_Limitless_Journal_Combined_01.pdf, which is the
 // source of truth for chapter names, entry numbering and deload spacing.
 
-export type Tier = 'core' | 'pro'
+/*
+ * Elite is the year long programme, sold as Elevate as well. It is not a rung
+ * above Pro: it is a different programme with its own journal and its own
+ * clock, so anything that treats tiers as a ladder has to name it explicitly.
+ */
+export type Tier = 'core' | 'pro' | 'elite'
 export type WeekType = 'chapter' | 'deload'
 
 export type Module = {

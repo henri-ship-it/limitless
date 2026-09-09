@@ -29,7 +29,7 @@ const at = (iso: string | null) => (iso ? Date.parse(iso) : 0)
 export function CohortTable({ members }: { members: MemberRow[] }) {
   const [sort, setSort] = useState<Key>('lastSeen')
   const [ascending, setAscending] = useState(true)
-  const [tier, setTier] = useState<'all' | 'pro' | 'core'>('all')
+  const [tier, setTier] = useState<'all' | 'pro' | 'core' | 'elite'>('all')
   const [search, setSearch] = useState('')
 
   /*
@@ -105,7 +105,7 @@ export function CohortTable({ members }: { members: MemberRow[] }) {
           className="w-full max-w-56 border border-line bg-surface px-3 py-2 text-[0.875rem] outline-none focus:border-ink"
         />
         <div className="flex gap-1.5">
-          {(['all', 'pro', 'core'] as const).map((option) => (
+          {(['all', 'pro', 'core', 'elite'] as const).map((option) => (
             <button
               key={option}
               type="button"

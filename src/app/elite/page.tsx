@@ -28,13 +28,14 @@ const TOC = [
  * is which month you are in and how much of it is left, because the failure
  * mode is not falling behind, it is a fortnight going by without opening it.
  *
- * Admin only while the member facing half is built. Luke is the one member and
- * he has not been switched over yet, so showing him a half finished programme
- * would be worse than showing him nothing.
+ * Reachable by the Elite member whose programme it is, and by the two people
+ * who run it. Nobody on the sixteen week programme can open it, since it is a
+ * different product rather than a preview of a better one.
  */
 export default async function ElitePage() {
   const member = await getMember()
-  if (!member?.isAdmin) notFound()
+  // Their own programme, or one of the two people who run it.
+  if (!member || (!member.isAdmin && member.tier !== 'elite')) notFound()
 
   const month = currentEliteMonth()
   const open = Math.min(ELITE.months, Math.max(1, month))

@@ -27,7 +27,8 @@ export default async function EliteMonthPage({
   params: Promise<{ month: string }>
 }) {
   const member = await getMember()
-  if (!member?.isAdmin) notFound()
+  // Their own programme, or one of the two people who run it.
+  if (!member || (!member.isAdmin && member.tier !== 'elite')) notFound()
 
   const { month: raw } = await params
   const n = Number(raw)
