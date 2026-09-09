@@ -287,7 +287,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ mem
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 1200,
+      max_tokens: 2500,
       system,
       messages: [{ role: 'user', content: prompt }],
     }),
@@ -315,12 +315,24 @@ export async function POST(request: Request, { params }: { params: Promise<{ mem
     try {
       const parsed = JSON.parse(text.slice(start, end + 1)) as { angle?: string; message?: string }
       if (parsed.message) {
-        return NextResponse.json({ message: plainDashes(parsed.message.trim()), angle: parsed.angle ?? '' })
+        return NextResponse.json({
+          message: plainDashes(parsed.message.trim()),
+          angle: parsed.angle ?? '',
+        })
       }
     } catch {
-      // Fall through and hand back whatever came out.
+      // Fall through to salvage.
     }
   }
+
+  /*
+   * A reply cut off mid-string has no closing brace, so it will not parse, and
+   * handing back the raw text put a wall of {"angle": ... in the box Chris is
+   * meant to read. Pull the message out by hand instead: a draft missing its
+   * last sentence is still a draft, and he can see that it is short.
+   */
+  const salvaged = salvage(text)
+  if (salvaged) return NextResponse.json({ message: plainDashes(salvaged), angle: '' })
 
   return NextResponse.json({ message: plainDashes(text), angle: '' })
 }
@@ -334,4 +346,36 @@ export async function POST(request: Request, { params }: { params: Promise<{ mem
  */
 function plainDashes(text: string): string {
   return text.replace(/\s*[—–]\s*/g, ' - ')
+}
+
+/** The message out of a JSON reply that did not finish. Null when there is none. */
+function salvage(text: string): string | null {
+  const at = text.search(/"message"\s*:\s*"/)
+  if (at === -1) return null
+
+  const from = text.indexOf('"', text.indexOf(':', at)) + 1
+  let out = ''
+  for (let i = from; i < text.length; i += 1) {
+    const c = text[i]
+    if (c === '\\') {
+      const next = text[i + 1]
+      // \u0027 and friends: models reach for them on apostrophes and quotes.
+      if (next === 'u') {
+        const code = text.slice(i + 2, i + 6)
+        if (/^[0-9a-fA-F]{4}$/.test(code)) {
+          out += String.fromCharCode(parseInt(code, 16))
+          i += 5
+          continue
+        }
+      }
+      out += next === 'n' ? '\n' : next === 't' ? '\t' : (next ?? '')
+      i += 1
+      continue
+    }
+    // An unescaped quote ends the string, whether or not the reply got that far.
+    if (c === '"') break
+    out += c
+  }
+
+  return out.trim() || null
 }
