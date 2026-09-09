@@ -12,6 +12,7 @@ import type { EntryData } from '@/content/journal-fields'
 import { resolveEntry } from '@/lib/entry'
 import { getJournalEntry, getMember } from '@/lib/member'
 import { isUnlocked } from '@/lib/cohort'
+import { BulkPhotos } from '@/components/BulkPhotos'
 import { supabaseConfigured } from '@/lib/env'
 
 export function generateStaticParams() {
@@ -80,7 +81,17 @@ export default async function EntryPage({ params }: { params: Promise<{ entry: s
         persist={supabaseConfigured ? 'db' : 'local'}
       />
 
-      {/* The huddle closes the week, so it is where the week can be taken away. */}
+      {/*
+        * The huddle closes the week, so it is where a week of written pages is
+        * handed over and where the week can be taken away.
+        */}
+      {entry.huddle ? (
+        <div className="border-t border-line px-6 py-8 sm:px-10">
+          <p className="label mb-3">This week on paper</p>
+          <BulkPhotos week={entry.week} />
+        </div>
+      ) : null}
+
       {entry.huddle ? (
         <div className="border-t border-line px-6 py-8 sm:px-10">
           <p className="label mb-3">Keep your week</p>
