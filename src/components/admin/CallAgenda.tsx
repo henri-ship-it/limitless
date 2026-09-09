@@ -35,7 +35,7 @@ export function CallAgenda({ week }: { week: number }) {
       })
       const payload = await response.json()
       if (!response.ok) {
-        setProblem(payload.error ?? 'That did not work.')
+        setProblem([payload.error, payload.detail].filter(Boolean).join(' '))
         setAgenda(null)
         return
       }

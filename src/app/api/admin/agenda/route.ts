@@ -156,7 +156,7 @@ export async function POST(request: Request) {
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 2500,
+      max_tokens: 4000,
       system: [CHRIS, LANGUAGE].join('\n\n'),
       messages: [{ role: 'user', content: prompt }],
     }),
@@ -177,14 +177,20 @@ export async function POST(request: Request) {
 
   const start = text.indexOf('{')
   const end = text.lastIndexOf('}')
-  if (start === -1 || end <= start) {
-    return NextResponse.json({ error: 'That came back unreadable. Try again.' }, { status: 502 })
+  if (start !== -1 && end > start) {
+    try {
+      const parsed = JSON.parse(text.slice(start, end + 1))
+      return NextResponse.json({ agenda: parsed, week: n, writing, of: cohort.length })
+    } catch {
+      // Fall through, with the reply attached so the reason is visible.
+    }
   }
 
-  try {
-    const parsed = JSON.parse(text.slice(start, end + 1))
-    return NextResponse.json({ agenda: parsed, week: n, writing, of: cohort.length })
-  } catch {
-    return NextResponse.json({ error: 'That came back unreadable. Try again.' }, { status: 502 })
-  }
+  return NextResponse.json(
+    {
+      error: 'That came back unreadable. Try again.',
+      detail: text.slice(0, 400),
+    },
+    { status: 502 },
+  )
 }
