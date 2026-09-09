@@ -11,7 +11,8 @@ import { useState } from 'react'
  */
 
 type Item = { title: string; minutes?: number; why: string; ask: string }
-type Agenda = { headline: string; items: Item[]; watch?: string[] }
+type Read = { name: string; at?: string; notes: string[] }
+type Agenda = { headline: string; items: Item[]; read?: Read[]; watch?: string[] }
 
 export function CallAgenda({ week }: { week: number }) {
   const [kind, setKind] = useState<'dropin' | 'workshop'>('dropin')
@@ -57,7 +58,17 @@ export function CallAgenda({ week }: { week: number }) {
         (item, i) =>
           `${i + 1}. ${item.title}${item.minutes ? ` (${item.minutes} min)` : ''}\n   ${item.why}\n   Open with: ${item.ask}`,
       ),
-      ...(agenda.watch?.length ? ['', 'Worth noticing:', ...agenda.watch.map((w) => `- ${w}`)] : []),
+      ...(agenda.read?.length
+        ? [
+            '',
+            'The read:',
+            ...agenda.read.flatMap((person) => [
+              `${person.name}${person.at ? ` (${person.at})` : ''}`,
+              ...person.notes.map((note) => `  - ${note}`),
+            ]),
+          ]
+        : []),
+      ...(agenda.watch?.length ? ['', 'Privately:', ...agenda.watch.map((w) => `- ${w}`)] : []),
     ].join('\n')
     await navigator.clipboard.writeText(text)
     setCopied(true)
@@ -150,9 +161,39 @@ export function CallAgenda({ week }: { week: number }) {
             ))}
           </ol>
 
+          {/*
+            * The detail lives here rather than in the agenda above, which is
+            * for the room and has to stay short enough to glance at.
+            */}
+          {agenda.read?.length ? (
+            <div className="mt-8 border-t border-line pt-6">
+              <p className="label !mb-4">The read</p>
+              <div className="flex flex-col gap-5">
+                {agenda.read.map((person, i) => (
+                  <div key={i}>
+                    <p className="!mb-1.5 flex flex-wrap items-baseline gap-2">
+                      <span className="text-[1rem] font-medium text-ink">{person.name}</span>
+                      {person.at ? <span className="label !text-ink-40">{person.at}</span> : null}
+                    </p>
+                    <ul className="!mb-0 !list-none !pl-0 flex flex-col gap-1">
+                      {person.notes.map((note, j) => (
+                        <li
+                          key={j}
+                          className="border-l-2 border-line pl-3 text-[0.9375rem] leading-relaxed text-ink-72"
+                        >
+                          {note}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           {agenda.watch?.length ? (
-            <div className="mt-6 border-t border-line pt-5">
-              <p className="label !mb-2 !text-ink-56">Worth noticing</p>
+            <div className="mt-8 border-t border-line pt-6">
+              <p className="label !mb-2 !text-ink-56">Privately, not on the call</p>
               <ul className="!mb-0 !list-none !pl-0 flex flex-col gap-1.5">
                 {agenda.watch.map((line, i) => (
                   <li key={i} className="text-[0.9375rem] leading-relaxed text-ink-72">

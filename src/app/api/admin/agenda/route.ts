@@ -7,6 +7,7 @@ import { resolveEntry } from '@/lib/entry'
 import { entriesForWeek } from '@/content/journal'
 import { exerciseAnswers } from '@/lib/entry-text'
 import { CHRIS, LANGUAGE } from '@/content/voice'
+import { leadStyle } from '@/content/know-thyself'
 import type { EntryData } from '@/content/journal-fields'
 
 /**
@@ -17,14 +18,16 @@ import type { EntryData } from '@/content/journal-fields'
  * the week for him and comes back with what is worth raising: what several
  * people are circling, where the chapter has landed, and where it has not.
  *
- * Written without names, and that is not squeamishness. An agenda is a list of
- * things to put to a room, and the moment one carries "Felix said" it stops
- * being an agenda and becomes a briefing on individuals to be read out to them.
- * Counts do the work instead: four people writing about the same difficulty is
- * a thing to raise, and nobody has to be identified for Chris to raise it.
+ * Names throughout. This was built anonymous at first, on the reasoning that an
+ * agenda carrying a name becomes a briefing on individuals. That was the wrong
+ * call: it is a coach's own notes for his own cohort, read by nobody else, and
+ * stripping the names only made him work out who was who from the description.
+ * What he does with a name in the room is his judgement, not the platform's.
  *
- * The private half of that job already exists on each member's own page, where
- * a message can be drafted to one person with everything known about them.
+ * Two halves. The agenda is for the room and is short, because half an hour of
+ * anything is four things at most. The read is per person, in bullets, and is
+ * where the detail goes: where they are, what the entries show, and how that
+ * sits against the style they came out as.
  */
 
 const MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-opus-5'
@@ -68,9 +71,11 @@ export async function POST(request: Request) {
 
   const { data: journal } = await supabase
     .from('member_journal')
-    .select('member_id, entry_number, data')
+    .select('member_id, entry_number, data, updated_at')
     .in('member_id', ids)
     .order('entry_number', { ascending: false })
+
+  const named = new Map(cohort.map((p) => [p.id, p.first_name ?? 'Someone']))
 
   /*
    * Grouped by person, then flattened without them. The grouping is only so
@@ -86,18 +91,36 @@ export async function POST(request: Request) {
 
   const lines: string[] = []
   let writing = 0
-  for (const rows of byMember.values()) {
+  for (const [id, rows] of byMember.entries()) {
     if (!rows?.length) continue
     writing += 1
+
+    const person = cohort.find((p) => p.id === id)
+    const name = named.get(id) ?? 'Someone'
+    const assessment = (person?.assessment ?? {}) as {
+      scorecard?: { scores?: Record<string, number> }
+    }
+    const style = leadStyle(assessment.scorecard?.scores ?? {})
+
+    lines.push(
+      `### ${name}${style ? ` (leads with ${style.name}: ${style.reads})` : ''}`,
+      `Has written entries ${rows.map((r) => r.entry_number).sort((a, b) => a - b).join(', ')}.`,
+      '',
+    )
+
     for (const row of rows) {
       const answers = exerciseAnswers(row.entry_number, row.data as EntryData)
       if (!answers.length) continue
       const entry = resolveEntry(row.entry_number)
-      lines.push(`Someone, entry ${row.entry_number}${entry?.title ? `, ${entry.title}` : ''}:`)
+      lines.push(`${name}, entry ${row.entry_number}${entry?.title ? `, ${entry.title}` : ''}:`)
       for (const answer of answers) lines.push(`- ${answer.label}: ${answer.text}`)
       lines.push('')
     }
   }
+
+  const quiet = cohort
+    .filter((p) => !byMember.get(p.id)?.length)
+    .map((p) => p.first_name ?? 'someone')
 
   if (!lines.length) {
     return NextResponse.json(
@@ -115,34 +138,35 @@ export async function POST(request: Request) {
 
   const shape =
     kind === 'workshop'
-      ? [
-          'This is the monthly workshop: ninety minutes, live, taught as well as discussed.',
-          'Give it four or five parts with a rough number of minutes against each, opening with what the month has actually thrown up rather than with a recap of the chapter.',
-        ].join('\n')
-      : [
-          'This is the Wednesday drop-in: half an hour, informal, no teaching.',
-          'Give it three or four things to raise, in the order to raise them, with a line on why each one is worth the room\'s time this week. Half an hour goes quickly, so anything that would take twenty minutes on its own does not belong here.',
-        ].join('\n')
+      ? 'This is the monthly workshop: ninety minutes, live, taught as well as discussed. Four or five items.'
+      : 'This is the Wednesday drop-in: half an hour, informal, no teaching. Three items, four at the very most.'
 
   const prompt = [
     `Week ${n} of ${weeks.length} is "${chapter.title}". This week's entries are ${thisWeek}.`,
-    `${cohort.length} people in this group, ${writing} of whom have written something.`,
+    `${cohort.length} people in this group. ${writing} have written something.`,
+    quiet.length ? `Nothing at all from: ${quiet.join(', ')}.` : '',
     '',
-    'Here is what they have written, most recent first. Every entry is attributed to "Someone" on purpose: you do not know who wrote what and must not guess.',
+    'Here is what each of them has written, by person, newest entry first.',
     '',
-    ...lines.slice(0, 400),
+    ...lines.slice(0, 500),
     '',
     shape,
     intent.trim() ? `Chris also wants to cover: ${intent.trim()}` : '',
     '',
+    'Two things are wanted, and they are different jobs.',
+    '',
+    'THE AGENDA is for the room. Short. Each item is a title, a rough number of minutes, ONE sentence saying why it is worth the time and who it is for by name, and the question Chris opens it with. One sentence means one sentence. Do not restate the entries back; Chris has read them in the second half of this.',
+    '',
+    'THE READ is per person, and is where the detail goes. For each person who has written, give their name, the entry they are up to, and two to four short bullets. Bullets are notes to himself, not prose: what the writing actually shows, the pattern under it, and how that sits against the style they came out as. Name the mechanism where there is one worth naming, in plain words rather than jargon. Be specific and be willing to say something uncomfortable if it is what the entries show.',
+    '',
     'Rules:',
-    '- Work from what is actually written. If two people circled the same difficulty, say so and say how many. If something is only one person, it is not an agenda item for a group call.',
-    '- Never name anybody, never quote a sentence, and never use a proper noun taken from an entry. Chris has to be able to read this aloud without anyone recognising themselves against their will.',
-    '- Say plainly where the chapter has not landed. An agenda that reports everything going well is no use to anybody.',
-    '- Never use an em dash or an en dash.',
+    '- Use their names. These are Chris\'s own notes on his own cohort and nobody else reads them.',
+    '- Work only from what is written. Never invent a motive, a diagnosis or an event.',
+    '- Say plainly where the chapter has not landed, and who has not started.',
+    '- No em dashes, no en dashes, no semicolons.',
     '',
     'Reply with JSON only, no other text:',
-    '{"headline": "one line on where the group is this week", "items": [{"title": "short", "minutes": 8, "why": "one or two sentences", "ask": "the question Chris opens it with"}], "watch": ["anything worth noticing that is not an agenda item"]}',
+    '{"headline": "one line on where the group is", "items": [{"title": "short", "minutes": 8, "why": "one sentence, naming who", "ask": "the question Chris opens with"}], "read": [{"name": "their name", "at": "entry 12, or not started", "notes": ["short bullet", "short bullet"]}], "watch": ["at most three things that belong in a private message rather than the call"]}',
   ]
     .filter(Boolean)
     .join('\n')
