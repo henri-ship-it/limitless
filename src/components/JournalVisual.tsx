@@ -30,10 +30,22 @@ export function JournalVisual({
   const size = `${Math.round(visual.scale * 100)}%`
   const hasCaption = Boolean(caption && (caption.lines.length || caption.author))
 
-  // The diagram fills `scale` of the panel, so a point on the page is worth
-  // that fraction of a container width divided by the crop's width in points.
+  /*
+   * How wide a point on the printed page is here, as a fraction of the panel.
+   *
+   * `scale` caps both sides of the image, so the crop fits inside a square of
+   * that size rather than filling its width. A wide crop is held by its width
+   * and does fill it; a tall one is held by its height and comes out narrower
+   * by its aspect ratio.
+   *
+   * Reading `scale` as the rendered width regardless made the caption on a
+   * tall crop too big by exactly the amount the image had shrunk. Entry 20 is
+   * a narrow column of words and was the worst of it, nearly twice the size it
+   * should have been, in the thumbnail and on the page alike.
+   */
   const sourcePt = visual.width / RENDER_SCALE
-  const perPoint = (visual.scale * 100) / sourcePt
+  const renderedWidth = visual.scale * Math.min(1, visual.width / visual.height) * 100
+  const perPoint = renderedWidth / sourcePt
 
   return (
     /*
