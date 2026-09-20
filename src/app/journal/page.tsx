@@ -129,6 +129,7 @@ export default async function JournalPage() {
                             <JournalVisual
                               visual={entry.visual}
                               caption={entry.caption}
+                              compact
                               className="mt-12 max-w-sm border border-line"
                             />
                             <p className="mt-6">

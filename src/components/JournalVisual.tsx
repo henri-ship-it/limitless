@@ -1,11 +1,18 @@
 type Visual = { src: string; width: number; height: number; scale: number }
 type Caption = { lines: string[]; author?: string }
 
-/** The diagrams are rendered at three times their size on the page. */
-const RENDER_SCALE = 3
-/** Blender Pro Bold, 12pt on the page. Medium, 10pt, for the attribution. */
-const CAPTION_PT = 12
-const AUTHOR_PT = 10
+/*
+ * Caption size, as a share of the panel rather than of the artwork.
+ *
+ * This used to be worked out from the crop's own width, on the idea that a
+ * caption should match the lettering inside the diagram. In practice the crops
+ * run from 268px to 1284px wide, so the same twelve point caption came out at
+ * anything from five pixels to seventeen, and two thumbnails side by side had
+ * visibly different captions. The caption is display text sitting under the
+ * picture, not part of it, so it belongs to the panel.
+ */
+const CAPTION_CQW = 3
+const AUTHOR_CQW = 2.5
 
 /**
  * The artwork for an entry, sat square on a flat ground.
@@ -19,33 +26,24 @@ const AUTHOR_PT = 10
 export function JournalVisual({
   visual,
   caption,
+  compact = false,
   className = '',
 }: {
   visual: Visual | null
   caption?: Caption | null
+  /**
+   * A small panel, such as the journal index. The caption's line breaks are
+   * set for the width of the page and break again when the panel is narrow,
+   * which strands two or three words on a line of their own. Here the lines
+   * are run together and left to wrap where they will.
+   */
+  compact?: boolean
   className?: string
 }) {
   if (!visual) return null
 
   const size = `${Math.round(visual.scale * 100)}%`
   const hasCaption = Boolean(caption && (caption.lines.length || caption.author))
-
-  /*
-   * How wide a point on the printed page is here, as a fraction of the panel.
-   *
-   * `scale` caps both sides of the image, so the crop fits inside a square of
-   * that size rather than filling its width. A wide crop is held by its width
-   * and does fill it; a tall one is held by its height and comes out narrower
-   * by its aspect ratio.
-   *
-   * Reading `scale` as the rendered width regardless made the caption on a
-   * tall crop too big by exactly the amount the image had shrunk. Entry 20 is
-   * a narrow column of words and was the worst of it, nearly twice the size it
-   * should have been, in the thumbnail and on the page alike.
-   */
-  const sourcePt = visual.width / RENDER_SCALE
-  const renderedWidth = visual.scale * Math.min(1, visual.width / visual.height) * 100
-  const perPoint = renderedWidth / sourcePt
 
   return (
     /*
@@ -70,12 +68,12 @@ export function JournalVisual({
             className="max-w-[80%] text-center"
             style={{ fontFamily: 'var(--font-caption)' }}
           >
-            {caption!.lines.map((line, i) => (
+            {(compact ? [caption!.lines.join(' ')] : caption!.lines).map((line, i) => (
               <p
                 key={i}
                 className="font-bold uppercase text-ink"
                 style={{
-                  fontSize: `clamp(0.75rem, ${(perPoint * CAPTION_PT).toFixed(3)}cqw, 2rem)`,
+                  fontSize: `clamp(0.75rem, ${CAPTION_CQW}cqw, 2rem)`,
                   lineHeight: 1.25,
                 }}
               >
@@ -86,7 +84,7 @@ export function JournalVisual({
               <p
                 className="mt-[1.4em] font-medium uppercase text-ink-40"
                 style={{
-                  fontSize: `clamp(0.625rem, ${(perPoint * AUTHOR_PT).toFixed(3)}cqw, 1.667rem)`,
+                  fontSize: `clamp(0.625rem, ${AUTHOR_CQW}cqw, 1.667rem)`,
                   letterSpacing: '0.04em',
                 }}
               >
