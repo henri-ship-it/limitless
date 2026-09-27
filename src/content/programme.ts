@@ -183,7 +183,7 @@ export const weeks: Week[] = [
       'Flexible thinking isn’t about shutting down difficult or negative thoughts. It’s about developing the ability to regulate them.',
       'This chapter explores how to be present in the moment, open up to challenging situations, and take purposeful action. You’ll learn to surf the waves of your self-talk, rather than being swept away by it.',
     ],
-    youtubeId: '0HmkBW1ZSCA',
+    youtubeId: 'VnX5GW5kHBo',
     firstEntry: 29,
   },
   {

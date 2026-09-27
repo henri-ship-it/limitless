@@ -157,6 +157,12 @@ export const entryOverrides: Record<number, EntryOverride> = {
   // Week 5
   29: {
     title: 'The Agile Mind',
+    /*
+     * Bigger than the default half. The crop used to carry a third of a page
+     * of white either side of the triangle, so half the panel was mostly
+     * nothing; tight to the ink, half reads small.
+     */
+    visualScale: 0.68,
     exercise: {
       intro: ['Rate yourself on a scale of 1 to 10 for each question, 1 being low and 10 being high.'],
       fields: [
@@ -176,6 +182,7 @@ export const entryOverrides: Record<number, EntryOverride> = {
   31: { title: 'The Mind is Like Water', hideExercise: true },
   32: {
     title: 'Hooked and Reacting Automatically',
+    visualScale: 0.68,
     exercise: {
       intro: ['Identify a current challenging situation. Reflect on:'],
       fields: [
@@ -191,6 +198,7 @@ export const entryOverrides: Record<number, EntryOverride> = {
   },
   33: {
     title: 'Unhooked and Responding Deliberately',
+    visualScale: 0.68,
     exercise: {
       intro: ['Identify a current challenging situation. Reflect on:'],
       fields: [
@@ -207,7 +215,12 @@ export const entryOverrides: Record<number, EntryOverride> = {
   34: { title: 'Where Focus Goes, Energy Flows', hideExercise: true },
   35: {
     exercise: {
-      intro: ['Shifting our thinking on the spot.'],
+      /*
+       * No intro. This carried "Shifting our thinking on the spot.", which is
+       * the entry's own title said again in sentence case, so the page showed
+       * the same words twice capitalised two ways. The line is not on the
+       * printed page either; the heading there is the title and nothing else.
+       */
       fields: [
         { kind: 'text', label: 'What am I resisting right now, and how can I make space for it?' },
         { kind: 'text', label: 'Be present: what is happening right here, right now, that I can notice fully?' },

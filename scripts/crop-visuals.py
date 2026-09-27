@@ -20,11 +20,19 @@ CLIPS = {
     58: (0, 96, 420, 200),
     # Only the four circles, not the question printed beside them.
     61: (0, 96, 420, 200),
-    # The self-talk triangle, above the rating scale.
-    29: (0, 92, 420, 338),
-    # The hooked and unhooked diagrams, with their labels beside them.
-    32: (0, 96, 420, 350),
-    33: (0, 96, 420, 350),
+    # The self-talk triangle alone. The full page width left a third of the
+    # frame empty, and the eight point pad below reached far enough to catch
+    # the line above and the rating heading below, so both showed as slivers.
+    29: (107, 102, 312, 306),
+    # The mind like water, with its caption. Found automatically, the light
+    # grey of the blurred shape fell under the threshold and the box started
+    # inside it, cutting the shape and the first word of the quote.
+    31: (100, 222, 319, 363),
+    # The hooked and unhooked arrows, with their label beside them. Tight to
+    # the ink: the gap between the line above and the numbered badge is six
+    # points, so anything wider brings half a sentence with it.
+    32: (30, 101, 284, 343),
+    33: (136, 101, 374, 343),
     # The four kinds of support, one shaded on each entry of the chapter.
     57: (0, 96, 420, 200),
     # The stairway to optimism, which sits beside the heading on each of the
