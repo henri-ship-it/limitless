@@ -178,7 +178,10 @@ export const entryOverrides: Record<number, EntryOverride> = {
       ],
     },
   },
-  30: { title: 'Going from Away, Towards', hideVisual: true },
+  // The page holds no artwork, only the prompt and its ruled lines. Kept all
+  // the same: without it entry 30 is the one bare row in a week of illustrated
+  // ones, and the blank page reads as part of the set.
+  30: { title: 'Going from Away, Towards' },
   31: { title: 'The Mind is Like Water', hideExercise: true },
   32: {
     title: 'Hooked and Reacting Automatically',
