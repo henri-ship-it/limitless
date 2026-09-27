@@ -3,6 +3,7 @@
 import { useOptimistic, useTransition } from 'react'
 import { toggleChecklistItem } from '@/app/actions'
 import { TickIcon } from './icons'
+import { linkify } from './Linkify'
 
 /**
  * The focus points for a week, as things to tick off rather than another
@@ -59,7 +60,7 @@ export function DigestChecklist({
                   checked ? 'text-ink-40 line-through' : 'text-ink-72'
                 }`}
               >
-                {item}
+                {linkify(item)}
               </span>
             </button>
           </li>

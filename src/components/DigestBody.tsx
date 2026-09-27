@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { DigestNode } from '@/content/digests'
 import { DigestChecklist } from './DigestChecklist'
+import { linkify } from './Linkify'
 
 type Props = {
   nodes: DigestNode[]
@@ -55,7 +56,7 @@ export function DigestBody({ nodes, week, firstEntry, completedItems }: Props) {
           const afterList = nodes[i - 1]?.type === 'ul'
           return (
             <p key={i} className={afterList ? '!mt-8' : undefined}>
-              {node.text}
+              {linkify(node.text)}
             </p>
           )
         }
@@ -111,7 +112,7 @@ function PracticeList({ items, firstEntry }: { items: string[]; firstEntry: numb
           >
             Prompt
           </Link>
-          <span className="text-[0.9375rem] leading-relaxed text-ink-72">{item}</span>
+          <span className="text-[0.9375rem] leading-relaxed text-ink-72">{linkify(item)}</span>
         </li>
       ))}
     </ol>
@@ -123,7 +124,7 @@ function QuestionList({ items }: { items: string[] }) {
     <ul className="!list-none !pl-0 !mb-0 grid gap-px bg-line sm:grid-cols-2">
       {items.map((item, i) => (
         <li key={i} className="!mb-0 bg-surface p-4">
-          <p className="!mb-0 text-[0.9375rem] leading-relaxed !text-ink">{item}</p>
+          <p className="!mb-0 text-[0.9375rem] leading-relaxed !text-ink">{linkify(item)}</p>
         </li>
       ))}
     </ul>
@@ -143,7 +144,7 @@ function TermList({ items }: { items: string[] }) {
           >
             <dt className="label !text-ink pt-0.5">{term.trim()}</dt>
             <dd className="text-[0.9375rem] leading-relaxed text-ink-72">
-              {rest.join(':').trim()}
+              {linkify(rest.join(':').trim())}
             </dd>
           </div>
         )
@@ -161,7 +162,7 @@ function PlainRows({ items }: { items: string[] }) {
           key={i}
           className="!mb-0 border-b border-line py-3 text-[0.9375rem] leading-relaxed text-ink-72"
         >
-          {item}
+          {linkify(item)}
         </li>
       ))}
     </ul>
