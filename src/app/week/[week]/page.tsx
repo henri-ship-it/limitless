@@ -8,6 +8,7 @@ import { ChapterVisual } from '@/components/ChapterVisual'
 import { VideoEmbed } from '@/components/VideoEmbed'
 import { DriveEmbed } from '@/components/DriveEmbed'
 import { DigestBody } from '@/components/DigestBody'
+import { DigestEnd } from '@/components/DigestEnd'
 import { StyleRadar } from '@/components/StyleRadar'
 import { MarkWeekDone } from '@/components/MarkWeekDone'
 import { LockIcon } from '@/components/icons'
@@ -178,6 +179,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
                 <StyleRadar scores={scores} lead={leadStyle(scores)?.name} />
               </div>
             ) : null}
+            <DigestEnd week={n} done={progress.completedWeeks.has(n)} />
           </>
         ) : (
           <p className="!text-ink-56">
