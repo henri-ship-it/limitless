@@ -9,11 +9,13 @@ import { LockIcon } from '@/components/icons'
 import { journalEntries, entriesForWeek } from '@/content/journal'
 import { getWeek, moduleForWeek } from '@/content/programme'
 import type { EntryData } from '@/content/journal-fields'
-import { resolveEntry } from '@/lib/entry'
+import { resolveEntry, resolveEliteEntry } from '@/lib/entry'
 import { getJournalEntry, getMember } from '@/lib/member'
 import { isUnlocked } from '@/lib/cohort'
 import { BulkPhotos } from '@/components/BulkPhotos'
 import { supabaseConfigured } from '@/lib/env'
+import { getMode } from '@/lib/programme-mode'
+import { EliteEntry } from '@/components/EliteEntry'
 
 export function generateStaticParams() {
   return journalEntries.map((e) => ({ entry: String(e.n) }))
@@ -22,12 +24,27 @@ export function generateStaticParams() {
 export default async function EntryPage({ params }: { params: Promise<{ entry: string }> }) {
   const { entry: entryParam } = await params
   const n = Number(entryParam)
+  const member = await getMember()
+  const mode = await getMode(member?.tier ?? 'core', member?.isAdmin ?? false)
+
+  /*
+   * Elite reads a different book. Entry five of each journal is a different
+   * page, so an Elite member resolved against the weekly content would be
+   * shown somebody else's exercise under the right number, which is worse than
+   * an error: nothing on the page would look wrong.
+   */
+  if (mode === 'elite') {
+    const elite = resolveEliteEntry(n)
+    if (!elite) notFound()
+    const savedElite = member ? await getJournalEntry(member.id, n) : null
+    return <EliteEntry entry={elite} initial={(savedElite ?? {}) as EntryData} />
+  }
+
   const entry = resolveEntry(n)
   if (!entry) notFound()
 
   const week = getWeek(entry.week)!
   const module = moduleForWeek(entry.week)!
-  const member = await getMember()
 
   const isAdmin = member?.isAdmin ?? false
   if (!isUnlocked(entry.week, isAdmin)) {

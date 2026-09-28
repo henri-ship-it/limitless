@@ -3,6 +3,7 @@ import { HUDDLE_QUESTIONS, isHuddleEntry, type Field } from '@/content/entry-fie
 import { overrideFor } from '@/content/entry-overrides'
 import { customExercise, linkForEntry } from '@/content/entry-extras'
 import { visualForEntry } from '@/content/journal-visuals'
+import { eliteJournalEntry } from '@/content/elite-journal'
 
 export type ResolvedEntry = {
   n: number
@@ -78,3 +79,41 @@ export function resolveEntry(n: number): ResolvedEntry | null {
 }
 
 export { HUDDLE_QUESTIONS }
+
+/**
+ * The same thing for the Elite journal.
+ *
+ * A separate function rather than a flag on the one above, because the two
+ * books only share a shape. Entry five of the weekly journal and entry five of
+ * the Elite journal are different exercises on different pages, so resolving an
+ * Elite member's entry against the weekly content would quietly show them
+ * somebody else's book, with the right number at the top of it.
+ *
+ * None of the corrections apply. Overrides, custom exercises, cropped artwork
+ * and QR links were all measured against the weekly journal by entry number,
+ * and reusing them here would attach week three's diagram to whatever Elite
+ * happens to number the same. Elite gets the parsed page and nothing else until
+ * its own artwork has been cropped.
+ */
+export function resolveEliteEntry(n: number): ResolvedEntry | null {
+  const entry = eliteJournalEntry(n)
+  if (!entry) return null
+
+  const huddle = isHuddleEntry(n)
+
+  return {
+    n,
+    week: entry.week,
+    day: n,
+    huddle,
+    title: entry.title ?? (huddle ? 'Huddle' : `Entry ${n}`),
+    intro: entry.intro,
+    fields: entry.prompts.map((label) => ({ kind: 'text', label })),
+    outro: entry.outro,
+    caption: null,
+    visual: null,
+    link: null,
+    awaitingLink: entry.qr,
+    hasExercise: Boolean(entry.prompts.length || entry.intro.length),
+  }
+}

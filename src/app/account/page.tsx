@@ -57,9 +57,11 @@ export default async function AccountPage() {
 
       <Section id="membership" label="Membership">
         <p>
-          {member.tier === 'pro'
-            ? 'Pro. You join the four module workshops live, the drop-in call in every chapter week, and the WhatsApp community, and you can reach Chris directly there.'
-            : 'Core. You have the journal, the weekly digests, every chapter masterclass and the recording of each module workshop. The drop-in calls, the WhatsApp community and the live workshops are Pro only.'}
+          {member.tier === 'elite'
+            ? 'Elite. Twelve chapters across a year, four printed journals, a check-in with Chris in every chapter, and him directly on WhatsApp the whole way through. There is no group: the support is one to one.'
+            : member.tier === 'pro'
+              ? 'Pro. You join the four module workshops live, the drop-in call in every chapter week, and the WhatsApp community, and you can reach Chris directly there.'
+              : 'Core. You have the journal, the weekly digests, every chapter masterclass and the recording of each module workshop. The drop-in calls, the WhatsApp community and the live workshops are Pro only.'}
         </p>
         {member.tier === 'core' ? (
           <p className="!text-ink-56 text-[0.8125rem]">
@@ -108,9 +110,11 @@ export default async function AccountPage() {
 
       <Section id="support" label="Support">
         <p>
-          {member.tier === 'pro'
-            ? 'Message the WhatsApp community, or email Chris for anything you would rather keep private.'
-            : 'Email Chris, or reply to any email he sends. He reads and answers every one.'}
+          {member.tier === 'elite'
+            ? 'Message Chris directly on WhatsApp, or email him. Either reaches him, and there is no group in between.'
+            : member.tier === 'pro'
+              ? 'Message the WhatsApp community, or email Chris for anything you would rather keep private.'
+              : 'Email Chris, or reply to any email he sends. He reads and answers every one.'}
         </p>
         <CopyEmail address={SUPPORT_EMAIL} />
       </Section>

@@ -10,6 +10,9 @@ import { JournalVisual } from '@/components/JournalVisual'
 import Link from 'next/link'
 import { currentWeek, isUnlocked } from '@/lib/cohort'
 import { getMember } from '@/lib/member'
+import { getMode } from '@/lib/programme-mode'
+import { EliteJournalIndex, ELITE_TOC } from '@/components/EliteJournalIndex'
+import { ELITE, ELITE_ENTRIES, ELITE_WEEKS, currentEliteChapter } from '@/content/elite'
 
 const TOC = modules.map((m) => ({
   id: `module-${m.number}`,
@@ -22,7 +25,52 @@ const TOC = modules.map((m) => ({
 
 export default async function JournalPage() {
   const active = currentWeek()
-  const isAdmin = (await getMember())?.isAdmin ?? false
+  const member = await getMember()
+  const isAdmin = member?.isAdmin ?? false
+  const mode = await getMode(member?.tier ?? 'core', isAdmin)
+
+  /*
+   * Two books, not one book with a filter. Elite runs to three hundred and
+   * thirty six entries over twelve chapters and the weekly one to a hundred and
+   * twelve over sixteen weeks, so the counts, the headings and the grouping are
+   * different the whole way down.
+   */
+  if (mode === 'elite') {
+    const chapter = member?.eliteStartDate ? currentEliteChapter(member.eliteStartDate) : 0
+    return (
+      <Shell toc={ELITE_TOC}>
+        <PageHeader
+          eyebrow="Library"
+          title="The journal"
+          lede="Every entry in the four printed books, in order. Preview your day, work the entry, then review it."
+          pills={
+            <>
+              <span className="pill">{ELITE_ENTRIES} entries</span>
+              <span className="pill">7 a week</span>
+              <span className="pill">{ELITE.chapters} chapters</span>
+              <span className="pill">{ELITE_WEEKS} weeks</span>
+            </>
+          }
+        />
+
+        <Section label="How it works">
+          <p>
+            Each day has a preview and a review. Preview your day, set three intentions, and track
+            your schedule. At the end of the day record one win, one thing on your mind, and one
+            thing you are grateful for.
+          </p>
+          <p>
+            The entry itself carries the exercise for that day. The huddle closes each week: what
+            went well, what did not, and what you will change. Twenty eight entries to a chapter,
+            four weeks at seven a week.
+          </p>
+        </Section>
+
+        <JumpToHash />
+        <EliteJournalIndex currentChapter={chapter} />
+      </Shell>
+    )
+  }
 
   return (
     <Shell toc={TOC}>
