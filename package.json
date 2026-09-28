@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "check": "tsx scripts/check-dwell.ts && tsx scripts/check-reached-end.ts"
+    "check": "tsx scripts/check-dwell.ts && tsx scripts/check-reached-end.ts && tsx scripts/check-elite.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

@@ -3,18 +3,25 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { modules, weeks } from '@/content/programme'
-import { currentEliteMonth, eliteMonths } from '@/content/elite'
+import { chaptersInModule } from '@/content/elite'
 import { AdminIcon, GuideIcon, JournalIcon, NowIndicator, ProIcon, BlueprintIcon } from './icons'
 import { WeekMarker } from './WeekMarker'
 
 type Props = {
-  /** Elite replaces the week list with its twelve months. */
+  /** Elite replaces the sixteen weeks with its twelve chapters. */
   mode?: 'limitless' | 'elite'
   currentWeek: number
   openThrough: number
   completedWeeks: number[]
   isPro: boolean
   isAdmin: boolean
+  /**
+   * Which Elite chapter is open for this member.
+   *
+   * Passed in rather than worked out here, because it is derived from their own
+   * start date and this is a client component with no way to read it.
+   */
+  eliteChapter?: number
 }
 
 export function Sidebar({
@@ -24,6 +31,7 @@ export function Sidebar({
   completedWeeks,
   isPro,
   isAdmin,
+  eliteChapter = 0,
 }: Props) {
   const pathname = usePathname()
   const done = new Set(completedWeeks)
@@ -46,8 +54,18 @@ export function Sidebar({
             /* An open entry is still the journal, and the sidebar should say so. */
             active={pathname.startsWith('/journal')}
           />
-          {isPro ? (
-            <TopLink href="/pro" label="Pro" icon={<ProIcon />} active={pathname === '/pro'} />
+          {/*
+            * Named for the tier it belongs to. An Elite member has no Pro
+            * anything - no group, no drop-in, no workshops - so a link labelled
+            * Pro would send them to a page about a programme they are not on.
+            */}
+          {isPro || mode === 'elite' ? (
+            <TopLink
+              href="/pro"
+              label={mode === 'elite' ? 'Elite' : 'Pro'}
+              icon={<ProIcon />}
+              active={pathname === '/pro'}
+            />
           ) : null}
           {/*
             * The same page for both tiers, and not the same thing. Pro reads a
@@ -72,25 +90,49 @@ export function Sidebar({
         </ul>
 
         {mode === 'elite'
-          ? eliteMonths.map((month) => {
-              const active = pathname === `/elite/month/${month.n}`
-              return (
+          ? modules.map((m) => (
+              <div key={m.number} className="mb-7">
                 <Link
-                  key={month.n}
-                  href={`/elite/month/${month.n}`}
-                  className={`-ml-px flex items-center justify-between gap-2 border-l py-1.5 pr-1 pl-4 text-[0.875rem] ${
-                    active
-                      ? 'border-ink font-medium text-ink'
-                      : 'border-transparent text-ink-72 hover:border-line-strong hover:text-ink'
+                  href={`/module/${m.number}`}
+                  className={`label mb-2 block hover:!text-ink ${
+                    pathname === `/module/${m.number}` ? '!text-ink' : ''
                   }`}
                 >
-                  <span className="truncate">{month.title}</span>
-                  {month.n === currentEliteMonth() ? (
-                    <span className="radar shrink-0" aria-hidden />
-                  ) : null}
+                  {String(m.number).padStart(2, '0')} · {m.name}
                 </Link>
-              )
-            })
+                <ul className="border-l border-line">
+                  {chaptersInModule(m.number).map((c) => {
+                    const active = pathname === `/elite/chapter/${c.n}`
+                    /*
+                     * Nothing is locked. On a programme running to the member's
+                     * own clock there is no cohort to stay level with, so a
+                     * padlock here would be the platform inventing a rule.
+                     */
+                    return (
+                      <li key={c.n}>
+                        <Link
+                          href={`/elite/chapter/${c.n}`}
+                          className={`-ml-px block border-l py-1.5 pr-1 pl-4 text-[0.875rem] ${
+                            active
+                              ? 'border-ink font-medium text-ink'
+                              : 'border-transparent text-ink-72 hover:border-line-strong hover:text-ink'
+                          }`}
+                        >
+                          <span className="flex items-center justify-between gap-2">
+                            <span className="truncate">{c.title}</span>
+                            <WeekMarker
+                              done={done.has(c.n)}
+                              now={c.n === eliteChapter}
+                              locked={false}
+                            />
+                          </span>
+                        </Link>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            ))
           : null}
 
         {mode === 'elite' ? null : modules.map((m) => (

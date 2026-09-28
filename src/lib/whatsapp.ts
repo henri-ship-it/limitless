@@ -23,3 +23,19 @@ export function whatsappHref({ phone, text }: { phone?: string | null; text?: st
   if (text) params.set('text', text)
   return `whatsapp://send?${params.toString()}`
 }
+
+/**
+ * The same thing for a member rather than for Chris.
+ *
+ * `wa.me` rather than the `whatsapp://` scheme above, and deliberately so. That
+ * scheme does nothing at all when WhatsApp is not installed, which is the right
+ * trade on a page only Chris and Henri open on their own phones. A member might
+ * be at a desk with no WhatsApp on it, and for them falling through to
+ * web.whatsapp.com is the difference between a button that works and one that
+ * appears to be broken.
+ */
+export function whatsappMemberHref({ phone, text }: { phone: string; text?: string }): string {
+  const digits = phone.replace(/[^0-9]/g, '')
+  const query = text ? `?text=${encodeURIComponent(text)}` : ''
+  return `https://wa.me/${digits}${query}`
+}

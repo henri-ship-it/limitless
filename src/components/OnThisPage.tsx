@@ -45,8 +45,8 @@ export function OnThisPage({ items }: { items: TocItem[] }) {
   if (items.length < 2) return null
 
   return (
-    <nav className="hidden xl:block xl:w-56 xl:shrink-0" aria-label="On this page">
-      <div className="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto py-8 pr-5">
+    <nav className="hidden xl:block xl:w-64 xl:shrink-0" aria-label="On this page">
+      <div className="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto py-8 pl-7 pr-5">
         <p className="label mb-3">On this page</p>
         <ul className="border-l border-line">
           {items.map((item) => {

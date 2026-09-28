@@ -20,6 +20,27 @@ SMALL = {
     "the", "a", "an", "and", "or", "of", "to", "in", "on", "for", "with",
     "your", "you", "it", "is", "as", "at", "but", "by", "from",
 }
+# How many entries the book runs to. The Elite journal is the same design over
+# three hundred and thirty six pages, so the parser is shared and this is set by
+# whichever script is driving it.
+TOTAL = 112
+# The printed marker. Some pages set it "ENTRY 3/ 336", without the space.
+def entry_re():
+    return re.compile(r"^ENTRY\s*\d+\s*/\s*%d$" % TOTAL)
+
+
+def strip_marker(text: str) -> str:
+    """
+    Takes the page marker out of a block rather than only skipping blocks that
+    are nothing else. On the last page of the Elite journal the marker merged
+    with the day-of-week strip beside it, so an exact match filtered nothing and
+    "Entry 336 / 336 day: m t w t f s s" was published as a prompt.
+    """
+    text = re.sub(r"ENTRY\s*\d+\s*/\s*%d" % TOTAL, " ", text)
+    text = re.sub(r"\bDAY:\s*(?:[MTWFS]\s*){5,9}", " ", text, flags=re.I)
+    return " ".join(text.split())
+
+
 # A prompt is followed by room to write. Anything tighter than this is prose.
 WRITING_SPACE = 42
 MERGE_GAP = 6
@@ -28,6 +49,8 @@ FORM_LABELS = {
     "PREVIEW", "REVIEW", "INTENTIONS", "SCHEDULE", "ACHIEVEMENTS", "HUDDLE",
     "ONE WIN OF YOUR DAY", "ONE THING ON YOUR MIND",
     "ONE THING YOU\u2019RE GRATEFUL FOR",
+    # Printed above the blank space on the entry page itself, not a prompt.
+    "NOTES",
 }
 
 
@@ -55,7 +78,10 @@ def blocks_for(page):
         if x1 <= W / 2:
             continue
         text = " ".join(l.strip() for l in text.strip().split("\n") if l.strip())
-        if not text or re.match(r"^ENTRY \d+ / 112$", text):
+        if not text or entry_re().match(text):
+            continue
+        text = strip_marker(text)
+        if not text:
             continue
         if text.upper() in FORM_LABELS or re.match(r"^[\d.\s]+$", text):
             continue
@@ -168,7 +194,7 @@ def main() -> None:
 
     entries = []
     for page in doc:
-        em = re.search(r"ENTRY (\d+) / 112", page.get_text())
+        em = re.search(r"ENTRY\s*(\d+)\s*/\s*%d" % TOTAL, page.get_text())
         if not em:
             continue
         entry = parse_entry(page)

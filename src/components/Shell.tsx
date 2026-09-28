@@ -2,6 +2,7 @@ import { getMember, getProgress, getStreak } from '@/lib/member'
 import { supabaseConfigured } from '@/lib/env'
 import { currentWeek, unlockedThrough } from '@/lib/cohort'
 import { getMode } from '@/lib/programme-mode'
+import { currentEliteChapter } from '@/content/elite'
 import { TopBar } from './TopBar'
 import { Sidebar } from './Sidebar'
 import { OnThisPage, type TocItem } from './OnThisPage'
@@ -26,6 +27,15 @@ export async function Shell({
   const mode = await getMode(tier, isAdmin)
   const openThrough = unlockedThrough(new Date(), isAdmin)
   const completed = [...progress.completedWeeks]
+  /*
+   * Only meaningful in Elite mode, and only from the member's own start date.
+   * An admin looking at Elite has none, so nothing is marked as current rather
+   * than chapter one being marked for everybody.
+   */
+  const eliteChapter =
+    mode === 'elite' && member?.eliteStartDate
+      ? currentEliteChapter(member.eliteStartDate)
+      : 0
 
   return (
     <div className="min-h-screen bg-bg">
@@ -49,6 +59,7 @@ export async function Shell({
           completedWeeks={completed}
           isPro={tier === 'pro'}
           isAdmin={isAdmin}
+          eliteChapter={eliteChapter}
         />
         <main className="guides min-w-0 flex-1 bg-surface">
           {children}

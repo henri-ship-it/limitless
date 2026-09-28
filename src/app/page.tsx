@@ -8,7 +8,6 @@ import { GetStarted } from '@/components/GetStarted'
 import { Timeline } from '@/components/Timeline'
 import { LockIcon } from '@/components/icons'
 import { CopyEmail } from '@/components/CopyEmail'
-import { Workshops } from '@/components/Workshops'
 import { checklistFor } from '@/content/checklist'
 import { COHORT, modules, weeks } from '@/content/programme'
 import { SUPPORT_EMAIL } from '@/content/assets'
@@ -21,7 +20,6 @@ function tocFor(setUp: boolean) {
     { id: 'progress', label: 'Your progress' },
     { id: 'get-started', label: setUp ? 'Get started' : 'Where you are' },
     { id: 'how-it-works', label: 'How it works' },
-    { id: 'workshops', label: 'Workshops' },
     { id: 'rhythm', label: 'The weekly rhythm' },
     { id: 'support', label: 'Support' },
   ]
@@ -131,15 +129,6 @@ export default async function StartGuide() {
             </div>
           ))}
         </div>
-      </Section>
-
-      <Section id="workshops" label="Workshops">
-        <p>
-          Four workshops, one at the end of each module. Each runs during that module&rsquo;s deload
-          week, and the recording is posted on the deload week page a few days later.
-          {tier === 'pro' ? ' You join all four live.' : ''}
-        </p>
-        <Workshops />
       </Section>
 
       <Section id="rhythm" label="The weekly rhythm">

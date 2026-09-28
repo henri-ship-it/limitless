@@ -49,9 +49,6 @@ export default async function JournalPage() {
           The entry itself carries the exercise for that day. The huddle closes each week: what went
           well, what did not, and what you will change.
         </p>
-        <p>
-          <a href="/journal/download">Download the PDF journal</a>
-        </p>
       </Section>
 
       <JumpToHash />

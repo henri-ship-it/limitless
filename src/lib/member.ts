@@ -12,6 +12,14 @@ export type Member = {
   isAdmin: boolean
   /** Whether their writing may inform what they are sent. */
   personalisedNudges: boolean
+  /**
+   * First day of this member's Elite year, or null for everyone else.
+   *
+   * Elite is sold one person at a time, so there is no cohort date to fall
+   * back on: without this an Elite member has no position in their own
+   * programme, which the Elite pages treat as not yet started.
+   */
+  eliteStartDate: string | null
 }
 
 /** Below this, seeing someone again is not worth a write. */
@@ -31,6 +39,7 @@ export const getMember = cache(async (): Promise<Member | null> => {
       cohort: '4.0',
       isAdmin: true,
       personalisedNudges: true,
+      eliteStartDate: '2026-08-31',
     }
   }
 
@@ -50,7 +59,7 @@ export const getMember = cache(async (): Promise<Member | null> => {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('first_name, tier, cohort, is_admin, personalised_nudges, last_seen_at')
+    .select('first_name, tier, cohort, is_admin, personalised_nudges, last_seen_at, elite_start_date')
     .eq('id', user.id)
     .single()
 
@@ -76,6 +85,7 @@ export const getMember = cache(async (): Promise<Member | null> => {
     cohort: profile?.cohort ?? '4.0',
     isAdmin: profile?.is_admin ?? false,
     personalisedNudges: profile?.personalised_nudges ?? true,
+    eliteStartDate: (profile?.elite_start_date as string | null) ?? null,
   }
 })
 

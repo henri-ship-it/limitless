@@ -2,129 +2,240 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Shell } from '@/components/Shell'
 import { PageHeader } from '@/components/PageHeader'
+import { Streak } from '@/components/Streak'
 import { Section } from '@/components/Section'
-import { getMember } from '@/lib/member'
+import { GetStarted } from '@/components/GetStarted'
+import { EliteTimeline } from '@/components/EliteTimeline'
+import { CopyEmail } from '@/components/CopyEmail'
+import { MessageChris } from '@/components/MessageChris'
+import { checklistFor } from '@/content/checklist'
+import { modules } from '@/content/programme'
+import { SUPPORT_EMAIL } from '@/content/assets'
 import {
   ELITE,
   ELITE_ENTRIES,
-  currentEliteMonth,
-  eliteMonths,
-  formatEliteMonth,
+  ELITE_WEEKS,
+  chaptersInModule,
+  currentEliteChapter,
+  eliteChapter,
+  eliteChapters,
+  formatEliteChapter,
+  weekInChapter,
 } from '@/content/elite'
+import { getMember, getProgress, getStreak } from '@/lib/member'
 
 export const metadata = { title: 'Elite · Limitless' }
 
 const TOC = [
-  { id: 'where', label: 'Where you are' },
-  { id: 'months', label: 'The twelve months' },
-  { id: 'how', label: 'How it runs' },
+  { id: 'progress', label: 'Your progress' },
+  { id: 'get-started', label: 'Where you are' },
+  { id: 'how-it-works', label: 'How it works' },
+  { id: 'rhythm', label: 'The rhythm' },
+  { id: 'support', label: 'Support' },
 ]
 
 /**
- * The Elite dashboard.
+ * The Elite front door, which is the Start Guide written for a year.
  *
- * A year is not sixteen weeks with more gaps in it, so this does not try to be
- * the Start Guide with different numbers. What matters on a monthly programme
- * is which month you are in and how much of it is left, because the failure
- * mode is not falling behind, it is a fortnight going by without opening it.
+ * Deliberately the same page as the sixteen week one rather than a different
+ * idea: same progress run, same setting up list, same rhythm table, same place
+ * to get help. What changes is the clock. A chapter is four weeks instead of
+ * one, there are no deloads and no workshops, and every date is counted from
+ * this member's own start rather than a cohort's.
  *
  * Reachable by the Elite member whose programme it is, and by the two people
- * who run it. Nobody on the sixteen week programme can open it, since it is a
- * different product rather than a preview of a better one.
+ * who run it.
  */
 export default async function ElitePage() {
   const member = await getMember()
-  // Their own programme, or one of the two people who run it.
   if (!member || (!member.isAdmin && member.tier !== 'elite')) notFound()
 
-  const month = currentEliteMonth()
-  const open = Math.min(ELITE.months, Math.max(1, month))
-  const current = eliteMonths.find((m) => m.n === open)!
+  const progress = await getProgress(member.id)
+  const streak = await getStreak()
+  const items = checklistFor('elite')
+  const settingUp = items.some((item) => !progress.completedItems.has(item.key))
+
+  /*
+   * An admin looking at Elite has no start date of their own, so they are shown
+   * the programme from its first day rather than as not yet begun. A real Elite
+   * member without one is a data problem rather than a state to design for, and
+   * the same fallback keeps the page readable while it is fixed.
+   */
+  const start = member.eliteStartDate ?? new Date().toISOString().slice(0, 10)
+  const chapter = currentEliteChapter(start)
+  const open = Math.min(ELITE.chapters, Math.max(1, chapter))
+  const current = eliteChapter(open)!
+  const week = weekInChapter(start)
+  // Chapters, not weeks: the year is counted in the twelve things it contains.
+  const doneChapters = [...progress.completedWeeks]
 
   return (
     <Shell toc={TOC}>
       <PageHeader
         eyebrow={`${ELITE.label}, also sold as ${ELITE.alias}`}
-        title="The year"
-        lede="Twelve chapters, one a month, across four printed journals. The same frameworks as the sixteen week programme, taken further and given room."
+        title={member.firstName ? `Welcome, ${member.firstName}` : 'Elite'}
+        lede="Twelve chapters over a year, four modules, four journals. This page covers how the programme runs and where you are in it."
         pills={
           <>
-            <span className="pill !text-ink">
-              Month {String(open).padStart(2, '0')} of {ELITE.months}
+            <Streak days={streak} />
+            <span className="pill">elite</span>
+            {settingUp ? (
+              <span className="pill">
+                {progress.completedItems.size}/{items.length} set up
+              </span>
+            ) : null}
+            <span className="pill">
+              {doneChapters.length}/{ELITE.chapters} chapters complete
             </span>
-            <span className="pill">{ELITE_ENTRIES} entries</span>
-            <span className="pill">{ELITE.entriesPerMonth} a month</span>
-            <span className="pill">No deloads</span>
           </>
         }
       />
 
-      <Section id="where" label="Where you are">
-        <div className="!mb-0 border border-line p-6">
-          <p className="label !mb-2">
-            {formatEliteMonth(open)} · Journal {current.volume}
-          </p>
-          <p className="!mb-3 text-[1.625rem] leading-tight font-medium tracking-[-0.022em]">
-            {current.title}
-          </p>
-          <p className="!mb-5 text-[0.9375rem] leading-relaxed text-ink-72">
-            Entries {current.firstEntry} to {current.lastEntry}, broken into four weeks of work
-            against the journal.
-          </p>
-          <Link
-            href={`/elite/month/${open}`}
-            className="label !text-white bg-ink px-4 py-3 !no-underline hover:bg-ink-72"
-          >
-            Open this month
-          </Link>
-        </div>
+      <Section id="progress" label="Your progress">
+        <EliteTimeline currentChapter={chapter} completedChapters={doneChapters} />
       </Section>
 
-      <Section id="months" label="The twelve months">
-        <ol className="!mb-0 !list-none !pl-0">
-          {eliteMonths.map((m) => {
-            const done = m.n < open
-            const now = m.n === open
-            return (
-              <li key={m.n} className="border-t border-line last:border-b">
-                <Link
-                  href={`/elite/month/${m.n}`}
-                  className="flex flex-wrap items-baseline gap-x-4 gap-y-1 py-3.5 !no-underline hover:bg-ink-3"
-                >
-                  <span className="label w-6 shrink-0">{String(m.n).padStart(2, '0')}</span>
-                  <span
-                    className={`min-w-0 flex-1 text-[1rem] ${now ? 'font-medium text-ink' : done ? 'text-ink-72' : 'text-ink-56'}`}
-                  >
-                    {m.title}
-                  </span>
-                  <span className="label !text-ink-40">
-                    {m.firstEntry} to {m.lastEntry}
-                  </span>
-                  <span className="label !text-ink-40 w-16 text-right">Journal {m.volume}</span>
-                  {now ? <span className="radar shrink-0" aria-hidden /> : null}
-                </Link>
-              </li>
-            )
-          })}
-        </ol>
-      </Section>
+      <GetStarted items={items} completed={[...progress.completedItems]} settingUp={settingUp}>
+        <WhereYouAre start={start} chapter={open} week={week} />
+      </GetStarted>
 
-      <Section id="how" label="How it runs">
+      <Section id="how-it-works" label="How it works">
         <p>
-          One chapter a month. The digest arrives {ELITE.digest.toLowerCase()}, written to the month
-          rather than the week: one long piece with the work split across four weeks against the
-          journal, rather than a short note every Sunday.
+          Four modules, three chapters in each, four weeks to a chapter. A chapter is a framework
+          and twenty eight entries to work it through, which is the same material the sixteen week
+          programme covers in a week, given four times the room.
         </p>
         <p>
           There are no deload weeks. A deload exists on the sixteen week programme because a new
-          framework every week is more than anybody can absorb without a pause. A month a chapter
-          is already that pause, so a month of nothing would only be a month of nothing.
+          framework every week is more than anybody absorbs without a pause. Four weeks a chapter is
+          already that pause, so a deload here would only be a month of nothing.
         </p>
-        <p className="!mb-0">
-          The journal runs to {ELITE_ENTRIES} entries across {ELITE.volumes} printed books, three
-          months to a book.
-        </p>
+        <div className="mt-8 space-y-8">
+          {modules.map((m) => (
+            <div key={m.number} className="border-t border-line pt-5">
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <span className="pill">Module {String(m.number).padStart(2, '0')}</span>
+                <span className="text-[1.0625rem] font-medium text-ink">{m.name}</span>
+              </div>
+              <p className="mb-4 text-[0.9375rem]">{m.summary}</p>
+              <ul className="!list-none !pl-0 !mb-0">
+                {chaptersInModule(m.number).map((c) => (
+                  <li key={c.n} className="border-t border-line">
+                    <Link
+                      href={`/elite/chapter/${c.n}`}
+                      className="flex items-baseline gap-4 py-2.5 !no-underline hover:bg-ink-3"
+                    >
+                      <span className="label w-20 shrink-0">Chapter {c.n}</span>
+                      <span
+                        className={`text-[0.9375rem] ${c.n === open ? 'font-medium text-ink' : c.n < open ? 'text-ink' : 'text-ink-56'}`}
+                      >
+                        {c.title}
+                      </span>
+                      <span className="label !text-ink-40 ml-auto shrink-0">
+                        {formatEliteChapter(start, c.n)}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       </Section>
+
+      <Section id="rhythm" label="The rhythm">
+        <p>
+          Your year runs to its own clock rather than a cohort&rsquo;s. Every chapter opens four
+          weeks after the last one, on the same weekday you began.
+        </p>
+        <ul className="!list-none !pl-0 !mb-0">
+          <li className="flex gap-5 border-t border-line py-3">
+            <span className="label w-28 shrink-0 pt-0.5">Daily</span>
+            <span>A journal entry. Preview the day, then review it.</span>
+          </li>
+          <li className="flex gap-5 border-t border-line py-3">
+            <span className="label w-28 shrink-0 pt-0.5">End of week</span>
+            <span>The huddle. What worked, what did not, what changes.</span>
+          </li>
+          <li className="flex gap-5 border-t border-line py-3">
+            <span className="label w-28 shrink-0 pt-0.5">Every chapter</span>
+            <span>A check-in with Chris, and the new chapter opens here.</span>
+          </li>
+          <li className="flex gap-5 border-y border-line py-3">
+            <span className="label w-28 shrink-0 pt-0.5">Across the year</span>
+            <span>
+              {ELITE.chapters} chapters, {ELITE_WEEKS} weeks, {ELITE_ENTRIES} entries.
+            </span>
+          </li>
+        </ul>
+      </Section>
+
+      <Section id="support" label="Support">
+        <p>
+          Elite has no group. Chris is the whole support line, so anything at all goes straight to
+          him, whenever it comes up.
+        </p>
+        <MessageChris />
+        <p className="mt-8 text-[0.9375rem]">Or by email, if it is easier.</p>
+        <CopyEmail address={SUPPORT_EMAIL} />
+      </Section>
+
+      <div className="px-6 py-10 sm:px-10">
+        <Link
+          href={`/elite/chapter/${open}`}
+          className="label !text-white inline-flex items-center bg-ink px-5 py-3 no-underline hover:bg-ink-72"
+        >
+          Open chapter {open}
+        </Link>
+      </div>
     </Shell>
+  )
+}
+
+/** The chapter in hand, and the way into it. */
+function WhereYouAre({ start, chapter, week }: { start: string; chapter: number; week: number }) {
+  const current = eliteChapters.find((c) => c.n === chapter)!
+  const module = modules.find((m) => m.number === current.module)!
+  /*
+   * Which entry they are meant to be on. Seven a week from the chapter's first,
+   * so the fourth day of the second week of a chapter is its eleventh entry.
+   */
+  const entry = current.firstEntry + Math.max(0, week - 1) * 7
+
+  return (
+    <div className="border border-line p-6">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <span className="radar" aria-hidden />
+        <span className="label">
+          Chapter {String(chapter).padStart(2, '0')} · Module{' '}
+          {String(module.number).padStart(2, '0')} {module.name}
+        </span>
+      </div>
+      <p className="!mb-1 text-[1.25rem] font-medium tracking-[-0.015em] text-ink">
+        {current.title}
+      </p>
+      <span className="pill">
+        Week {Math.max(1, week)} of {ELITE.weeksPerChapter}
+      </span>
+
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <Link
+          href={`/journal/${entry}`}
+          className="label !text-white !no-underline bg-ink px-4 py-3 hover:bg-ink-72"
+        >
+          Open today&rsquo;s entry
+        </Link>
+        <Link
+          href={`/elite/chapter/${chapter}`}
+          className="label !no-underline border border-line px-4 py-3 hover:border-ink hover:!text-ink"
+        >
+          Read the chapter
+        </Link>
+      </div>
+      <p className="mt-3 !mb-0 !text-ink-56 text-[0.8125rem]">
+        Entry {entry} of {ELITE_ENTRIES} · Journal {current.volume} · opened{' '}
+        {formatEliteChapter(start, chapter)}
+      </p>
+    </div>
   )
 }

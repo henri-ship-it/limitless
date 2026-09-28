@@ -54,3 +54,13 @@ export const workshopRecordings: Record<number, Asset> = {
 }
 
 export const SUPPORT_EMAIL = 'chris@lmntaryperformance.com'
+
+/**
+ * Chris's WhatsApp number, in full international form.
+ *
+ * Elite has no group. Where a Pro member is pointed at the community, an Elite
+ * member is pointed straight at Chris, so this is the one route and it has to
+ * be right. Null until Henri fills it in, and the button says so rather than
+ * opening WhatsApp with nobody on the other end.
+ */
+export const CHRIS_WHATSAPP: string | null = null
