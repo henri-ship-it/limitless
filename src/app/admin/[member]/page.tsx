@@ -33,7 +33,7 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
   const detail = await getMemberDetail(id)
   if (!detail) notFound()
 
-  const { profile, weeksComplete, entries, totalWeeks, time, secondsSpent, arrivals, conversations } =
+  const { profile, weeksComplete, entries, totalUnits, unitName, time, secondsSpent, arrivals, conversations } =
     detail
   const name = profile.first_name ?? profile.email.split('@')[0]
   const assessment = (profile.assessment ?? {}) as AssessmentData
@@ -52,7 +52,7 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
             <span className="pill">{readable(secondsSpent)} on the platform</span>
             <span className="pill">Last seen {since(profile.last_seen_at)}</span>
             <span className="pill">
-              {weeksComplete.length}/{totalWeeks} weeks
+              {weeksComplete.length}/{totalUnits} {unitName}
             </span>
             <span className="pill">{entries.length} entries</span>
             {profile.personalised_nudges ? null : <span className="pill">Nudges off</span>}

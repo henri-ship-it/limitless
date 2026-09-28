@@ -16,7 +16,12 @@ export const previewWeek =
     ? null
     : Number(process.env.PREVIEW_WEEK)
 
-export const previewTier = process.env.PREVIEW_TIER === 'pro' ? 'pro' : 'core'
+export const previewTier =
+  process.env.PREVIEW_TIER === 'elite'
+    ? 'elite'
+    : process.env.PREVIEW_TIER === 'pro'
+      ? 'pro'
+      : 'core'
 
 /**
  * Opens every week regardless of the release schedule.

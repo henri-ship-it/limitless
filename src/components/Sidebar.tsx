@@ -75,7 +75,7 @@ export function Sidebar({
             */}
           <TopLink
             href="/blueprint"
-            label={isPro ? 'Blueprint' : "How you're wired"}
+            label={isPro || mode === 'elite' ? 'Blueprint' : "How you're wired"}
             icon={<BlueprintIcon />}
             active={pathname === '/blueprint'}
           />

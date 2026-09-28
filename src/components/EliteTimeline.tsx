@@ -1,9 +1,9 @@
 import Link from 'next/link'
 import { eliteChapters, chaptersInModule, ELITE } from '@/content/elite'
 import { modules } from '@/content/programme'
-import { LockIcon, TickIcon } from './icons'
+import { TickIcon } from './icons'
 
-type State = 'done' | 'now' | 'open' | 'locked'
+type State = 'done' | 'now' | 'open' | 'ahead'
 
 /**
  * The year as one run: twelve chapters under the four modules.
@@ -27,7 +27,7 @@ export function EliteTimeline({
   const percent = Math.round((done.size / ELITE.chapters) * 100)
 
   const stateOf = (n: number): State =>
-    done.has(n) ? 'done' : n === currentChapter ? 'now' : n > currentChapter ? 'locked' : 'open'
+    done.has(n) ? 'done' : n === currentChapter ? 'now' : n > currentChapter ? 'ahead' : 'open'
 
   return (
     <div>
@@ -83,7 +83,7 @@ function Marker({
       ? 'border-accent bg-accent-soft text-accent-ink'
       : state === 'now'
         ? 'border-ink bg-ink text-white'
-        : state === 'locked'
+        : state === 'ahead'
           ? 'border-line bg-ink-3 text-ink-20 hover:border-ink-20 hover:text-ink-56'
           : 'border-line bg-surface text-ink-56 hover:border-ink hover:text-ink'
 
@@ -92,7 +92,12 @@ function Marker({
       <span
         className={`flex h-11 flex-1 items-center justify-center border font-mono text-[0.6875rem] transition-colors sm:h-9 sm:text-[0.625rem] ${tone}`}
       >
-        {state === 'done' ? <TickIcon /> : state === 'locked' ? <LockIcon /> : label}
+        {/*
+          A chapter still ahead shows its number, greyed. A padlock would be the
+          platform inventing a rule: there is no cohort to stay level with here,
+          and reading ahead on your own year is not against anything.
+        */}
+        {state === 'done' ? <TickIcon /> : label}
       </span>
       {/*
         The number alone says nothing, so hovering names the chapter. Hidden on

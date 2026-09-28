@@ -5,6 +5,8 @@ import { getMember } from './member'
 import { currentWeek } from './cohort'
 import { weeks, type Tier } from '@/content/programme'
 import { journalEntries } from '@/content/journal'
+import { eliteJournalEntry } from '@/content/elite-journal'
+import { ELITE } from '@/content/elite'
 import type { ConversationNotes } from './distil'
 
 export { since, readable } from './format'
@@ -217,10 +219,21 @@ export async function getMemberDetail(id: string) {
     weeksComplete: (progress ?? []).map((p) => p.week_number).sort((a, b) => a - b),
     entries: (journal ?? []).map((row) => ({
       n: row.entry_number,
-      week: journalEntries.find((e) => e.n === row.entry_number)?.week ?? 0,
+      week:
+        profile.tier === 'elite'
+          ? (eliteJournalEntry(row.entry_number)?.week ?? 0)
+          : (journalEntries.find((e) => e.n === row.entry_number)?.week ?? 0),
       updatedAt: row.updated_at,
       data: row.data as Record<string, unknown>,
     })),
+    /*
+     * What the progress rows are counted against. An Elite member's rows are
+     * chapters of their year, not weeks of a cohort, so counting them out of
+     * sixteen would have read as somebody four chapters in being a quarter of
+     * the way through a programme they are not on.
+     */
+    totalUnits: profile.tier === 'elite' ? ELITE.chapters : weeks.length,
+    unitName: profile.tier === 'elite' ? 'chapters' : 'weeks',
     totalWeeks: weeks.length,
   }
 }
