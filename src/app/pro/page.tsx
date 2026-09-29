@@ -105,8 +105,8 @@ function ElitePage() {
       <Section label="Check-ins">
         <p>
           Two with Chris in every chapter, so twice a month and {ELITE.chapters * ELITE.checkInsPerChapter}{' '}
-          across the year. Half an hour each on what the chapter is surfacing, what you are carrying
-          into the next one, and anything in the way.
+          across the year. Forty five minutes each on what the chapter is surfacing, what you are
+          carrying into the next one, and anything in the way.
         </p>
         <p className="!mb-0">They are yours to move, and they follow your chapters rather than a fixed slot.</p>
       </Section>

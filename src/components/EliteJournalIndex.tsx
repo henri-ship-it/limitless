@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { modules } from '@/content/programme'
 import { chaptersInModule, ELITE } from '@/content/elite'
 import { eliteEntriesForChapter } from '@/content/elite-journal'
+import { resolveEliteEntry } from '@/lib/entry'
+import { JournalVisual } from './JournalVisual'
 
 /**
  * The Elite journal, laid out as the four modules hold it.
@@ -66,31 +68,77 @@ export function EliteJournalIndex({ currentChapter }: { currentChapter: number }
                   <span className="label !text-ink-40 ml-auto">Journal {c.volume}</span>
                 </div>
 
-                <div className="space-y-7">
+                <div className="space-y-8">
                   {weeks.map((week) => (
                     <div key={week.n}>
-                      <p className="label !text-ink-40 mb-2">
+                      <p className="label !text-ink-40 mb-3">
                         Week {week.n} of {ELITE.weeksPerChapter}
                       </p>
-                      <ul className="!list-none !pl-0">
-                        {week.entries.map((entry, i) => (
-                          <li key={entry.n} className="border-t border-line">
-                            <Link
-                              href={`/journal/${entry.n}`}
-                              className="flex items-baseline gap-4 py-2.5 !no-underline hover:bg-ink-3"
+                      <ol className="!list-none !pl-0 space-y-8">
+                        {week.entries.map((entry) => {
+                          const resolved = resolveEliteEntry(entry.n)
+                          return (
+                            <li
+                              key={entry.n}
+                              className="grid gap-5 border-t border-line pt-6 sm:grid-cols-[7rem_1fr]"
                             >
-                              <span className="label w-20 shrink-0">
-                                {/* Seven to a week, so the last of them closes it. */}
-                                {i === 6 ? 'Huddle' : `Day ${i + 1}`}
-                              </span>
-                              <span className="label !text-ink-20 w-16 shrink-0">{entry.n}</span>
-                              <span className="min-w-0 flex-1 text-[0.9375rem] text-ink">
-                                {entry.title ?? entry.prompts[0] ?? entry.intro[0] ?? 'Reflection'}
-                              </span>
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
+                              {/*
+                                * Entry numbers run straight through rather than
+                                * restarting each week. Entry eight is entry
+                                * eight, not day one again, which is also how
+                                * the printed book numbers its pages.
+                                */}
+                              <div>
+                                <p className="label">
+                                  {entry.n % 7 === 0 ? 'Huddle' : `Entry ${entry.n}`}
+                                </p>
+                              </div>
+                              <div className="min-w-0">
+                                <Link
+                                  href={`/journal/${entry.n}`}
+                                  className="text-[1rem] font-medium hover:underline"
+                                >
+                                  {resolved?.title ?? `Entry ${entry.n}`}
+                                </Link>
+                                {entry.intro.map((line, i) => (
+                                  <p
+                                    key={i}
+                                    className="mt-2 text-[0.875rem] leading-relaxed text-ink-56"
+                                  >
+                                    {line}
+                                  </p>
+                                ))}
+                                {entry.prompts.length ? (
+                                  <ul className="mt-3 space-y-1.5">
+                                    {entry.prompts.map((prompt, i) => (
+                                      <li
+                                        key={i}
+                                        className="text-[0.875rem] leading-relaxed text-ink-72"
+                                      >
+                                        {prompt}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : null}
+                                <JournalVisual
+                                  visual={resolved?.visual ?? null}
+                                  caption={null}
+                                  compact
+                                  className="mt-12 max-w-sm border border-line"
+                                />
+                                <p className="mt-6">
+                                  <Link
+                                    href={`/journal/${entry.n}`}
+                                    className="label hover:!text-ink"
+                                  >
+                                    Open entry →
+                                  </Link>
+                                </p>
+                              </div>
+                            </li>
+                          )
+                        })}
+                      </ol>
                     </div>
                   ))}
                 </div>

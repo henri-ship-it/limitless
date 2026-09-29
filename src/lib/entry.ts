@@ -5,6 +5,7 @@ import { customExercise, linkForEntry } from '@/content/entry-extras'
 import { visualForEntry } from '@/content/journal-visuals'
 import { eliteJournalEntry } from '@/content/elite-journal'
 import { eliteVisualForEntry } from '@/content/elite-visuals'
+import { eliteTitles } from '@/content/elite-titles'
 
 export type ResolvedEntry = {
   n: number
@@ -104,17 +105,13 @@ export function resolveEliteEntry(n: number): ResolvedEntry | null {
 
   /*
    * Most Elite pages are printed as one question and the space to answer it,
-   * with no heading above. The question is what the page is, so it becomes the
-   * title, and it is then taken out of the exercise rather than being asked
-   * again over the box. "Entry 30" as a heading, which is what this did before,
-   * names the page without saying anything about it.
+   * with no heading above. The question belongs in the exercise, where the
+   * weekly journal also puts it, so the page still needs a name of its own:
+   * those are written in elite-titles. "Entry 30" as a heading names the page
+   * without saying anything about it.
    */
-  const bare = !entry.title && !huddle && entry.prompts.length === 1 && !entry.intro.length
-  const title = entry.title ?? (huddle ? 'Huddle' : (entry.prompts[0] ?? `Entry ${n}`))
-
-  const fields: Field[] = bare
-    ? [{ kind: 'text', label: '' }]
-    : entry.prompts.map((label) => ({ kind: 'text', label }))
+  const title = entry.title ?? eliteTitles[n] ?? (huddle ? 'Huddle' : `Entry ${n}`)
+  const fields: Field[] = entry.prompts.map((label) => ({ kind: 'text', label }))
 
   return {
     n,

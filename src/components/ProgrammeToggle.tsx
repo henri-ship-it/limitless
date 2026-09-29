@@ -50,7 +50,9 @@ export function ProgrammeToggle({ mode }: { mode: Mode }) {
           aria-pressed={mode === option.key}
           title={option.full}
           className={`label rounded-full px-2.5 py-1 ${
-            mode === option.key ? 'bg-ink-8 !text-ink' : '!text-ink-40 hover:!text-ink'
+            mode === option.key
+              ? 'bg-ink !text-white'
+              : '!text-ink-40 hover:!text-ink'
           }`}
         >
           {option.label}

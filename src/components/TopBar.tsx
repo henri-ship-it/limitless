@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { modules, weeks, type Tier } from '@/content/programme'
+import { chaptersInModule } from '@/content/elite'
 import { AccountIcon, ChevronIcon, NowIndicator } from './icons'
 import { Streak } from './Streak'
 import { ProgrammeToggle } from './ProgrammeToggle'
@@ -21,6 +22,8 @@ type Props = {
   streak: number
   /** Which programme is being shown. Only admins can change it. */
   mode: Mode
+  /** Which Elite chapter is open, when Elite is the programme being shown. */
+  eliteChapter?: number
 }
 
 export function TopBar({
@@ -31,6 +34,7 @@ export function TopBar({
   completedWeeks,
   streak,
   mode,
+  eliteChapter = 0,
 }: Props) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
@@ -102,7 +106,7 @@ export function TopBar({
                   onClick={() => setOpen(false)}
                   className="label hover:!text-ink"
                 >
-                  {tier === 'pro' ? 'Blueprint' : "How you're wired"}
+                  {tier === 'pro' || mode === 'elite' ? 'Blueprint' : "How you're wired"}
                 </Link>
                 {/*
                   * In here rather than in the bar. A streak is worth seeing
@@ -143,34 +147,67 @@ export function TopBar({
                     </p>
                     <p className="mb-3 text-[0.9375rem] font-medium">{m.name}</p>
                     <ul className="space-y-0.5">
-                      {m.weeks.map((n) => {
-                        const week = weeks.find((w) => w.number === n)!
-                        const locked = n > openThrough
-                        const inner = (
-                          <span className="flex items-center justify-between gap-3 py-1">
-                            <span className="flex min-w-0 items-baseline gap-2.5">
-                              <span className="label w-4 shrink-0">{String(n).padStart(2, '0')}</span>
-                              <span className="truncate text-[0.875rem]">{week.title}</span>
-                            </span>
-                            <WeekMarker done={done.has(n)} now={n === currentWeek} locked={locked} />
-                          </span>
-                        )
-                        return (
-                          <li key={n}>
-                            {locked ? (
-                              <span className="block cursor-default text-ink-40">{inner}</span>
-                            ) : (
+                      {/*
+                        * Elite has three chapters to a module and no deload, and
+                        * nothing is locked on a programme running to the member's
+                        * own clock. Listing the sixteen week weeks here put four
+                        * deloads and a row of padlocks in front of somebody whose
+                        * programme has neither.
+                        */}
+                      {mode === 'elite'
+                        ? chaptersInModule(m.number).map((c) => (
+                            <li key={c.n}>
                               <Link
-                                href={`/week/${n}`}
+                                href={`/elite/chapter/${c.n}`}
                                 onClick={() => setOpen(false)}
                                 className="block text-ink-72 hover:text-ink"
                               >
-                                {inner}
+                                <span className="flex items-center justify-between gap-3 py-1">
+                                  <span className="flex min-w-0 items-baseline gap-2.5">
+                                    <span className="label w-4 shrink-0">
+                                      {String(c.n).padStart(2, '0')}
+                                    </span>
+                                    <span className="truncate text-[0.875rem]">{c.title}</span>
+                                  </span>
+                                  <WeekMarker
+                                    done={done.has(c.n)}
+                                    now={c.n === eliteChapter}
+                                    locked={false}
+                                  />
+                                </span>
                               </Link>
-                            )}
-                          </li>
-                        )
-                      })}
+                            </li>
+                          ))
+                        : m.weeks.map((n) => {
+                            const week = weeks.find((w) => w.number === n)!
+                            const locked = n > openThrough
+                            const inner = (
+                              <span className="flex items-center justify-between gap-3 py-1">
+                                <span className="flex min-w-0 items-baseline gap-2.5">
+                                  <span className="label w-4 shrink-0">
+                                    {String(n).padStart(2, '0')}
+                                  </span>
+                                  <span className="truncate text-[0.875rem]">{week.title}</span>
+                                </span>
+                                <WeekMarker done={done.has(n)} now={n === currentWeek} locked={locked} />
+                              </span>
+                            )
+                            return (
+                              <li key={n}>
+                                {locked ? (
+                                  <span className="block cursor-default text-ink-40">{inner}</span>
+                                ) : (
+                                  <Link
+                                    href={`/week/${n}`}
+                                    onClick={() => setOpen(false)}
+                                    className="block text-ink-72 hover:text-ink"
+                                  >
+                                    {inner}
+                                  </Link>
+                                )}
+                              </li>
+                            )
+                          })}
                     </ul>
                   </div>
                 ))}

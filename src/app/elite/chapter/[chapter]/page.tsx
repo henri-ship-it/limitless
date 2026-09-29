@@ -14,6 +14,7 @@ import {
   formatEliteChapter,
 } from '@/content/elite'
 import { eliteEntriesForChapter } from '@/content/elite-journal'
+import { resolveEliteEntry } from '@/lib/entry'
 
 export const metadata = { title: 'Chapter · Elite' }
 
@@ -88,9 +89,11 @@ export default async function EliteChapterPage({
                       href={`/journal/${entry.n}`}
                       className="flex items-baseline gap-4 py-2.5 !no-underline hover:bg-ink-3"
                     >
-                      <span className="label w-16 shrink-0">{entry.n}</span>
+                      <span className="label w-24 shrink-0">
+                        {entry.n % 7 === 0 ? 'Huddle' : `Entry ${entry.n}`}
+                      </span>
                       <span className="min-w-0 flex-1 text-[0.9375rem] text-ink">
-                        {entry.title ?? entry.prompts[0] ?? 'Reflection'}
+                        {resolveEliteEntry(entry.n)?.title ?? `Entry ${entry.n}`}
                       </span>
                     </Link>
                   </li>

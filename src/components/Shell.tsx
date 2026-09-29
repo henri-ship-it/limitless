@@ -49,6 +49,7 @@ export async function Shell({
         completedWeeks={completed}
         streak={streak}
         mode={mode}
+        eliteChapter={eliteChapter}
       />
 
       <div className="mx-auto flex max-w-[var(--container)] items-stretch">

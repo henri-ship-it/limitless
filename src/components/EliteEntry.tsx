@@ -35,7 +35,6 @@ export function EliteEntry({
   const module = modules.find((m) => m.number === chapter.module)!
   // Which of the chapter's four weeks this entry falls in.
   const weekOfChapter = Math.floor((entry.n - chapter.firstEntry) / 7) + 1
-  const dayOfWeek = ((entry.n - 1) % 7) + 1
 
   const prev = entry.n > 1 ? entry.n - 1 : null
   const next = entry.n < ELITE_ENTRIES ? entry.n + 1 : null
@@ -47,7 +46,12 @@ export function EliteEntry({
         title={entry.title}
         pills={
           <>
-            <span className="pill">{entry.huddle ? 'Huddle' : `Day ${dayOfWeek}`}</span>
+            {/*
+              * No day number. Entries are counted straight through, so "Day 2"
+              * beside "Entry 30 of 336" is a second, smaller numbering of the
+              * same thing and the reader has to work out which one matters.
+              */}
+            {entry.huddle ? <span className="pill">Huddle</span> : null}
             <span className="pill">Week {weekOfChapter} of 4</span>
             <span className="pill">
               Entry {entry.n} of {ELITE_ENTRIES}

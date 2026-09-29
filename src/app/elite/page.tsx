@@ -72,7 +72,7 @@ export default async function ElitePage() {
   return (
     <Shell toc={TOC}>
       <PageHeader
-        eyebrow={`${ELITE.label}, also sold as ${ELITE.alias}`}
+        eyebrow="Limitless Elite"
         title={member.firstName ? `Welcome, ${member.firstName}` : 'Elite'}
         lede="Twelve chapters over a year, four modules, four journals. This page covers how the programme runs and where you are in it."
         pills={
