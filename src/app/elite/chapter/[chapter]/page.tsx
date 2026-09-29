@@ -117,7 +117,7 @@ export default async function EliteChapterPage({
             </Link>
           ) : (
             <Link href="/elite" className="label hover:!text-ink">
-              The year
+              Start Guide
             </Link>
           )}
           {next ? (
