@@ -386,7 +386,17 @@ function FieldGroup({
   return (
     <div>
       <div className="mb-3 flex items-baseline justify-between gap-4">
-        <p className={plain ? 'text-[0.9375rem] leading-relaxed text-ink' : 'label'}>{label}</p>
+        {/*
+          An empty label means the heading above already asks the question. Most
+          Elite pages are one question and a space to write, so the question is
+          the title of the page, and printing it again over the box would ask it
+          twice.
+        */}
+        {label ? (
+          <p className={plain ? 'text-[0.9375rem] leading-relaxed text-ink' : 'label'}>{label}</p>
+        ) : (
+          <span />
+        )}
         {action ?? (meta ? <p className="label shrink-0">{meta}</p> : null)}
       </div>
       <div className="space-y-2">{children}</div>

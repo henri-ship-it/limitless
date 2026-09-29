@@ -101,14 +101,14 @@ export default async function ElitePage() {
 
       <Section id="how-it-works" label="How it works">
         <p>
-          Four modules, three chapters in each, four weeks to a chapter. A chapter is a framework
-          and twenty eight entries to work it through, which is the same material the sixteen week
-          programme covers in a week, given four times the room.
+          Four modules, three chapters in each, four weeks to a chapter. A chapter is one framework
+          and twenty eight journal entries to work it through, so you have a month with each idea
+          rather than a week.
         </p>
         <p>
-          There are no deload weeks. A deload exists on the sixteen week programme because a new
-          framework every week is more than anybody absorbs without a pause. Four weeks a chapter is
-          already that pause, so a deload here would only be a month of nothing.
+          Every chapter builds on the one before it. The four modules take you from understanding
+          how you operate, through managing your own thinking, to the environment around you and
+          what you do with all of it.
         </p>
         <div className="mt-8 space-y-8">
           {modules.map((m) => (
@@ -145,8 +145,8 @@ export default async function ElitePage() {
 
       <Section id="rhythm" label="The rhythm">
         <p>
-          Your year runs to its own clock rather than a cohort&rsquo;s. Every chapter opens four
-          weeks after the last one, on the same weekday you began.
+          Your year runs to your own clock. Every chapter opens four weeks after the last one, on
+          the same weekday you began.
         </p>
         <ul className="!list-none !pl-0 !mb-0">
           <li className="flex gap-5 border-t border-line py-3">
@@ -158,8 +158,12 @@ export default async function ElitePage() {
             <span>The huddle. What worked, what did not, what changes.</span>
           </li>
           <li className="flex gap-5 border-t border-line py-3">
-            <span className="label w-28 shrink-0 pt-0.5">Every chapter</span>
-            <span>A check-in with Chris, and the new chapter opens here.</span>
+            <span className="label w-28 shrink-0 pt-0.5">Twice a chapter</span>
+            <span>A check-in with Chris.</span>
+          </li>
+          <li className="flex gap-5 border-t border-line py-3">
+            <span className="label w-28 shrink-0 pt-0.5">Every four weeks</span>
+            <span>The next chapter opens here, with its digest.</span>
           </li>
           <li className="flex gap-5 border-y border-line py-3">
             <span className="label w-28 shrink-0 pt-0.5">Across the year</span>
@@ -171,10 +175,7 @@ export default async function ElitePage() {
       </Section>
 
       <Section id="support" label="Support">
-        <p>
-          Elite has no group. Chris is the whole support line, so anything at all goes straight to
-          him, whenever it comes up.
-        </p>
+        <p>Any questions, please reach out.</p>
         <MessageChris />
         <p className="mt-8 text-[0.9375rem]">Or by email, if it is easier.</p>
         <CopyEmail address={SUPPORT_EMAIL} />

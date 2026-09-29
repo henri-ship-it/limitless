@@ -42,7 +42,7 @@ export function Sidebar({
         <ul className="mb-8 space-y-0.5">
           <TopLink
             href={mode === 'elite' ? '/elite' : '/'}
-            label={mode === 'elite' ? 'The year' : 'Start Guide'}
+            label="Start Guide"
             icon={<GuideIcon />}
             active={mode === 'elite' ? pathname.startsWith('/elite') : pathname === '/'}
             marker={currentWeek === 0 ? <span className="radar" aria-hidden /> : null}

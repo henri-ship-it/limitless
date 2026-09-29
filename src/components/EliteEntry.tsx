@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Shell } from './Shell'
 import { PageHeader } from './PageHeader'
 import { DailyJournal } from './DailyJournal'
+import { JournalVisual } from './JournalVisual'
 import { DownloadWeek } from './DownloadWeek'
 import { BulkPhotos } from './BulkPhotos'
 import { supabaseConfigured } from '@/lib/env'
@@ -54,6 +55,12 @@ export function EliteEntry({
             <span className="pill">Journal {chapter.volume}</span>
           </>
         }
+      />
+
+      <JournalVisual
+        visual={entry.visual}
+        caption={entry.caption}
+        className="border-b border-line"
       />
 
       <DailyJournal

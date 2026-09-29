@@ -6,18 +6,22 @@ import { Section } from '@/components/Section'
 import { MessageChris } from '@/components/MessageChris'
 import { CopyEmail } from '@/components/CopyEmail'
 import { assets, SUPPORT_EMAIL } from '@/content/assets'
-import { ELITE, ELITE_WEEKS } from '@/content/elite'
+import { ELITE, ELITE_ENTRIES, ELITE_WEEKS } from '@/content/elite'
 import { getMember } from '@/lib/member'
+import { getMode } from '@/lib/programme-mode'
 
 export default async function ProPage() {
   const member = await getMember()
 
   /*
-   * Elite reads the same route and almost none of the same page. There is no
-   * community, no drop-in and no workshops, so the Pro copy would describe
-   * three things they do not have and one thing they do.
+   * Branching on the programme being shown rather than on the tier, which is
+   * what this got wrong. The two admins are tier pro, so toggling into Elite
+   * left them reading the Pro page: a WhatsApp community, a Wednesday drop-in
+   * and four workshops, none of which exists on Elite. An Elite member saw the
+   * right page and the people checking it never did.
    */
-  if (member?.tier === 'elite') return <ElitePage />
+  const mode = await getMode(member?.tier ?? 'core', member?.isAdmin ?? false)
+  if (mode === 'elite') return <ElitePage />
 
   // Core members get a 404 rather than a locked page. Nothing about the Pro
   // community is rendered for them, including in the HTML payload.
@@ -76,32 +80,39 @@ function ElitePage() {
       <PageHeader
         eyebrow={ELITE.label}
         title="Your year"
-        lede="What Elite is, and how the support around it works."
+        lede="What Limitless Elite is, and how the support around it works."
         pills={
           <>
             <span className="pill">elite</span>
             <span className="pill">{ELITE.chapters} chapters</span>
             <span className="pill">{ELITE_WEEKS} weeks</span>
+            <span className="pill">{ELITE_ENTRIES} entries</span>
           </>
         }
       />
 
-      <Section label="Check-ins">
+      <Section label="The programme">
         <p>
-          One with Chris in every chapter, so twelve across the year. Half an hour on what the
-          chapter surfaced, what you are carrying into the next one, and anything in the way.
+          Twelve chapters across a year, three in each of four modules. A chapter is one framework
+          and four weeks to work it through, with twenty eight journal entries to write against.
         </p>
         <p className="!mb-0">
-          They are yours to move. The programme runs to your clock rather than a cohort&rsquo;s, so
-          a check-in follows where you actually are.
+          It runs to your own clock. Each chapter opens four weeks after the last, counted from the
+          day you started, so the programme follows where you actually are.
         </p>
       </Section>
 
-      <Section label="Direct support">
+      <Section label="Check-ins">
         <p>
-          Elite has no group and no community to post in. Chris is the support line, directly, for
-          the whole year. Anything at all, whenever it comes up.
+          Two with Chris in every chapter, so twice a month and {ELITE.chapters * ELITE.checkInsPerChapter}{' '}
+          across the year. Half an hour each on what the chapter is surfacing, what you are carrying
+          into the next one, and anything in the way.
         </p>
+        <p className="!mb-0">They are yours to move, and they follow your chapters rather than a fixed slot.</p>
+      </Section>
+
+      <Section label="WhatsApp support">
+        <p>Message Chris directly, any time across the year. Any questions, please reach out.</p>
         <MessageChris />
         <p className="mt-8 text-[0.9375rem]">Or by email, if it is easier.</p>
         <CopyEmail address={SUPPORT_EMAIL} />

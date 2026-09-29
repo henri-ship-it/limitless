@@ -4,6 +4,7 @@ import { overrideFor } from '@/content/entry-overrides'
 import { customExercise, linkForEntry } from '@/content/entry-extras'
 import { visualForEntry } from '@/content/journal-visuals'
 import { eliteJournalEntry } from '@/content/elite-journal'
+import { eliteVisualForEntry } from '@/content/elite-visuals'
 
 export type ResolvedEntry = {
   n: number
@@ -101,19 +102,44 @@ export function resolveEliteEntry(n: number): ResolvedEntry | null {
 
   const huddle = isHuddleEntry(n)
 
+  /*
+   * Most Elite pages are printed as one question and the space to answer it,
+   * with no heading above. The question is what the page is, so it becomes the
+   * title, and it is then taken out of the exercise rather than being asked
+   * again over the box. "Entry 30" as a heading, which is what this did before,
+   * names the page without saying anything about it.
+   */
+  const bare = !entry.title && !huddle && entry.prompts.length === 1 && !entry.intro.length
+  const title = entry.title ?? (huddle ? 'Huddle' : (entry.prompts[0] ?? `Entry ${n}`))
+
+  const fields: Field[] = bare
+    ? [{ kind: 'text', label: '' }]
+    : entry.prompts.map((label) => ({ kind: 'text', label }))
+
   return {
     n,
     week: entry.week,
     day: n,
     huddle,
-    title: entry.title ?? (huddle ? 'Huddle' : `Entry ${n}`),
+    title: stripTrailingColon(title),
     intro: entry.intro,
-    fields: entry.prompts.map((label) => ({ kind: 'text', label })),
+    fields,
     outro: entry.outro,
     caption: null,
-    visual: null,
+    // Cropped from the Elite books by their own script, never borrowed from the
+    // weekly set: those were measured by weekly entry number, so entry 29 there
+    // is a different page from entry 29 here.
+    visual: (() => {
+      const found = eliteVisualForEntry(n)
+      return found ? { ...found, scale: 0.5 } : null
+    })(),
     link: null,
     awaitingLink: entry.qr,
     hasExercise: Boolean(entry.prompts.length || entry.intro.length),
   }
+}
+
+/** A prompt set as a heading should not end mid-sentence on a colon. */
+function stripTrailingColon(text: string): string {
+  return text.replace(/\s*:\s*$/, '')
 }

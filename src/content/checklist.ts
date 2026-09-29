@@ -45,9 +45,8 @@ export const checklist: ChecklistItem[] = [
 
 /*
  * Elite sets up differently enough that filtering the list above by tier would
- * not do it. There is no cohort to join and no group to be added to, the
- * journal is four books rather than one, and the call is a check-in with Chris
- * rather than a drop-in somebody else is also on. Keys are distinct from the
+ * not do it: the journal is four books rather than one, and the support is
+ * Chris directly rather than a group to be added to. Keys are distinct from the
  * weekly ones so that a member who has done both programmes does not arrive at
  * Elite with half the list already ticked.
  */
@@ -60,7 +59,7 @@ export const eliteChecklist: ChecklistItem[] = [
   {
     key: 'elite-journal',
     label: 'Receive your journals',
-    detail: 'Four printed books, three chapters in each. The first arrives before you begin.',
+    detail: 'Four printed books, three chapters in each.',
   },
   {
     key: 'elite-assessment',
@@ -70,12 +69,6 @@ export const eliteChecklist: ChecklistItem[] = [
   {
     key: 'elite-whatsapp',
     label: 'Save Chris on WhatsApp',
-    detail: 'Elite has no group. Anything at all, any time, straight to him.',
-  },
-  {
-    key: 'elite-check-in',
-    label: 'Put your check-ins in the diary',
-    detail: 'One with Chris in each chapter, so twelve across the year.',
   },
 ]
 

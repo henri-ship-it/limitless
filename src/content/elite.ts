@@ -48,6 +48,8 @@ export const ELITE = {
   weeksPerChapter: 4,
   volumes: 4,
   digest: 'Every four weeks, when the chapter opens',
+  /** Check-ins with Chris inside each chapter, so twice a month. */
+  checkInsPerChapter: 2,
 } as const
 
 export const ELITE_ENTRIES = ELITE.chapters * ELITE.entriesPerChapter

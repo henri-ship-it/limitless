@@ -58,9 +58,9 @@ export const SUPPORT_EMAIL = 'chris@lmntaryperformance.com'
 /**
  * Chris's WhatsApp number, in full international form.
  *
- * Elite has no group. Where a Pro member is pointed at the community, an Elite
- * member is pointed straight at Chris, so this is the one route and it has to
- * be right. Null until Henri fills it in, and the button says so rather than
- * opening WhatsApp with nobody on the other end.
+ * Where a Pro member is pointed at the community, an Elite member is pointed
+ * straight at Chris, so this is the one route and it has to be right. Null
+ * would make the button say it is not set up rather than open WhatsApp with
+ * nobody on the other end.
  */
-export const CHRIS_WHATSAPP: string | null = null
+export const CHRIS_WHATSAPP: string | null = '+44 7308 428564'
