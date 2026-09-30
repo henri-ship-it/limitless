@@ -78,6 +78,7 @@ const visuals: Record<number, Visual> = {
   103: { src: '/journal/visuals/e103.webp', width: 583, height: 421 },
   107: { src: '/journal/visuals/e107.webp', width: 627, height: 282 },
   108: { src: '/journal/visuals/e108.webp', width: 1158, height: 1026 },
+  105: { src: '/journal/visuals/e105.webp', width: 634, height: 768 },
   109: { src: '/journal/visuals/e109.webp', width: 777, height: 290 },
   110: { src: '/journal/visuals/e110.webp', width: 1156, height: 623 },
   111: { src: '/journal/visuals/e111.webp', width: 478, height: 437 },

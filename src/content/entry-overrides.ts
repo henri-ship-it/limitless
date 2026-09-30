@@ -239,6 +239,7 @@ export const entryOverrides: Record<number, EntryOverride> = {
   36: {
     link: motivationLink,
     exercise: {
+      intro: [],
       fields: [
         ...motivationFields,
         { kind: 'text', label: 'Does this reflect how you feel on a daily basis?' },
@@ -253,6 +254,10 @@ export const entryOverrides: Record<number, EntryOverride> = {
   40: {
     title: 'Motivation Comes from Within',
     caption: { lines: [], author: 'Michael Johnson' },
+    // A quotation and nothing to fill in. The attribution was the only text the
+    // parser could read, so it became the prompt and the page asked the member
+    // to write about a name.
+    hideExercise: true,
   },
   41: {
     exercise: {
@@ -548,6 +553,10 @@ export const entryOverrides: Record<number, EntryOverride> = {
   79: {
     title: 'On the Shoulders of Giants',
     caption: { lines: [], author: 'Isaac Newton' },
+    // A quotation and nothing to fill in. The attribution was the only text the
+    // parser could read, so it became the prompt and the page asked the member
+    // to write about a name.
+    hideExercise: true,
   },
 
   // Titles read off the printed page, where the heading is set as outlines.
@@ -558,22 +567,84 @@ export const entryOverrides: Record<number, EntryOverride> = {
   83: {
     title: 'Building the New',
     caption: { lines: [], author: 'Socrates' },
+    // A quotation and nothing to fill in. The attribution was the only text the
+    // parser could read, so it became the prompt and the page asked the member
+    // to write about a name.
+    hideExercise: true,
   },
   86: { title: 'Mind Full or Mindful' },
   88: { title: 'Growth Follows Awareness' },
   90: {
     title: 'Effective Action, Quiet Reflection',
     caption: { lines: [], author: 'Peter Drucker' },
+    // A quotation and nothing to fill in. The attribution was the only text the
+    // parser could read, so it became the prompt and the page asked the member
+    // to write about a name.
+    hideExercise: true,
   },
   96: { title: 'Systems, Milestones, Destination' },
   97: { title: 'Think Big, Progress Small' },
+  // A chart to plot on, with its axis labels read as things to fill in. "High"
+  // and "In flow: out flow:" belong to the drawing, not to the exercise.
+  80: {
+    title: 'Flow State Autopsy',
+    exercise: {
+      intro: [
+        'Think of an experience where you felt completely in flow, engaged and focused, and one where you felt out of flow, disengaged and distracted. Plot your skill and challenge level on the chart:',
+      ],
+      fields: [
+        {
+          kind: 'text',
+          label: 'In each experience, draw a line between skill and challenge. What do you notice?',
+        },
+        { kind: 'text', label: 'What insights can you take moving forward?' },
+      ],
+    },
+  },
+  // A quotation, set in full on the page with the attribution under it. The
+  // quote landed in the framing text and the name became the only prompt.
+  98: {
+    caption: {
+      lines: [
+        'The purpose of setting goals is to win the game. The purpose of building systems is to continue playing the game. True long-term thinking is goal-less thinking. It is not about any single accomplishment. It is about the cycle of endless refinement and continuous improvement.',
+        'Ultimately, it is your commitment to the process that will determine your progress.',
+      ],
+      author: 'James Clear',
+    },
+    hideExercise: true,
+  },
+  // A month of calendars to mark up. There is nothing to type, and the day
+  // headings printed across them were read as prompts.
+  100: {
+    title: 'Monthly Rhythms',
+    exercise: {
+      intro: [
+        'Build restoration into your monthly planning before you need it. Strategic recovery prevents fatigue and amplifies your next sprint.',
+      ],
+      fields: [{ kind: 'note', text: 'The calendars for this one are in your printed journal.' }],
+    },
+  },
+  // The quotation is drawn rather than typed, so only the name came through.
+  105: {
+    title: 'That Little Extra',
+    caption: { lines: [], author: 'Jimmy Johnson' },
+    hideExercise: true,
+  },
   101: {
     title: 'Wellbeing Is Energy',
     caption: { lines: [], author: 'Owen Eastwood' },
+    // A quotation and nothing to fill in. The attribution was the only text the
+    // parser could read, so it became the prompt and the page asked the member
+    // to write about a name.
+    hideExercise: true,
   },
   103: { title: 'The Finish Line Keeps Moving' },
   107: { title: 'Direction Over Speed' },
-  109: { title: 'Do the Verb', caption: { lines: ['Forget the noun, do the verb.'], author: 'Austin Kleon' } },
+  109: {
+    title: 'Do the Verb',
+    caption: { lines: ['Forget the noun, do the verb.'], author: 'Austin Kleon' },
+    hideExercise: true,
+  },
   111: { title: 'The Happiness of Pursuit' },
 }
 

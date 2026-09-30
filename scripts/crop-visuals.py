@@ -16,6 +16,10 @@ FORCE = {29, 32, 33, 43, 45, 47, 49, 57}
 # Where the automatic bounds pull in text that belongs to the exercise, the
 # region is given directly, in points on the right hand page.
 CLIPS = {
+    # The ordinary-to-extraordinary stack with its quotation, which is drawn
+    # rather than typed. Named by hand because entry 105 closes a week and the
+    # automatic pass skips those, and on this page the artwork is the page.
+    105: (115, 185, 310, 425),
     # Only the four support headings, not the instruction above them.
     58: (0, 96, 420, 200),
     # Only the four circles, not the question printed beside them.
