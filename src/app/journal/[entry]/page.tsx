@@ -10,6 +10,7 @@ import { journalEntries, entriesForWeek } from '@/content/journal'
 import { getWeek, moduleForWeek } from '@/content/programme'
 import type { EntryData } from '@/content/journal-fields'
 import { resolveEntry, resolveEliteEntry } from '@/lib/entry'
+import { customExercise } from '@/content/entry-extras'
 import { getJournalEntry, getMember } from '@/lib/member'
 import { isUnlocked } from '@/lib/cohort'
 import { BulkPhotos } from '@/components/BulkPhotos'
@@ -96,6 +97,7 @@ export default async function EntryPage({ params }: { params: Promise<{ entry: s
         awaitingLink={entry.awaitingLink}
         initial={(saved ?? {}) as EntryData}
         persist={supabaseConfigured ? 'db' : 'local'}
+        custom={customExercise(n)}
       />
 
       {/*

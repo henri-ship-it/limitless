@@ -9,7 +9,7 @@ import {
   type ScheduleBlock,
 } from '@/content/journal-fields'
 import { HUDDLE_QUESTIONS, type Field } from '@/content/entry-fields'
-import { VALUES, customExercise } from '@/content/entry-extras'
+import { VALUES, type CustomExercise } from '@/content/entry-extras'
 import { EntryField } from './EntryField'
 import { Dictate } from './Dictate'
 import { EntryText } from './EntryText'
@@ -30,6 +30,15 @@ type Props = {
   initial: EntryData
   /** With no Supabase project the entry is kept on the device instead. */
   persist: 'db' | 'local'
+  /**
+   * An exercise the book draws rather than writes, such as the values grid.
+   *
+   * Passed in rather than looked up by entry number, because the number means
+   * different things in the two journals: entry 29 is Decode Your Values in the
+   * Elite book and The Agile Mind in the weekly one, and a lookup here would
+   * have put a hundred and sixteen values under the wrong question.
+   */
+  custom?: CustomExercise | null
 }
 
 const SAVE_DELAY = 800
@@ -44,9 +53,9 @@ export function DailyJournal({
   awaitingLink,
   initial,
   persist,
+  custom = null,
 }: Props) {
   const storageKey = `limitless:entry:${entry}`
-  const custom = customExercise(entry)
   const [data, setData] = useState<EntryData>(initial)
   const [state, setState] = useState<'idle' | 'saving' | 'saved'>('idle')
   /* What the entry looked like before a photograph filled it in, so there is

@@ -11,6 +11,7 @@ import type { EntryData } from '@/content/journal-fields'
 import { modules } from '@/content/programme'
 import { ELITE_ENTRIES, chapterForEntry } from '@/content/elite'
 import { eliteEntriesForWeek } from '@/content/elite-journal'
+import { eliteCustomExercise } from '@/content/elite-extras'
 
 /**
  * One page of the Elite journal.
@@ -77,6 +78,7 @@ export function EliteEntry({
         awaitingLink={entry.awaitingLink}
         initial={initial}
         persist={supabaseConfigured ? 'db' : 'local'}
+        custom={eliteCustomExercise(entry.n)}
       />
 
       {/*

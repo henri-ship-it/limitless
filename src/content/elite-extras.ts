@@ -1,4 +1,5 @@
 import type { Field } from './entry-fields'
+import type { CustomExercise } from './entry-extras'
 
 /**
  * Things the printed Elite page carries that no parser can lift out of it.
@@ -80,6 +81,16 @@ export const eliteExercises: Record<
       'Build restoration into your monthly planning before you need it. Strategic recovery prevents fatigue and amplifies your next sprint.',
     ],
     fields: [{ kind: 'note', text: 'The calendars for this one are in your printed journal.' }],
+  },
+  /*
+   * The values grid replaces the prompts, so the page keeps only the sentence
+   * that sets it up. The rest is the picker.
+   */
+  29: {
+    intro: [
+      'Identify the values that are important to you and fill you with a feeling of purpose. Consider the following questions:',
+    ],
+    fields: [],
   },
   /*
    * The page says "scan the QR code and plot them below". The QR is rendered as
@@ -190,6 +201,30 @@ export const eliteExercises: Record<
       { kind: 'text', label: 'Which traits are your strengths? Which need work?' },
     ],
   },
+}
+
+/**
+ * Exercises the book draws rather than writes.
+ *
+ * The values page prints a hundred and sixteen words in a grid to circle, which
+ * is artwork to a parser and a list to a reader. On screen they are ticked.
+ * Keyed by Elite entry number and kept apart from the weekly set, because the
+ * same number is a different page in each book.
+ */
+export const eliteCustomExercises: Record<number, CustomExercise> = {
+  29: {
+    guidance: [
+      'Does this define me? Is this who I am at my best? Is this a filter that I use to make hard decisions?',
+    ],
+    fieldsIntro:
+      'From those selected, condense your values down to the two that resonate most with you.',
+    fields: ['Value one', 'Value two'],
+    picker: 'values',
+  },
+}
+
+export function eliteCustomExercise(n: number): CustomExercise | null {
+  return eliteCustomExercises[n] ?? null
 }
 
 export function eliteLinkFor(n: number) {

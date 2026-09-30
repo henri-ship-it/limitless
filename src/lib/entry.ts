@@ -8,7 +8,7 @@ import { eliteVisualForEntry } from '@/content/elite-visuals'
 import { ELITE } from '@/content/elite'
 import { eliteTitles } from '@/content/elite-titles'
 import { eliteOverrideFor } from '@/content/elite-overrides'
-import { eliteExerciseFor, eliteLinkFor } from '@/content/elite-extras'
+import { eliteCustomExercise, eliteExerciseFor, eliteLinkFor } from '@/content/elite-extras'
 
 export type ResolvedEntry = {
   n: number
@@ -173,7 +173,7 @@ export function resolveEliteEntry(n: number): ResolvedEntry | null {
     visual: art ? { src: art.src, width: art.width, height: art.height, scale: 0.5 } : null,
     link: eliteLinkFor(n),
     awaitingLink: entry.qr && !eliteLinkFor(n),
-    hasExercise: Boolean(prompts.length || intro.length),
+    hasExercise: Boolean(prompts.length || intro.length || eliteCustomExercise(n)),
   }
 }
 
