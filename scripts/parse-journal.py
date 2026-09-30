@@ -16,9 +16,17 @@ import sys
 
 import pymupdf
 
+# Words left in lower case inside a title: articles, conjunctions and the short
+# prepositions. Ordinary title case, in other words.
+#
+# "your", "you", "it" and "is" used to be in here, which is not a rule anybody
+# writes to. It produced "Shifting your Thinking on the Spot" and "Uncover your
+# Behavioural Style", where the possessive reads like a typo rather than a
+# style. A pronoun is a word like any other and a verb certainly is.
 SMALL = {
-    "the", "a", "an", "and", "or", "of", "to", "in", "on", "for", "with",
-    "your", "you", "it", "is", "as", "at", "but", "by", "from",
+    "a", "an", "and", "as", "at", "but", "by", "for", "from", "in", "nor",
+    "of", "off", "on", "or", "per", "so", "the", "to", "up", "via", "with",
+    "yet",
 }
 # How many entries the book runs to. The Elite journal is the same design over
 # three hundred and thirty six pages, so the parser is shared and this is set by

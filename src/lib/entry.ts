@@ -5,6 +5,7 @@ import { customExercise, linkForEntry } from '@/content/entry-extras'
 import { visualForEntry } from '@/content/journal-visuals'
 import { eliteJournalEntry } from '@/content/elite-journal'
 import { eliteVisualForEntry } from '@/content/elite-visuals'
+import { ELITE } from '@/content/elite'
 import { eliteTitles } from '@/content/elite-titles'
 import { eliteOverrideFor } from '@/content/elite-overrides'
 import { eliteExerciseFor, eliteLinkFor } from '@/content/elite-extras'
@@ -103,7 +104,14 @@ export function resolveEliteEntry(n: number): ResolvedEntry | null {
   const entry = eliteJournalEntry(n)
   if (!entry) return null
 
-  const huddle = isHuddleEntry(n)
+  /*
+   * In this journal the huddle is the chapter's review, not the week's. Every
+   * twenty eighth page asks the three set questions about the four weeks behind
+   * it; the pages that merely close a week ask one reflective question and are
+   * ordinary entries with names of their own. Calling those huddles put the
+   * word on twenty four pages that are not one.
+   */
+  const huddle = n % ELITE.entriesPerChapter === 0
   /*
    * Corrections first. The parser reads a page by measuring gaps, which cannot
    * see type that has been converted to outlines and cannot tell a diagram from

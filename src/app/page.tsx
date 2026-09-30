@@ -102,12 +102,23 @@ export default async function StartGuide() {
                 {m.weeks.map((n) => {
                   const w = weeks.find((x) => x.number === n)!
                   const open = n <= openThrough
+                  /*
+                   * The padlock sits in a slot that is always there, empty or
+                   * not. Both it and the topic used to push themselves right
+                   * with ml-auto, so on a locked week they shared the space
+                   * between them and the topic landed in the middle of the row
+                   * while an unlocked week had it hard right. Two columns of
+                   * pills at two different x positions, for no reason a reader
+                   * could see.
+                   */
                   const row = (
                     <>
                       <span className="label w-14 shrink-0">Week {n}</span>
-                      <span className="text-[0.9375rem]">{w.title}</span>
-                      {w.topic ? <span className="pill ml-auto">{w.topic}</span> : null}
-                      {open ? null : <LockIcon className="ml-auto shrink-0 text-ink-20" />}
+                      <span className="min-w-0 flex-1 text-[0.9375rem]">{w.title}</span>
+                      {w.topic ? <span className="pill shrink-0">{w.topic}</span> : null}
+                      <span className="flex w-4 shrink-0 justify-end">
+                        {open ? null : <LockIcon className="text-ink-20" />}
+                      </span>
                     </>
                   )
                   return (

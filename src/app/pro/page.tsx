@@ -121,8 +121,7 @@ function ElitePage() {
       <Section label="Your journals">
         <p className="!mb-0">
           Four printed books, three chapters in each, {ELITE.entriesPerChapter} entries to a
-          chapter. Every page is on the platform too, so you can work on paper or on screen and
-          photograph what you have written into the huddle at the end of each week.
+          chapter. Every page is on the platform too, so you can work on paper or on screen.
         </p>
       </Section>
 

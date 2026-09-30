@@ -90,7 +90,9 @@ export function EliteJournalIndex({ currentChapter }: { currentChapter: number }
                                 */}
                               <div>
                                 <p className="label">
-                                  {entry.n % 7 === 0 ? 'Huddle' : `Entry ${entry.n}`}
+                                  {entry.n % ELITE.entriesPerChapter === 0
+                                    ? 'Huddle'
+                                    : `Entry ${entry.n}`}
                                 </p>
                               </div>
                               <div className="min-w-0">

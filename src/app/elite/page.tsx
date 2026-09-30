@@ -81,7 +81,7 @@ export default async function ElitePage() {
             <span className="pill">elite</span>
             {settingUp ? (
               <span className="pill">
-                {progress.completedItems.size}/{items.length} set up
+                Setting up {progress.completedItems.size} of {items.length}
               </span>
             ) : null}
             <span className="pill">

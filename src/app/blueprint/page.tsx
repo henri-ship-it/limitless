@@ -3,6 +3,7 @@ import { Shell } from '@/components/Shell'
 import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
 import { getMember } from '@/lib/member'
+import { getMode } from '@/lib/programme-mode'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseConfigured } from '@/lib/env'
 import { SUPPORT_EMAIL } from '@/content/assets'
@@ -31,26 +32,37 @@ export default async function BlueprintPage() {
   const { blueprint, scores } = await readBlueprint(member.id)
 
   /*
+   * Which programme this belongs to, rather than which tier the reader is on.
+   * Both admins are tier pro, so branching on tier showed them a page badged
+   * Limitless Pro while the toggle said Elite, which is the same mistake the
+   * tier page was making.
+   */
+  const mode = await getMode(member.tier, member.isAdmin)
+  const elite = mode === 'elite' || member.tier === 'elite'
+  const tier = elite ? 'elite' : 'pro'
+  const label = elite ? 'Limitless Elite' : 'Limitless Pro'
+
+  /*
    * Core gets the half of this that is theirs: their own scorecard and what
    * the four styles mean. The blueprint itself is written from a welcome call
    * they have not had, so none of it reaches their HTML.
    */
-  if (member.tier !== 'pro') return <HowYoureWired scores={scores} />
+  if (!elite && member.tier !== 'pro') return <HowYoureWired scores={scores} />
 
-  if (!blueprint) return <NotYet />
+  if (!blueprint) return <NotYet label={label} tier={tier} />
 
   const { territory, resistance, journey, integration } = blueprint
 
   return (
     <Shell toc={TOC}>
       <PageHeader
-        eyebrow="Limitless Pro"
+        eyebrow={label}
         title="Your blueprint"
         lede="Written from your pre-assessment and your welcome call. It is a read on how you are wired to perform, and where the programme will ask something different of you."
         pills={
           <>
-            <span className="tier-tag" data-tier="pro">
-              pro
+            <span className="tier-tag" data-tier={tier}>
+              {tier}
             </span>
             {blueprint.issuedAt ? (
               <span className="pill">
@@ -195,17 +207,17 @@ async function readBlueprint(
   }
 }
 
-/** Pro, but nothing written for them yet. Says so rather than 404ing. */
-function NotYet() {
+/** Nothing written for them yet. Says so rather than 404ing. */
+function NotYet({ label, tier }: { label: string; tier: 'pro' | 'elite' }) {
   return (
     <Shell>
       <PageHeader
-        eyebrow="Limitless Pro"
+        eyebrow={label}
         title="Your blueprint"
         lede="Yours is written after your welcome call, from that conversation and your pre-assessment."
         pills={
-          <span className="tier-tag" data-tier="pro">
-            pro
+          <span className="tier-tag" data-tier={tier}>
+            {tier}
           </span>
         }
       />

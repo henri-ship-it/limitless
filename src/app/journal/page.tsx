@@ -60,9 +60,13 @@ export default async function JournalPage() {
             thing you are grateful for.
           </p>
           <p>
-            The entry itself carries the exercise for that day. The huddle closes each week: what
-            went well, what did not, and what you will change. Twenty eight entries to a chapter,
-            four weeks at seven a week.
+            The entry itself carries the exercise for that day. The huddle closes each chapter:
+            what went well over the four weeks, what did not, and what you will change. Twenty
+            eight entries to a chapter, at seven a week.
+          </p>
+          <p>
+            Each chapter opens with a game plan in the printed book: a page to mark the deadlines,
+            milestones and events of the four weeks ahead before you start writing them.
           </p>
         </Section>
 

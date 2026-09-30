@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { getMember } from '@/lib/member'
+import { getMode } from '@/lib/programme-mode'
 import { BLUEPRINT_BUCKET, blueprintPdfPath } from '@/content/blueprint'
 
 /**
@@ -21,7 +22,9 @@ export async function GET() {
   const member = await getMember()
 
   if (!member) return NextResponse.redirect(new URL('/sign-in?next=/blueprint', site))
-  if (member.tier !== 'pro') return new NextResponse('Not found', { status: 404 })
+  // Gated on the programme rather than the tier, to match the page itself.
+  const elite = (await getMode(member.tier, member.isAdmin)) === 'elite' || member.tier === 'elite'
+  if (!elite && member.tier !== 'pro') return new NextResponse('Not found', { status: 404 })
 
   const admin = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,7 +35,9 @@ export async function GET() {
   const { data, error } = await admin.storage
     .from(BLUEPRINT_BUCKET)
     .createSignedUrl(blueprintPdfPath(member.id), 60 * 10, {
-      download: 'Limitless Pro Blueprint.pdf',
+      // Named for the programme rather than the tier, so an Elite member does
+      // not save a file badged with somebody else's.
+      download: `Limitless ${elite ? 'Elite' : 'Pro'} Blueprint.pdf`,
     })
 
   if (error || !data) {

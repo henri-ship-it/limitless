@@ -54,7 +54,7 @@ export const eliteChecklist: ChecklistItem[] = [
   {
     key: 'elite-welcome-call',
     label: 'Have your welcome call with Chris',
-    detail: 'Forty five minutes on where you are starting from and what the year is for.',
+    detail: 'Where you are starting from, and what the year is for.',
   },
   {
     key: 'elite-journal',

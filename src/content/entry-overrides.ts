@@ -58,14 +58,14 @@ export const entryOverrides: Record<number, EntryOverride> = {
     },
   },
   3: {
-    title: 'Change the Way you See Things',
+    title: 'Change the Way You See Things',
     caption: {
       lines: ['We don’t see the world as it is,', 'we see it as we are.'],
       author: 'Anaïs Nin',
     },
   },
-  5: { title: 'Expand your Range' },
-  6: { title: 'Tendency, not Destiny', hideExercise: true },
+  5: { title: 'Expand Your Range' },
+  6: { title: 'Tendency, Not Destiny', hideExercise: true },
   // The picker sets up its own fields, so the printed line repeating that below
   // them said the same thing twice.
   8: { hideVisual: true, exercise: { fields: [], outro: [] } },
@@ -73,7 +73,7 @@ export const entryOverrides: Record<number, EntryOverride> = {
   // Week 2
   9: { title: 'Living with Intent', hideVisual: true },
   10: {
-    title: 'Purpose isn’t Found, it’s Lived',
+    title: 'Purpose Isn’t Found, It’s Lived',
     // Each prompt was printed twice over: once as a line of its own and again
     // as the label on the box below it.
     exercise: {
@@ -108,7 +108,7 @@ export const entryOverrides: Record<number, EntryOverride> = {
       fields: [{ kind: 'lines', label: 'Words and phrases', count: 6 }],
     },
   },
-  18: { title: 'Play to your Strengths' },
+  18: { title: 'Play to Your Strengths' },
   20: {
     title: 'That Little Extra',
     caption: {
@@ -121,7 +121,7 @@ export const entryOverrides: Record<number, EntryOverride> = {
   // Week 4
   22: { title: 'Looking Back', hideVisual: true },
   23: {
-    title: 'Until you Make the Unconscious Conscious',
+    title: 'Until You Make the Unconscious Conscious',
     caption: {
       lines: [
         'Until you make the unconscious conscious, it will',
@@ -133,7 +133,7 @@ export const entryOverrides: Record<number, EntryOverride> = {
   },
   24: { hideVisual: true },
   25: {
-    title: 'The Things you are Passionate About',
+    title: 'The Things You Are Passionate About',
     caption: {
       lines: ['The things you are passionate about are', 'not random, they are your calling.'],
       author: 'Fabienne Fredrickson',
@@ -178,11 +178,11 @@ export const entryOverrides: Record<number, EntryOverride> = {
       ],
     },
   },
-  // The page holds no artwork, only the prompt and its ruled lines. Kept all
-  // the same: without it entry 30 is the one bare row in a week of illustrated
-  // ones, and the blank page reads as part of the set.
-  30: { title: 'Going from Away, Towards' },
-  31: { title: 'The Mind is Like Water', hideExercise: true },
+  // No artwork on this page, only the prompt and its ruled lines. It was put
+  // back to even up a week of illustrated rows and it did not read as a
+  // picture, it read as a blank page with the question asked twice.
+  30: { title: 'Going from Away, Towards', hideVisual: true },
+  31: { title: 'The Mind Is Like Water', hideExercise: true },
   32: {
     title: 'Hooked and Reacting Automatically',
     visualScale: 0.68,
@@ -281,12 +281,12 @@ export const entryOverrides: Record<number, EntryOverride> = {
     },
   },
   44: {
-    title: 'Change the Way you Look at Things',
+    title: 'Change the Way You Look at Things',
     hideExercise: true,
     caption: { lines: [], author: 'Wayne Dyer' },
   },
   45: {
-    title: 'List your Resources',
+    title: 'List Your Resources',
     exercise: {
       intro: ['With the challenge from Entry 43 in mind, list your available resources:'],
       fields: [
@@ -298,7 +298,7 @@ export const entryOverrides: Record<number, EntryOverride> = {
   },
   46: { title: 'The Realistic Optimist', hideExercise: true },
   47: {
-    title: 'Build your Action Plan',
+    title: 'Build Your Action Plan',
     exercise: {
       fields: [
         { kind: 'text', label: 'Create a detailed action plan for your challenge:', step: 3 },
@@ -349,7 +349,7 @@ export const entryOverrides: Record<number, EntryOverride> = {
     },
   },
   53: {
-    title: 'Control your own Destiny',
+    title: 'Control Your Own Destiny',
     hideExercise: true,
     caption: { lines: [], author: 'Jack Welch' },
   },
@@ -551,9 +551,9 @@ export const entryOverrides: Record<number, EntryOverride> = {
   },
 
   // Titles read off the printed page, where the heading is set as outlines.
-  13: { title: 'You Become What you Do' },
-  38: { title: 'Extrinsic is Fleeting, Intrinsic is Lasting' },
-  76: { title: 'What you Can Always Change' },
+  13: { title: 'You Become What You Do' },
+  38: { title: 'Extrinsic Is Fleeting, Intrinsic Is Lasting' },
+  76: { title: 'What You Can Always Change' },
   81: { title: 'Challenge and Ability' },
   83: {
     title: 'Building the New',
@@ -568,7 +568,7 @@ export const entryOverrides: Record<number, EntryOverride> = {
   96: { title: 'Systems, Milestones, Destination' },
   97: { title: 'Think Big, Progress Small' },
   101: {
-    title: 'Wellbeing is Energy',
+    title: 'Wellbeing Is Energy',
     caption: { lines: [], author: 'Owen Eastwood' },
   },
   103: { title: 'The Finish Line Keeps Moving' },

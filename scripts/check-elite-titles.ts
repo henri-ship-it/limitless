@@ -12,9 +12,17 @@ import { resolveEliteEntry } from '../src/lib/entry'
  * sort of thing nobody sees one at a time and everybody sees in a list.
  */
 
+/*
+ * Articles, conjunctions and the short prepositions, and nothing else. This
+ * list used to carry "your", "you", "it" and "is", which produced titles like
+ * "Shifting your Thinking on the Spot" where the possessive reads as a typo.
+ * Kept in step with SMALL in scripts/parse-journal.py, which sets the titles
+ * the books print.
+ */
 const SMALL = new Set([
-  'the', 'a', 'an', 'and', 'or', 'of', 'to', 'in', 'on', 'for', 'with',
-  'your', 'you', 'it', 'is', 'as', 'at', 'but', 'by', 'from',
+  'a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'from', 'in', 'nor',
+  'of', 'off', 'on', 'or', 'per', 'so', 'the', 'to', 'up', 'via', 'with',
+  'yet',
 ])
 
 /** The house form: title case, with the small words left down after the first. */
