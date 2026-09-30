@@ -2,261 +2,313 @@
   "1": {
     "file": "e001.webp",
     "w": 883,
-    "h": 879
+    "h": 879,
+    "coversText": false
   },
   "10": {
     "file": "e010.webp",
     "w": 686,
-    "h": 614
+    "h": 614,
+    "coversText": false
   },
   "16": {
     "file": "e016.webp",
     "w": 891,
-    "h": 481
+    "h": 481,
+    "coversText": true
   },
   "22": {
     "file": "e022.webp",
     "w": 651,
-    "h": 218
+    "h": 218,
+    "coversText": false
   },
   "32": {
     "file": "e032.webp",
     "w": 729,
-    "h": 767
+    "h": 767,
+    "coversText": true
   },
   "38": {
     "file": "e038.webp",
     "w": 709,
-    "h": 381
+    "h": 381,
+    "coversText": false
   },
   "44": {
     "file": "e044.webp",
     "w": 626,
-    "h": 344
+    "h": 344,
+    "coversText": false
   },
   "50": {
     "file": "e050.webp",
     "w": 548,
-    "h": 548
+    "h": 548,
+    "coversText": false
   },
   "60": {
     "file": "e060.webp",
     "w": 798,
-    "h": 473
+    "h": 473,
+    "coversText": false
   },
   "66": {
     "file": "e066.webp",
     "w": 793,
-    "h": 549
+    "h": 549,
+    "coversText": false
   },
   "69": {
     "file": "e069.webp",
     "w": 1063,
-    "h": 546
+    "h": 546,
+    "coversText": false
   },
   "78": {
     "file": "e078.webp",
     "w": 674,
-    "h": 826
+    "h": 826,
+    "coversText": false
   },
   "85": {
     "file": "e085.webp",
     "w": 712,
-    "h": 705
+    "h": 705,
+    "coversText": true
   },
   "88": {
     "file": "e088.webp",
     "w": 763,
-    "h": 519
+    "h": 519,
+    "coversText": true
   },
   "94": {
     "file": "e094.webp",
     "w": 428,
-    "h": 397
+    "h": 397,
+    "coversText": false
   },
   "97": {
     "file": "e097.webp",
     "w": 868,
-    "h": 798
+    "h": 798,
+    "coversText": true
   },
   "100": {
     "file": "e100.webp",
     "w": 574,
-    "h": 592
+    "h": 592,
+    "coversText": false
   },
   "103": {
     "file": "e103.webp",
     "w": 826,
-    "h": 798
+    "h": 798,
+    "coversText": true
   },
   "116": {
     "file": "e116.webp",
     "w": 757,
-    "h": 396
+    "h": 396,
+    "coversText": false
   },
   "122": {
     "file": "e122.webp",
     "w": 310,
-    "h": 608
+    "h": 608,
+    "coversText": false
   },
   "128": {
     "file": "e128.webp",
     "w": 693,
-    "h": 622
+    "h": 622,
+    "coversText": false
   },
   "134": {
     "file": "e134.webp",
     "w": 583,
-    "h": 1177
+    "h": 1177,
+    "coversText": false
   },
   "144": {
     "file": "e144.webp",
     "w": 697,
-    "h": 519
+    "h": 519,
+    "coversText": false
   },
   "150": {
     "file": "e150.webp",
     "w": 533,
-    "h": 485
+    "h": 485,
+    "coversText": false
   },
   "156": {
     "file": "e156.webp",
     "w": 688,
-    "h": 573
+    "h": 573,
+    "coversText": false
   },
   "162": {
     "file": "e162.webp",
     "w": 806,
-    "h": 275
+    "h": 275,
+    "coversText": false
   },
   "172": {
     "file": "e172.webp",
     "w": 593,
-    "h": 546
+    "h": 546,
+    "coversText": false
   },
   "178": {
     "file": "e178.webp",
     "w": 461,
-    "h": 542
+    "h": 542,
+    "coversText": false
   },
   "184": {
     "file": "e184.webp",
     "w": 732,
-    "h": 453
+    "h": 453,
+    "coversText": false
   },
   "190": {
     "file": "e190.webp",
     "w": 589,
-    "h": 690
+    "h": 690,
+    "coversText": false
   },
   "200": {
     "file": "e200.webp",
     "w": 598,
-    "h": 360
+    "h": 360,
+    "coversText": false
   },
   "206": {
     "file": "e206.webp",
     "w": 644,
-    "h": 403
+    "h": 403,
+    "coversText": false
   },
   "212": {
     "file": "e212.webp",
     "w": 590,
-    "h": 612
+    "h": 612,
+    "coversText": false
   },
   "218": {
     "file": "e218.webp",
     "w": 594,
-    "h": 677
+    "h": 677,
+    "coversText": false
   },
   "228": {
     "file": "e228.webp",
     "w": 606,
-    "h": 605
+    "h": 605,
+    "coversText": false
   },
   "234": {
     "file": "e234.webp",
     "w": 630,
-    "h": 658
+    "h": 658,
+    "coversText": false
   },
   "240": {
     "file": "e240.webp",
     "w": 544,
-    "h": 582
+    "h": 582,
+    "coversText": false
   },
   "246": {
     "file": "e246.webp",
     "w": 610,
-    "h": 1028
+    "h": 1028,
+    "coversText": false
   },
   "253": {
     "file": "e253.webp",
     "w": 835,
-    "h": 651
+    "h": 651,
+    "coversText": true
   },
   "256": {
     "file": "e256.webp",
     "w": 697,
-    "h": 297
+    "h": 297,
+    "coversText": false
   },
   "259": {
     "file": "e259.webp",
     "w": 835,
-    "h": 651
+    "h": 651,
+    "coversText": true
   },
   "262": {
     "file": "e262.webp",
     "w": 540,
-    "h": 747
+    "h": 747,
+    "coversText": false
   },
   "265": {
     "file": "e265.webp",
     "w": 835,
-    "h": 651
+    "h": 651,
+    "coversText": true
   },
   "268": {
     "file": "e268.webp",
     "w": 618,
-    "h": 651
+    "h": 651,
+    "coversText": false
   },
   "274": {
     "file": "e274.webp",
     "w": 627,
-    "h": 282
+    "h": 282,
+    "coversText": false
   },
   "290": {
     "file": "e290.webp",
     "w": 807,
-    "h": 422
+    "h": 422,
+    "coversText": false
   },
   "299": {
     "file": "e299.webp",
     "w": 775,
-    "h": 291
+    "h": 291,
+    "coversText": false
   },
   "302": {
     "file": "e302.webp",
     "w": 964,
-    "h": 331
+    "h": 331,
+    "coversText": false
   },
   "312": {
     "file": "e312.webp",
     "w": 828,
-    "h": 857
+    "h": 857,
+    "coversText": false
   },
   "318": {
     "file": "e318.webp",
     "w": 584,
-    "h": 420
+    "h": 420,
+    "coversText": false
   },
   "324": {
     "file": "e324.webp",
     "w": 610,
-    "h": 726
+    "h": 726,
+    "coversText": false
   },
   "330": {
     "file": "e330.webp",
     "w": 478,
-    "h": 438
+    "h": 438,
+    "coversText": false
   }
 }

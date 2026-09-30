@@ -45,6 +45,33 @@ MIN_INK = 0.01
 INK_LEVEL = 200
 
 
+def covers_text(page, clip) -> bool:
+    """
+    Whether the crop has swallowed printed words as well as the drawing.
+
+    The detector finds artwork by painting out text and taking what is left, but
+    the image it then saves is a plain render of that rectangle, so any words
+    standing inside it come back in the picture. Where the quotation sits beside
+    the drawing rather than beneath it the crop contains the quote, and printing
+    the caption underneath as well would set the same sentence twice.
+
+    Only real words count. A single label is part of the diagram.
+    """
+    W = page.rect.width
+    for x0, y0, x1, y1, text, *_ in page.get_text("blocks"):
+        if x1 <= W / 2:
+            continue
+        text = " ".join(text.split())
+        if not text or re.match(r"^ENTRY\s*\d+\s*/\s*%d$" % TOTAL, text):
+            continue
+        if len(text.split()) < 3:
+            continue
+        block = pymupdf.Rect(max(x0, W / 2), y0, x1, y1)
+        if not (block & clip).is_empty:
+            return True
+    return False
+
+
 def ink_fraction(img) -> float:
     grey = img.convert("L")
     data = grey.getdata()
@@ -138,7 +165,12 @@ def main() -> None:
                 continue
             name = f"e{entry:03d}.webp"
             img.save(os.path.join(OUT, name), "WEBP", quality=88, method=5)
-            found[entry] = {"file": name, "w": img.size[0], "h": img.size[1]}
+            found[entry] = {
+                "file": name,
+                "w": img.size[0],
+                "h": img.size[1],
+                "coversText": covers_text(page, clip),
+            }
 
     json.dump(found, open(os.path.join(OUT, "index.json"), "w"), indent=2)
 
@@ -151,18 +183,21 @@ def main() -> None:
         "",
         "import type { Visual } from './journal-visuals'",
         "",
-        "const eliteVisuals: Record<number, Visual> = {",
+        "/** True where the crop contains printed words as well as the drawing. */",
+        "export type EliteVisual = Visual & { coversText: boolean }",
+        "",
+        "const eliteVisuals: Record<number, EliteVisual> = {",
     ]
     for n in sorted(found):
         v = found[n]
         lines.append(
-            "  %d: { src: '/journal/elite-visuals/%s', width: %d, height: %d },"
-            % (n, v["file"], v["w"], v["h"])
+            "  %d: { src: '/journal/elite-visuals/%s', width: %d, height: %d, coversText: %s },"
+            % (n, v["file"], v["w"], v["h"], "true" if v["coversText"] else "false")
         )
     lines += [
         "}",
         "",
-        "export function eliteVisualForEntry(n: number): Visual | null {",
+        "export function eliteVisualForEntry(n: number): EliteVisual | null {",
         "  return eliteVisuals[n] ?? null",
         "}",
         "",

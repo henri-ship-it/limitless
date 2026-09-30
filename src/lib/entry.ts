@@ -7,6 +7,7 @@ import { eliteJournalEntry } from '@/content/elite-journal'
 import { eliteVisualForEntry } from '@/content/elite-visuals'
 import { eliteTitles } from '@/content/elite-titles'
 import { eliteOverrideFor } from '@/content/elite-overrides'
+import { eliteExerciseFor, eliteLinkFor } from '@/content/elite-extras'
 
 export type ResolvedEntry = {
   n: number
@@ -111,8 +112,12 @@ export function resolveEliteEntry(n: number): ResolvedEntry | null {
    */
   const override = eliteOverrideFor(n)
 
-  const intro = override?.intro ?? entry.intro
-  const outro = override?.outro ?? entry.outro
+  // A hand written exercise wins over both, because it is the only one that can
+  // say a field is a rating rather than a box to write in.
+  const written = eliteExerciseFor(n)
+
+  const intro = written?.intro ?? override?.intro ?? entry.intro
+  const outro = written?.outro ?? override?.outro ?? entry.outro
   const prompts = override?.prompts ?? entry.prompts
 
   /*
@@ -124,10 +129,25 @@ export function resolveEliteEntry(n: number): ResolvedEntry | null {
    */
   const title =
     override?.title ?? entry.title ?? eliteTitles[n] ?? (huddle ? 'Huddle' : `Entry ${n}`)
-  const fields: Field[] = prompts.map((label) => ({ kind: 'text', label }))
+  const fields: Field[] = written?.fields ?? prompts.map((label) => ({ kind: 'text', label }))
 
   const raw = override && 'caption' in override ? override.caption : entry.caption
-  const caption = raw ? { lines: raw.lines, author: raw.author ?? undefined } : null
+  const art = eliteVisualForEntry(n)
+
+  /*
+   * Where the crop swallowed the quotation along with the drawing, the words are
+   * already in the picture and only the attribution is set underneath it. Which
+   * pages those are is geometry, not a list: it depends on whether the artwork's
+   * bounding box happens to reach across the words, so the cropper works it out
+   * and records it.
+   */
+  const caption = raw
+    ? art?.coversText
+      ? raw.author
+        ? { lines: [], author: raw.author }
+        : null
+      : { lines: raw.lines, author: raw.author ?? undefined }
+    : null
 
   return {
     n,
@@ -142,12 +162,9 @@ export function resolveEliteEntry(n: number): ResolvedEntry | null {
     // Cropped from the Elite books by their own script, never borrowed from the
     // weekly set: those were measured by weekly entry number, so entry 29 there
     // is a different page from entry 29 here.
-    visual: (() => {
-      const found = eliteVisualForEntry(n)
-      return found ? { ...found, scale: 0.5 } : null
-    })(),
-    link: null,
-    awaitingLink: entry.qr,
+    visual: art ? { src: art.src, width: art.width, height: art.height, scale: 0.5 } : null,
+    link: eliteLinkFor(n),
+    awaitingLink: entry.qr && !eliteLinkFor(n),
     hasExercise: Boolean(prompts.length || intro.length),
   }
 }

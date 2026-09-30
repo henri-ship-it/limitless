@@ -36,6 +36,15 @@ export type EliteChapter = {
   lastEntry: number
   /** Which of the four printed journals carries it. */
   volume: number
+  /**
+   * The week of the sixteen week programme that teaches this same chapter.
+   *
+   * The two programmes cover the twelve chapters in the same order under the
+   * same titles, so the masterclass Chris recorded for that week is the
+   * masterclass for this chapter. Held here rather than worked out at each call
+   * site, because the mapping skips the deload weeks and is not n plus one.
+   */
+  weeklyWeek: number
 }
 
 export const ELITE = {
@@ -73,6 +82,9 @@ export const eliteChapters: EliteChapter[] = [
 ].map((title, i) => ({
   n: i + 1,
   title,
+  // Every fourth week of the weekly programme is a deload and teaches nothing
+  // new, so the twelve chapters sit in the other twelve weeks.
+  weeklyWeek: [1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15][i],
   // Three chapters to a module, and three to a printed journal: the books were
   // bound to the modules, so the two divisions are the same one.
   module: (Math.floor(i / 3) + 1) as 1 | 2 | 3 | 4,

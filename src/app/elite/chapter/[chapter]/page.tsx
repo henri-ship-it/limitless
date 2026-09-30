@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
 import { MarkWeekDone } from '@/components/MarkWeekDone'
 import { getMember, getProgress } from '@/lib/member'
-import { modules } from '@/content/programme'
+import { modules, weeks as programmeWeeks } from '@/content/programme'
 import {
   ELITE,
   currentEliteChapter,
@@ -16,6 +16,7 @@ import {
 import { eliteEntriesForChapter } from '@/content/elite-journal'
 import { eliteDigest } from '@/content/elite-digests'
 import { DigestBody } from '@/components/DigestBody'
+import { VideoEmbed } from '@/components/VideoEmbed'
 import { Quote } from '@/components/Quote'
 import { resolveEliteEntry } from '@/lib/entry'
 
@@ -53,6 +54,10 @@ export default async function EliteChapterPage({
   const next = eliteChapters.find((c) => c.n === n + 1)
 
   const digest = eliteDigest(n)
+  // The masterclass Chris recorded for this chapter, which the weekly
+  // programme teaches in its own week of the same name.
+  const masterclass =
+    programmeWeeks.find((w) => w.number === chapter.weeklyWeek)?.youtubeId ?? null
   const entries = eliteEntriesForChapter(n)
   const weeks = [0, 1, 2, 3].map((i) => ({
     n: i + 1,
@@ -64,16 +69,44 @@ export default async function EliteChapterPage({
       <PageHeader
         eyebrow={`Elite · Chapter ${String(n).padStart(2, '0')} of ${ELITE.chapters}`}
         title={chapter.title}
-        lede={`Module ${String(module.number).padStart(2, '0')} ${module.name}. Entries ${chapter.firstEntry} to ${chapter.lastEntry}, in journal ${chapter.volume}.`}
+        lede={`Module ${String(module.number).padStart(2, '0')} ${module.name}, in journal ${chapter.volume}.`}
         pills={
           <>
             <span className="pill">Opens {formatEliteChapter(start, n)}</span>
-            <span className="pill">{ELITE.entriesPerChapter} entries</span>
             <span className="pill">{ELITE.weeksPerChapter} weeks</span>
             {n === open ? <span className="pill !text-ink">This chapter</span> : null}
           </>
         }
       />
+
+      {masterclass ? (
+        <Section id="masterclass" label="Video masterclass">
+          <VideoEmbed youtubeId={masterclass} title={`${chapter.title} masterclass`} />
+          <p className="mt-4 !text-ink-56 text-[0.8125rem]">
+            Chris walks through the chapter. Watch it before you start.
+          </p>
+        </Section>
+      ) : null}
+
+      <Section id="digest" label="Chapter digest">
+        {digest ? (
+          <>
+            <DigestBody
+              nodes={digest.nodes}
+              week={n}
+              firstEntry={chapter.firstEntry}
+              completedItems={[...progress.completedItems]}
+              scope="c"
+            />
+            <p className="label !mt-8">Chris</p>
+          </>
+        ) : (
+          <p className="!mb-0 !text-ink-56">
+            The digest for this chapter is not written yet. It goes out from Kit in the meantime,
+            when the chapter opens.
+          </p>
+        )}
+      </Section>
 
       <Section label="The chapter's work">
         <p className="!mb-6">
@@ -106,26 +139,6 @@ export default async function EliteChapterPage({
             </div>
           ))}
         </div>
-      </Section>
-
-      <Section id="digest" label="Chapter digest">
-        {digest ? (
-          <>
-            <DigestBody
-              nodes={digest.nodes}
-              week={n}
-              firstEntry={chapter.firstEntry}
-              completedItems={[...progress.completedItems]}
-              scope="c"
-            />
-            <p className="label !mt-8">Chris</p>
-          </>
-        ) : (
-          <p className="!mb-0 !text-ink-56">
-            The digest for this chapter is not written yet. It goes out from Kit in the meantime,
-            when the chapter opens.
-          </p>
-        )}
       </Section>
 
       {digest?.quote ? (

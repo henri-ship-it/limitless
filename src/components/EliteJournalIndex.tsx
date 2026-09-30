@@ -122,7 +122,7 @@ export function EliteJournalIndex({ currentChapter }: { currentChapter: number }
                                 ) : null}
                                 <JournalVisual
                                   visual={resolved?.visual ?? null}
-                                  caption={null}
+                                  caption={resolved?.caption ?? null}
                                   compact
                                   className="mt-12 max-w-sm border border-line"
                                 />
