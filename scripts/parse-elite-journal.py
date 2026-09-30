@@ -38,6 +38,54 @@ ENTRIES_PER_WEEK = 7
 ENTRIES_PER_CHAPTER = 28
 
 
+def quote_page(page):
+    """
+    A quote page, read as the caption it is rather than as an exercise.
+
+    Every few entries the book gives a page over to a piece of artwork with a
+    quotation under it and nothing to fill in. Read as an ordinary page that
+    came out badly: entry 10 took the first line of Anais Nin as its heading,
+    the second line as the framing text, and set "Anais nin" as a prompt, so
+    the member was given a box and asked to write about a poet's name.
+
+    What marks one is that every line on it is printed in capitals and none of
+    it is a question. The exercise pages set their prompts in sentence case, so
+    the two never overlap.
+
+    Returns (lines, author) or None.
+    """
+    W = page.rect.width
+    blocks = []
+    for x0, y0, x1, y1, text, *_ in page.get_text("blocks"):
+        if x1 <= W / 2:
+            continue
+        text = " ".join(text.split())
+        if not text or re.match(r"^ENTRY\s*\d+\s*/\s*%d$" % TOTAL, text):
+            continue
+        blocks.append((y0, text))
+
+    if not blocks:
+        return None
+    if any(re.search("[a-z]", text) for _, text in blocks):
+        return None
+
+    blocks.sort(key=lambda b: b[0])
+    lines = [text for _, text in blocks]
+
+    # The attribution is the short last line. A quotation that runs to four
+    # words on its final line is rare; a name longer than four is rarer.
+    author = None
+    if len(lines) > 1 and len(lines[-1].split()) <= 4:
+        author = pj.title_case(lines.pop())
+
+    # Set in capitals on the page, read as a sentence on screen.
+    shaped = []
+    for i, line in enumerate(lines):
+        lowered = line.lower()
+        shaped.append(lowered[:1].upper() + lowered[1:] if i == 0 else lowered)
+    return shaped, author
+
+
 def main() -> None:
     if len(sys.argv) < 2:
         sys.exit("give the journal volumes in order, volume 1 first")
@@ -55,7 +103,20 @@ def main() -> None:
             n = int(em.group(1))
             if n in found:
                 sys.exit(f"entry {n} appears twice: volume {found[n]['volume']} and volume {volume}")
-            entry = pj.parse_entry(page)
+            quote = quote_page(page)
+            if quote:
+                lines, author = quote
+                entry = {
+                    "title": None,
+                    "intro": [],
+                    "prompts": [],
+                    "outro": [],
+                    "qr": False,
+                    "caption": {"lines": lines, "author": author},
+                }
+            else:
+                entry = pj.parse_entry(page)
+                entry["caption"] = None
             entry["n"] = n
             entry["week"] = (n - 1) // ENTRIES_PER_WEEK + 1
             entry["chapter"] = (n - 1) // ENTRIES_PER_CHAPTER + 1
@@ -90,13 +151,15 @@ def main() -> None:
         "  outro: string[]",
         "  /** The printed page carries a QR code here, replaced by a link. */",
         "  qr: boolean",
+        "  /** A quotation printed under the artwork, on pages that are only that. */",
+        "  caption: { lines: string[]; author: string | null } | null",
         "}",
         "",
         "export const eliteJournalEntries: EliteJournalEntry[] = [",
     ]
     for e in entries:
         out.append(
-            "  { n: %d, week: %d, chapter: %d, volume: %d, title: %s, intro: %s, prompts: %s, outro: %s, qr: %s },"
+            "  { n: %d, week: %d, chapter: %d, volume: %d, title: %s, intro: %s, prompts: %s, outro: %s, qr: %s, caption: %s },"
             % (
                 e["n"],
                 e["week"],
@@ -107,6 +170,15 @@ def main() -> None:
                 pj.ts_list(e["prompts"]),
                 pj.ts_list(e["outro"]),
                 "true" if e["qr"] else "false",
+                (
+                    "{ lines: %s, author: %s }"
+                    % (
+                        pj.ts_list(e["caption"]["lines"]),
+                        pj.ts(e["caption"]["author"]) if e["caption"]["author"] else "null",
+                    )
+                    if e.get("caption")
+                    else "null"
+                ),
             )
         )
     out += [

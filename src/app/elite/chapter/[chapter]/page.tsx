@@ -14,6 +14,9 @@ import {
   formatEliteChapter,
 } from '@/content/elite'
 import { eliteEntriesForChapter } from '@/content/elite-journal'
+import { eliteDigest } from '@/content/elite-digests'
+import { DigestBody } from '@/components/DigestBody'
+import { Quote } from '@/components/Quote'
 import { resolveEliteEntry } from '@/lib/entry'
 
 export const metadata = { title: 'Chapter · Elite' }
@@ -49,6 +52,7 @@ export default async function EliteChapterPage({
   const prev = eliteChapters.find((c) => c.n === n - 1)
   const next = eliteChapters.find((c) => c.n === n + 1)
 
+  const digest = eliteDigest(n)
   const entries = eliteEntriesForChapter(n)
   const weeks = [0, 1, 2, 3].map((i) => ({
     n: i + 1,
@@ -104,12 +108,31 @@ export default async function EliteChapterPage({
         </div>
       </Section>
 
-      <Section label="The digest">
-        <p className="!mb-0 !text-ink-56">
-          The digest for this chapter is not loaded into the platform yet. It goes out from Kit in
-          the meantime, when the chapter opens.
-        </p>
+      <Section id="digest" label="Chapter digest">
+        {digest ? (
+          <>
+            <DigestBody
+              nodes={digest.nodes}
+              week={n}
+              firstEntry={chapter.firstEntry}
+              completedItems={[...progress.completedItems]}
+              scope="c"
+            />
+            <p className="label !mt-8">Chris</p>
+          </>
+        ) : (
+          <p className="!mb-0 !text-ink-56">
+            The digest for this chapter is not written yet. It goes out from Kit in the meantime,
+            when the chapter opens.
+          </p>
+        )}
       </Section>
+
+      {digest?.quote ? (
+        <Section label="To close">
+          <Quote lines={digest.quote.lines} author={digest.quote.author} />
+        </Section>
+      ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line px-6 py-8 sm:px-10">
         <MarkWeekDone week={n} done={progress.completedWeeks.has(n)} />

@@ -112,6 +112,9 @@ export function resolveEliteEntry(n: number): ResolvedEntry | null {
    */
   const title = entry.title ?? eliteTitles[n] ?? (huddle ? 'Huddle' : `Entry ${n}`)
   const fields: Field[] = entry.prompts.map((label) => ({ kind: 'text', label }))
+  const caption = entry.caption
+    ? { lines: entry.caption.lines, author: entry.caption.author ?? undefined }
+    : null
 
   return {
     n,
@@ -122,7 +125,7 @@ export function resolveEliteEntry(n: number): ResolvedEntry | null {
     intro: entry.intro,
     fields,
     outro: entry.outro,
-    caption: null,
+    caption,
     // Cropped from the Elite books by their own script, never borrowed from the
     // weekly set: those were measured by weekly entry number, so entry 29 there
     // is a different page from entry 29 here.

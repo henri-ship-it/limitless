@@ -9,6 +9,13 @@ type Props = {
   /** First journal entry of the week, which the practice rows link into. */
   firstEntry: number
   completedItems: string[]
+  /**
+   * What `week` is counting. Elite passes a chapter number, and a chapter 1 tick
+   * must not be stored under the same key as a week 1 tick: nobody is on both
+   * programmes today, but a Pro member moved onto Elite would arrive with a
+   * checklist already half ticked by work they did somewhere else.
+   */
+  scope?: 'w' | 'c'
 }
 
 const FOCUS = /focus/i
@@ -25,7 +32,7 @@ const CHALLENGE = /challenge/i
  * journal entries, reflection questions are set as questions, and a list of
  * "Label: explanation" pairs is set as a table of terms.
  */
-export function DigestBody({ nodes, week, firstEntry, completedItems }: Props) {
+export function DigestBody({ nodes, week, firstEntry, completedItems, scope = 'w' }: Props) {
   let heading = ''
   let sub = ''
   let focusCount = 0
@@ -64,7 +71,7 @@ export function DigestBody({ nodes, week, firstEntry, completedItems }: Props) {
         const context = `${sub} ${heading}`
 
         if (FOCUS.test(context)) {
-          const prefix = `w${week}:focus:${focusCount}`
+          const prefix = `${scope}${week}:focus:${focusCount}`
           focusCount += 1
           return (
             <DigestChecklist

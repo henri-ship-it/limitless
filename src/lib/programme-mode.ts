@@ -14,7 +14,8 @@ import { cookies } from 'next/headers'
 
 export type Mode = 'limitless' | 'elite'
 
-export const MODE_COOKIE = 'programme'
+export { MODE_COOKIE } from './mode-cookie'
+import { MODE_COOKIE } from './mode-cookie'
 
 /**
  * Which programme to show.
