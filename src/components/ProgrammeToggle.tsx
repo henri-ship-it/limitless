@@ -1,7 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { MODE_COOKIE, MODE_MAX_AGE } from '@/lib/mode-cookie'
 import type { Mode } from '@/lib/programme-mode'
 
@@ -14,48 +13,39 @@ import type { Mode } from '@/lib/programme-mode'
  * two programmes with overlapping chapter titles is exactly the situation where
  * that matters.
  *
- * The cookie is written here rather than by a server action, which is what made
- * this slow. A click used to cost three trips to the server in a row: the
- * action, then the navigation, then a refresh, with the action calling
- * revalidatePath on the whole layout and throwing away every cached page in the
- * app on the way past.
+ * The cookie is written here rather than by a server action. That used to cost
+ * three trips to the server for one click, the first of them calling
+ * revalidatePath on the whole layout and dropping every cached page in the app
+ * on its way past. Nothing is lost by moving it, because the cookie is not a
+ * permission: getMode checks isAdmin before it reads it, so a forged one still
+ * returns the weekly programme.
  *
- * Nothing is lost by moving it. The cookie is not a permission and never was:
- * getMode checks isAdmin before it reads it, so a forged one still returns the
- * weekly programme. It records a preference about what to look at, which is the
- * same kind of thing as a theme, and the server decides what that preference is
- * allowed to mean.
- *
- * Both destinations are prefetched on mount, so the click itself is a
- * navigation that has already arrived.
+ * The navigation that follows is a real one, not a client side push, and both
+ * of the two attempts that came before it explain why. A soft push never
+ * arrived, and prefetching the two destinations was worse than useless: a
+ * prefetch is rendered under the cookie in force at the time, so the copy of
+ * /elite sitting in the router cache was the one built while the toggle still
+ * said sixteen weeks. Every page on the platform reads this cookie on the
+ * server, so the only correct thing to serve after it changes is a fresh
+ * render of everything.
  */
 export function ProgrammeToggle({ mode }: { mode: Mode }) {
-  const router = useRouter()
-  // Shown immediately on click. The server confirms it on the next render.
-  const [shown, setShown] = useState<Mode>(mode)
-
-  useEffect(() => setShown(mode), [mode])
-
-  useEffect(() => {
-    router.prefetch('/')
-    router.prefetch('/elite')
-  }, [router])
+  // Held so the button darkens on click rather than after the page has loaded.
+  const [going, setGoing] = useState<Mode | null>(null)
+  const shown = going ?? mode
 
   function pick(next: Mode) {
-    if (next === shown) return
-    setShown(next)
+    if (next === mode || going) return
+    setGoing(next)
     document.cookie = `${MODE_COOKIE}=${next}; path=/; max-age=${MODE_MAX_AGE}; samesite=lax`
-    router.push(next === 'elite' ? '/elite' : '/')
-    // The pages either side of this read the cookie on the server, so the
-    // router's own cache has to be dropped or the old programme is served back.
-    router.refresh()
+    window.location.assign(next === 'elite' ? '/elite' : '/')
   }
 
   return (
     <div
       role="group"
       aria-label="Programme"
-      className="flex items-center rounded-full border border-line p-0.5"
+      className={`flex items-center rounded-full border border-line p-0.5 ${going ? 'opacity-60' : ''}`}
     >
       {(
         [

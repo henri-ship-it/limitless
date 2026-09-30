@@ -15,7 +15,7 @@ import { cookies } from 'next/headers'
 export type Mode = 'limitless' | 'elite'
 
 export { MODE_COOKIE } from './mode-cookie'
-import { MODE_COOKIE } from './mode-cookie'
+import { LEGACY_MODE_COOKIE, MODE_COOKIE } from './mode-cookie'
 
 /**
  * Which programme to show.
@@ -29,5 +29,8 @@ export async function getMode(tier: string, isAdmin: boolean): Promise<Mode> {
   if (!isAdmin) return 'limitless'
 
   const jar = await cookies()
-  return jar.get(MODE_COOKIE)?.value === 'elite' ? 'elite' : 'limitless'
+  // The old cookie is still read so that nobody who last set it before the
+  // rename is thrown back to the weekly programme without asking.
+  const chosen = jar.get(MODE_COOKIE)?.value ?? jar.get(LEGACY_MODE_COOKIE)?.value
+  return chosen === 'elite' ? 'elite' : 'limitless'
 }
