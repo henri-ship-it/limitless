@@ -6,6 +6,7 @@ import { visualForEntry } from '@/content/journal-visuals'
 import { eliteJournalEntry } from '@/content/elite-journal'
 import { eliteVisualForEntry } from '@/content/elite-visuals'
 import { eliteTitles } from '@/content/elite-titles'
+import { eliteOverrideFor } from '@/content/elite-overrides'
 
 export type ResolvedEntry = {
   n: number
@@ -102,6 +103,17 @@ export function resolveEliteEntry(n: number): ResolvedEntry | null {
   if (!entry) return null
 
   const huddle = isHuddleEntry(n)
+  /*
+   * Corrections first. The parser reads a page by measuring gaps, which cannot
+   * see type that has been converted to outlines and cannot tell a diagram from
+   * room to write, so seventy three pages were reviewed against the print and
+   * corrected. Anything here wins.
+   */
+  const override = eliteOverrideFor(n)
+
+  const intro = override?.intro ?? entry.intro
+  const outro = override?.outro ?? entry.outro
+  const prompts = override?.prompts ?? entry.prompts
 
   /*
    * Most Elite pages are printed as one question and the space to answer it,
@@ -110,11 +122,12 @@ export function resolveEliteEntry(n: number): ResolvedEntry | null {
    * those are written in elite-titles. "Entry 30" as a heading names the page
    * without saying anything about it.
    */
-  const title = entry.title ?? eliteTitles[n] ?? (huddle ? 'Huddle' : `Entry ${n}`)
-  const fields: Field[] = entry.prompts.map((label) => ({ kind: 'text', label }))
-  const caption = entry.caption
-    ? { lines: entry.caption.lines, author: entry.caption.author ?? undefined }
-    : null
+  const title =
+    override?.title ?? entry.title ?? eliteTitles[n] ?? (huddle ? 'Huddle' : `Entry ${n}`)
+  const fields: Field[] = prompts.map((label) => ({ kind: 'text', label }))
+
+  const raw = override && 'caption' in override ? override.caption : entry.caption
+  const caption = raw ? { lines: raw.lines, author: raw.author ?? undefined } : null
 
   return {
     n,
@@ -122,9 +135,9 @@ export function resolveEliteEntry(n: number): ResolvedEntry | null {
     day: n,
     huddle,
     title: stripTrailingColon(title),
-    intro: entry.intro,
+    intro,
     fields,
-    outro: entry.outro,
+    outro,
     caption,
     // Cropped from the Elite books by their own script, never borrowed from the
     // weekly set: those were measured by weekly entry number, so entry 29 there
@@ -135,7 +148,7 @@ export function resolveEliteEntry(n: number): ResolvedEntry | null {
     })(),
     link: null,
     awaitingLink: entry.qr,
-    hasExercise: Boolean(entry.prompts.length || entry.intro.length),
+    hasExercise: Boolean(prompts.length || intro.length),
   }
 }
 

@@ -52,10 +52,41 @@ def ink_fraction(img) -> float:
     return dark / max(1, len(data))
 
 # Regions given by hand, in points on the right hand page, keyed by Elite entry.
-CLIPS: dict[int, tuple[float, float, float, float]] = {}
+#
+# Every one of these was measured against the printed page after the automatic
+# crop was checked by eye. The detector finds ink, which is the right instinct
+# and the wrong answer whenever the page carries ink that is not a picture.
+CLIPS: dict[int, tuple[float, float, float, float]] = {
+    # The QR code sits at the top right and dragged the bounding box up with it,
+    # so the crop carried the entry marker, the heading and the intro line as
+    # well as the radar chart.
+    1: (74, 130, 352, 407),
+    # The quote is set inside the artwork and ran wider than the ink the
+    # detector found, losing "THE" and half of "MIND" off the left edge.
+    88: (92, 214, 330, 371),
+    # The Reflective Cycle wheel, which the same three entries share. Left to
+    # itself the box reached down into the prompt printed under it.
+    253: (76, 97, 338, 298),
+    259: (76, 97, 338, 298),
+    265: (76, 97, 338, 298),
+    # Diagrams that sit inside the exercise rather than above it.
+    85: (99, 96, 320, 315),
+    97: (20, 100, 293, 350),
+    103: (127, 100, 386, 350),
+}
+
 # Entries whose diagram sits inside the exercise, where the prompt overlap test
 # would otherwise throw it away.
-FORCE: set[int] = set()
+FORCE: set[int] = {85, 97, 103}
+
+# Pages the detector called artwork that are nothing of the kind.
+#
+# All of them are things the reader fills in: a checklist of values, a row of
+# rating scales, a plotting grid, a QR code above three percentage boxes. They
+# carry enough ink to clear the dot grid floor and none of it is a picture, and
+# the entry renders those fields itself, so printing a photograph of the blank
+# form above them shows the same exercise twice.
+NOT_ARTWORK: set[int] = {29, 113, 137, 165, 187, 221, 281, 284, 293, 309}
 
 OUT = os.path.join(HERE, "..", "public", "journal", "elite-visuals")
 TARGET = os.path.join(HERE, "..", "src", "content", "elite-visuals.ts")
@@ -76,6 +107,9 @@ def main() -> None:
             if not m:
                 continue
             entry = int(m.group(1))
+
+            if entry in NOT_ARTWORK:
+                continue
 
             # Every seventh entry closes the week. Those pages carry no artwork,
             # unless one has been named explicitly.
