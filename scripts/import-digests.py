@@ -208,6 +208,12 @@ def main() -> None:
 // Chris's headings differ from week to week, so a digest is an ordered list of
 // nodes rather than a fixed set of fields. Workshop copy is stripped on import,
 // since the workshop belongs on the deload week page where its recording lands.
+//
+// A week the source marks MISSING is skipped and falls through to
+// digests-extra, which is written by hand. Notion wins the moment the page
+// exists, so nothing here has to be remembered.
+
+import { extraDigests } from './digests-extra'
 
 export type DigestNode =
   | { type: 'p'; text: string }
@@ -248,7 +254,12 @@ export const digests: Digest[] = [''']
     out.append("]")
     out.append("")
     out.append("export function getDigest(week: number): Digest | undefined {")
-    out.append("  return digests.find((d) => d.week === week)")
+    out.append("  // Notion wins. A week only falls through to the hand written set")
+    out.append("  // while it is marked MISSING on the source page and skipped here.")
+    out.append("  return (")
+    out.append("    digests.find((d) => d.week === week) ??")
+    out.append("    extraDigests.find((d) => d.week === week)")
+    out.append("  )")
     out.append("}")
     out.append("")
 
