@@ -41,10 +41,14 @@ CLIPS = {
     57: (0, 96, 420, 200),
     # The stairway to optimism, which sits beside the heading on each of the
     # four steps rather than above the exercise.
-    43: (150, 48, 280, 196),
-    45: (150, 48, 280, 196),
-    47: (150, 48, 280, 196),
-    49: (150, 48, 280, 196),
+    # Measured to the ink rather than guessed around it. The old box started at
+    # 48, and the eight point pad took it to 40, which is inside the "ENTRY 43 /
+    # 112" marker printed at the top of the page: every one of the four came
+    # back with a sliver of cut-off grey type above the stairway.
+    43: (160, 64, 260, 184),
+    45: (160, 64, 260, 184),
+    47: (160, 64, 260, 184),
+    49: (160, 64, 260, 184),
 }
 
 

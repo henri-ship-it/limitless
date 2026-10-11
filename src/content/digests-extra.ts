@@ -9,146 +9,139 @@ import type { Digest } from './digests'
  * importer skipped it, and the week page told members their digest had not
  * arrived yet, which it never would.
  *
- * This one is built from Chris's own Chapter 6 masterclass script, which is the
- * video that runs against this same week, so the digest and the masterclass say
- * the same thing. The studies, the Stockdale paradox, the matrix and the three
- * part lens are all his, in his order.
+ * This is Chris's own copy, from the Kit broadcast, transcribed verbatim except
+ * for three things. The line pointing at the entries and worksheet "below" is
+ * dropped, because on the platform they are listed on the page rather than
+ * under the digest. The Video Masterclass heading is dropped for the same
+ * reason: the embed sits directly above this, so a second reference to it with
+ * no video under it reads as something failing to load. And the sign off goes,
+ * because the page already prints his name after the digest.
  *
  * It is here rather than in digests.ts because that file is generated and the
- * next import would throw a hand edit away. If the Kit broadcast turns up, or
- * Chris writes the page, put it in Notion and delete the entry here: the
- * importer wins once the week stops being marked MISSING.
+ * next import would throw a hand edit away. If the week stops being marked
+ * MISSING on the Notion page, the importer wins and this entry can go.
  */
 export const extraDigests: Digest[] = [
   {
     week: 7,
     nodes: [
+      { type: 'p', text: 'Your mind can be your greatest ally or your worst enemy.' },
       {
         type: 'p',
-        text: 'Two athletes. Same injury, same diagnosis, same rehab timeline, same brutal odds.',
+        text: 'This week, we’re tackling a skill that separates elite performers from the rest: the ability to see possibilities where others see only problems.',
+      },
+      { type: 'p', text: 'Not sunshine-and-rainbows optimism. Not naive positivity.' },
+      {
+        type: 'p',
+        text: 'Realistic optimism. A balanced perspective that acknowledges reality while actively seeking opportunity.',
       },
       {
         type: 'p',
-        text: 'Months later one has quietly stepped away from the sport. The other is on the verge of a comeback. Not ability. Not fortune. Something else entirely.',
-      },
-      {
-        type: 'p',
-        text: 'Psychologists call it realistic optimism, and it is one of the most consistent traits found in top athletes, resilient teams and the underdog stories you remember. Unlike talent, it is trainable.',
+        text: 'It’s the final piece of your mental mastery toolkit, and possibly the most powerful.',
       },
       { type: 'h', text: 'This Week’s Focus' },
       {
         type: 'p',
-        text: 'Optimism gets a bad reputation. People hear the word and think delusional, out of touch, head in the clouds. But optimism is not ignoring reality. It is choosing a more useful one.',
-      },
-      { type: 'sub', text: 'Blind Optimism and Realistic Optimism' },
-      {
-        type: 'p',
-        text: 'This is where most people get it wrong. Blind optimism says it will all work out. Realistic optimism says it might be difficult, but I have tools and I will find a way. One is a wish. The other is a plan.',
-      },
-      { type: 'sub', text: 'The Stockdale Paradox' },
-      {
-        type: 'p',
-        text: 'Jim Stockdale spent eight years as a prisoner of war. Asked later who did not make it out, his answer was not the pessimists. It was the optimists, the ones who kept saying they would be out by Christmas. Christmas passed. Easter, then. Easter came and went. Each time hope was pinned to a deadline and broken, a little more of their spirit collapsed.',
+        text: 'We’re exploring “The Stairway to Optimism” framework. This approach to realistic optimism will help you:',
       },
       {
-        type: 'p',
-        text: 'Stockdale never lost faith that he would get out, and he never lied to himself about how bad things were. He accepted the brutal facts and held on to belief in the outcome. That combination of grounded realism and unwavering hope is the whole of it.',
+        type: 'ul',
+        items: [
+          'Overcome negative bias and thought patterns',
+          'Build solution-focused habits',
+          'Develop resilience in the face of setbacks',
+          'Maintain forward momentum during challenges',
+          'Strike the crucial balance between hope and reality',
+        ],
       },
-      { type: 'h', text: 'Key Insights' },
+      { type: 'h', text: 'Key Concepts' },
+      { type: 'sub', text: 'The Optimism Edge' },
+      {
+        type: 'p',
+        text: 'Research consistently shows that realistic optimists outperform both pessimists and blind optimists. They recover faster from setbacks, identify more creative solutions, and maintain higher performance during prolonged challenges.',
+      },
       { type: 'sub', text: 'Explanatory Style' },
       {
         type: 'p',
-        text: 'Take two people rejected from a job. One says I am not good enough, I will never catch a break. The other says this was not the one, I will learn and go again. Same event, two interpretations. One spirals, the other adapts. How you explain events, especially setbacks, predicts your bounce back speed and your long term progress.',
+        text: 'How you explain events to yourself shapes your future actions. Pessimists tend to view negative events as permanent, pervasive, and personal. Optimists see them as temporary, specific, and not entirely personal. This simple shift in explanatory style creates profound differences in resilience and action.',
       },
-      { type: 'sub', text: 'The Optimism Matrix' },
+      { type: 'sub', text: 'Possibility Thinking' },
       {
         type: 'p',
-        text: 'Picture a quadrant. One axis is how grounded you are in reality. The other is how much hope you hold for the future. Our injured athlete sits somewhere on it:',
-      },
-      {
-        type: 'ul',
-        items: [
-          'Low reality, low hope is helplessness. They ignore the rehab plan, stop showing up, and quietly quit.',
-          'High hope, low reality is fantasy. Convinced they will recover in half the time, they skip the basics, push too hard and are re-injured within weeks.',
-          'High reality, low hope is cynicism. They follow the protocol and know the statistics, but they have already retired in their mind.',
-          'High reality, high hope is realistic optimism. They know the injury is serious and the recovery long, and they still believe they can come back stronger.',
-        ],
-      },
-      {
-        type: 'p',
-        text: 'That last one is the space I call the power of possible. They focus on what they can control today, they show up with purpose, they track progress, and they do not fake positivity. They choose it.',
+        text: 'Where pessimists ask “What could go wrong?” and blind optimists ask “What will go right?”, realistic optimists ask “What could be possible?” This subtle distinction opens up a world of creative problem-solving and opportunity-spotting that others miss.',
       },
       { type: 'h', text: 'Implementation Guide' },
-      { type: 'sub', text: 'Daily Journal Practice' },
+      {
+        type: 'p',
+        text: 'This week, you’ll practice moving from challenge to possibility using a simple, framing process:',
+      },
       {
         type: 'ul',
         items: [
-          'Identify an ideal outcome you are working towards, with its best case and its obstacles',
-          'List the resources you already hold against it: skills, time, support',
-          'Build the action plan, and write down how you will take responsibility for each step',
-          'Recall a past success and name the lessons and strengths you can carry across',
-          'Score the likelihood of your outcome at each step, and watch what the scoring does',
+          'Define the Ideal: What’s the best realistic outcome? Be clear and specific.',
+          'Identify the Obstacles: What could get in the way, internally or externally?',
+          'Gather Resources: What skills, time, or support do you already have?',
+          'Reframe the Story: Shift from “why this won’t work” to “how this could work”.',
+          'Take Ownership: Pick one action you’ll take this week to move forward.',
         ],
       },
       { type: 'sub', text: 'Weekly Challenge' },
       {
         type: 'p',
-        text: 'Reframe one setback, just one, through the three part lens. Time: will this still matter in a year? Scope: is this about everything, or just this? Control: what is one thing I can do next? That is where optimism becomes action.',
+        text: 'Choose a current challenge. Apply the five steps above and track your mindset shift.',
       },
       { type: 'sub', text: 'Reflection Questions' },
       {
         type: 'ul',
         items: [
-          'Where do you sit on the matrix when you are under pressure?',
-          'When you face a challenge, do you spiral, gloss over the facts, or face them and still move forward?',
-          'What is the most constructive story you can tell yourself about your current challenge?',
-          'What can you still influence, and what opportunity could this lead to?',
+          'What changed when you reframed the story?',
+          'Which step felt most energising?',
+          'How has your belief in the outcome shifted?',
         ],
       },
-      { type: 'h', text: 'The Science in Action' },
+      { type: 'h', text: 'The Psychology in Practice' },
       {
         type: 'p',
-        text: 'Martin Seligman tested the optimism levels of insurance sales teams, then tracked their performance over two years. Salespeople with optimistic explanatory styles, who saw setbacks as temporary, specific and within their control, sold 37% more than their peers. Those in the top tenth for optimism sold 88% more than those in the bottom tenth. They did not avoid rejection. They just did not dwell in it.',
+        text: 'Our brains evolved with a negativity bias. We’re wired to spot threats and problems more readily than opportunities. This made perfect sense for survival but creates limitations in modern contexts.',
       },
       {
         type: 'p',
-        text: 'The physiology follows. Optimists show lower cortisol, stronger cardiovascular health, greater persistence and better long term wellbeing. The mechanism is not mysterious: they keep moving, and continued action is what tilts the odds in your favour.',
+        text: 'Research in cognitive psychology reveals that our perception of possibilities quite literally shapes what we can see. In one study, participants were shown the same ambiguous images but given different priming beforehand. Those primed with possibility-focused language identified significantly more potential interpretations and solutions.',
+      },
+      {
+        type: 'p',
+        text: 'The good news? This balanced perspective can be trained. Through consistent practice in reframing situations and expanding your perception of what’s possible, you can rewire your default response patterns. It’s not about ignoring reality, but about seeing it more completely.',
       },
       { type: 'h', text: 'Connecting the Dots' },
-      { type: 'p', text: 'This chapter builds directly on the work behind it:' },
+      { type: 'p', text: 'This framework completes our mental mastery toolkit:' },
       {
         type: 'ul',
         items: [
-          'Psychological flexibility gave you the space between the thought and the response. Realistic optimism decides what you do with that space.',
-          'Your motivation drivers tell you what keeps you going. Optimism determines whether you are still there to be driven after a setback.',
-          'Your values are what the hope is for. Grounded belief without direction is just restlessness.',
+          'Psychological flexibility gives you the ability to unhook from unhelpful thoughts',
+          'Motivational awareness helps you create conditions for sustainable drive',
+          'Realistic optimism provides the balanced perspective to see possibilities others miss',
         ],
+      },
+      {
+        type: 'p',
+        text: 'Together, these three elements form a powerful system for managing your inner world in service of your performance and wellbeing.',
       },
       { type: 'h', text: 'Looking Ahead' },
       {
         type: 'p',
-        text: 'Next week is a deload. No new frameworks, just the space to connect psychological flexibility, motivation and realistic optimism into one mental operating system.',
+        text: 'Next week marks the deload of Module 2 and our transition to Module 3: Nurture. We’ll consolidate your key takeaways on managing your inner world, and then turn the focus outward to optimise your environment for performance.',
       },
-      { type: 'h', text: 'This Week’s Focus Areas' },
-      { type: 'p', text: '1. Place yourself honestly on the optimism matrix' },
-      { type: 'p', text: '2. Work the stairway against one real challenge' },
-      { type: 'p', text: '3. Reframe a setback through time, scope and control' },
-      { type: 'p', text: '4. Notice where you default to fantasy or to cynicism' },
-      { type: 'p', text: '5. Track what the scoring does to your sense of what is possible' },
       { type: 'h', text: 'Remember' },
       {
         type: 'p',
-        text: 'Realistic optimism is not pretending everything is fine. It is believing things can improve because you are willing to act. It is facing the facts and still choosing hope.',
+        text: 'Optimism isn’t about positive thinking. It’s about complete thinking. It’s seeing not just what is and what could go wrong, but also what could be possible. In that broader perspective lies your edge.',
       },
-      {
-        type: 'p',
-        text: 'Choose the lens that fuels you, not the one that fools you.',
-      },
+      { type: 'p', text: 'Time to expand your view.' },
     ],
     quote: {
       lines: [
-        'You don’t need a perfect future to be hopeful.',
-        'You just need a perspective that helps you keep moving.',
+        'Pessimists may be right more often, but optimists succeed more often.',
+        'The key is to see reality clearly while maintaining a firm belief in your capacity to influence it.',
       ],
     },
   },

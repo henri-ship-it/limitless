@@ -283,6 +283,9 @@ export const entryOverrides: Record<number, EntryOverride> = {
         { kind: 'text', label: 'What are the potential obstacles?' },
         scoreGauge,
       ],
+      // The gauge carries this line as its own label, so leaving the parsed
+      // closing note in place asked the same thing twice on all four steps.
+      outro: [],
     },
   },
   44: {
@@ -299,6 +302,9 @@ export const entryOverrides: Record<number, EntryOverride> = {
         { kind: 'text', label: 'Time:' },
         scoreGauge,
       ],
+      // The gauge carries this line as its own label, so leaving the parsed
+      // closing note in place asked the same thing twice on all four steps.
+      outro: [],
     },
   },
   46: { title: 'The Realistic Optimist', hideExercise: true },
@@ -311,14 +317,22 @@ export const entryOverrides: Record<number, EntryOverride> = {
         { kind: 'text', label: 'Craft a positive, realistic narrative about your approach:' },
         scoreGauge,
       ],
+      // The gauge carries this line as its own label, so leaving the parsed
+      // closing note in place asked the same thing twice on all four steps.
+      outro: [],
     },
   },
   48: {
     title: 'The Optimistic Side of Life',
     caption: {
       lines: [
-        'I always like to look on the optimistic side of life, but I am',
-        'realistic enough to know that life is a complex matter.',
+        /*
+         * One line rather than the book's two. Its break falls after "but I
+         * am", which is mid clause, so on screen the line wrapped and left
+         * "am" alone on a line of its own. This is prose, so it is better let
+         * to wrap where the column ends.
+         */
+        'I always like to look on the optimistic side of life, but I am realistic enough to know that life is a complex matter.',
       ],
       author: 'Walt Disney',
     },
@@ -335,6 +349,9 @@ export const entryOverrides: Record<number, EntryOverride> = {
         { kind: 'text', label: 'What strengths will you draw on?' },
         scoreGauge,
       ],
+      // The gauge carries this line as its own label, so leaving the parsed
+      // closing note in place asked the same thing twice on all four steps.
+      outro: [],
     },
   },
 
