@@ -151,7 +151,12 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
           )}
           <p className="mt-4 !text-ink-56 text-[0.8125rem]">
             Chris works through the whole of {module.name}, drawing the three chapters together.
-            The workshop runs live during this week and the recording lands here afterwards.
+            {/*
+              * Only promise the recording while there is not one. Once it is
+              * playing above, telling a member it lands here afterwards reads
+              * as the thing they are watching being something else.
+              */}
+            {recording?.url ? '' : ' The workshop runs live during this week and the recording lands here afterwards.'}
           </p>
         </Section>
       ) : (
