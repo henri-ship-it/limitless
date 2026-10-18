@@ -13,6 +13,17 @@ SCALE = 2
 # prompt overlap test would throw these away, so it is skipped for them.
 FORCE = {29, 32, 33, 43, 45, 47, 49, 57}
 
+# Pages the detector called artwork that are nothing of the kind.
+#
+# Entry 52 is the motivation check-in: the page marker, the heading, the
+# instruction and three boxes to write a percentage in. The entry renders every
+# one of those itself, so the crop printed the form above the fields it
+# duplicates. It got past the detector on the ink in its QR code.
+#
+# Entry 36 is the same check-in earlier in the programme and never produced a
+# crop at all, which is how the two came to disagree.
+NOT_ARTWORK = {52}
+
 # Where the automatic bounds pull in text that belongs to the exercise, the
 # region is given directly, in points on the right hand page.
 CLIPS = {
@@ -148,6 +159,9 @@ def main():
         if not m:
             continue
         entry = int(m.group(1))
+
+        if entry in NOT_ARTWORK:
+            continue
 
         # Every seventh entry closes the week. Those pages carry no artwork,
         # unless one has been named explicitly.

@@ -42,7 +42,6 @@ const visuals: Record<number, Visual> = {
   48: { src: '/journal/visuals/e048.webp', width: 688, height: 573 },
   49: { src: '/journal/visuals/e049.webp', width: 349, height: 408 },
   51: { src: '/journal/visuals/e051.webp', width: 574, height: 592 },
-  52: { src: '/journal/visuals/e052.webp', width: 1163, height: 340 },
   53: { src: '/journal/visuals/e053.webp', width: 693, height: 622 },
   54: { src: '/journal/visuals/e054.webp', width: 1157, height: 1230 },
   55: { src: '/journal/visuals/e055.webp', width: 806, height: 273 },
