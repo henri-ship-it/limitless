@@ -408,7 +408,12 @@ export const entryOverrides: Record<number, EntryOverride> = {
   },
 
   // Week 9
+  // The four support check-ins share one diagram and should be one size. Only
+  // entry 60 carried a scale, so the other three rendered a third smaller than
+  // their twin for no reason a reader could see.
+  57: { visualScale: 0.66 },
   58: {
+    visualScale: 0.66,
     exercise: {
       intro: [
         'Think of a recent task that has been difficult to complete. Consider who or what could provide resources or support to assist you.',
@@ -433,6 +438,7 @@ export const entryOverrides: Record<number, EntryOverride> = {
     },
   },
   61: {
+    visualScale: 0.66,
     exercise: {
       intro: ['Ask a trusted friend or mentor for honest, constructive feedback on a current goal or project.'],
       fields: [

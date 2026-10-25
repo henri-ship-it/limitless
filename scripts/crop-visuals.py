@@ -31,10 +31,19 @@ CLIPS = {
     # rather than typed. Named by hand because entry 105 closes a week and the
     # automatic pass skips those, and on this page the artwork is the page.
     105: (115, 185, 310, 425),
-    # Only the four support headings, not the instruction above them.
-    58: (0, 96, 420, 200),
-    # Only the four circles, not the question printed beside them.
-    61: (0, 96, 420, 200),
+    # The four kinds of support, one picked out on each entry of the chapter.
+    #
+    # Measured to the ink. The old box was the full page width from 96 to 200,
+    # which started inside the instruction above the circles and stopped short
+    # of their bottoms, so the crop carried a cut-off line of type and a row of
+    # circles with their feet missing.
+    #
+    # Two sets of numbers because two of these pages set their instruction over
+    # two lines, which pushes the diagram eight points down the page.
+    57: (30, 116, 395, 213),
+    58: (30, 116, 395, 213),
+    60: (30, 107, 395, 205),
+    61: (30, 107, 395, 205),
     # The self-talk triangle alone. The full page width left a third of the
     # frame empty, and the eight point pad below reached far enough to catch
     # the line above and the rating heading below, so both showed as slivers.
@@ -48,8 +57,6 @@ CLIPS = {
     # points, so anything wider brings half a sentence with it.
     32: (30, 101, 284, 343),
     33: (136, 101, 374, 343),
-    # The four kinds of support, one shaded on each entry of the chapter.
-    57: (0, 96, 420, 200),
     # The stairway to optimism, which sits beside the heading on each of the
     # four steps rather than above the exercise.
     # Measured to the ink rather than guessed around it. The old box started at
