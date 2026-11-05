@@ -23,12 +23,17 @@ const at = (iso: string | null) => (iso ? Date.parse(iso) : 0)
 /**
  * The cohort, sortable and filterable.
  *
- * Opens on the quietest first, because the reason to look at this list is to
- * find who has gone missing rather than to admire who has not.
+ * Opens on the most recently seen, which is also what clicking the Last seen
+ * header gives you: the default used to be the other way up and disagreed with
+ * the table's own rule, so the first click on that column appeared to do
+ * nothing except reverse a sort nobody had asked for.
+ *
+ * Anyone never seen at all sorts to the bottom rather than the top, since a
+ * missing timestamp reads as zero.
  */
 export function CohortTable({ members }: { members: MemberRow[] }) {
   const [sort, setSort] = useState<Key>('lastSeen')
-  const [ascending, setAscending] = useState(true)
+  const [ascending, setAscending] = useState(false)
   const [tier, setTier] = useState<'all' | 'pro' | 'core' | 'elite'>('all')
   const [search, setSearch] = useState('')
 
