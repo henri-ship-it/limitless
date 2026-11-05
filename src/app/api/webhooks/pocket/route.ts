@@ -111,7 +111,7 @@ export async function POST(request: Request) {
 
   const supabase = createClient(url, service, { auth: { persistSession: false } })
 
-  const { filed, unmatched, ignored } = await fileCall(supabase, {
+  const { filed, unmatched, ignored, problems } = await fileCall(supabase, {
     recordingId,
     segments,
     speakers: body.speakers,
@@ -125,7 +125,7 @@ export async function POST(request: Request) {
    * a member whose Pocket label is not their first name, and the fix is to put
    * it in recording_name. Without this the call just quietly misses them.
    */
-  return NextResponse.json({ ok: true, recordingId, filed, unmatched, ignored })
+  return NextResponse.json({ ok: true, recordingId, filed, unmatched, ignored, problems })
 }
 
 /**

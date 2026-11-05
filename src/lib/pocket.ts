@@ -133,6 +133,8 @@ export type Filed = {
   unmatched: string[]
   /** Set when the recording was read and then left alone, saying why. */
   ignored?: string
+  /** Anything the database refused, which must never be silent again. */
+  problems?: string[]
 }
 
 /*
@@ -232,6 +234,7 @@ export async function fileCall(
   }
 
   const filed: string[] = []
+  const problems: string[] = []
 
   for (const member of present) {
 
@@ -267,10 +270,43 @@ export async function fileCall(
       },
       { onConflict: 'member_id,external_id' },
     )
-    if (!error) filed.push(member.firstName ?? member.id)
+
+    /*
+     * Reported rather than skipped over. This swallowed a refusal from the
+     * database for the whole of this feature's first life: every write failed
+     * on a conflict target that could not be inferred, the loop quietly moved
+     * on, and the result read as nobody on the call being recognised. A write
+     * that does not happen has to say so.
+     */
+    if (error) {
+      problems.push(`${member.firstName ?? member.id}: ${error.message}`)
+      continue
+    }
+
+    filed.push(member.firstName ?? member.id)
+
+    /*
+     * The previous group call goes, now this one is safely in.
+     *
+     * A member is on one of these every week, so keeping them all would turn
+     * their record into years of transcripts in which nothing stands out and
+     * the drafting brief reads the oldest as eagerly as the newest. What is
+     * wanted is the last one. Their 1:1s are left alone: those are put there
+     * deliberately, one at a time, and are not this.
+     *
+     * After the insert rather than before it, so a failure here leaves one
+     * call too many rather than none at all.
+     */
+    const { error: tidyError } = await supabase
+      .from('member_conversations')
+      .delete()
+      .eq('member_id', member.id)
+      .eq('source', 'group')
+      .neq('external_id', recordingId)
+    if (tidyError) problems.push(`${member.firstName ?? member.id}: ${tidyError.message}`)
   }
 
-  return { recordingId, filed, unmatched }
+  return { recordingId, filed, unmatched, problems: problems.length ? problems : undefined }
 }
 
 type Listed = {

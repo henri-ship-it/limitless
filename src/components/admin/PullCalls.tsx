@@ -27,7 +27,13 @@ type Result = {
   checked?: number
   skippedWithoutOpening?: number
   note?: string
-  results?: { recordingId: string; filed: string[]; unmatched: string[]; ignored?: string }[]
+  results?: {
+    recordingId: string
+    filed: string[]
+    unmatched: string[]
+    ignored?: string
+    problems?: string[]
+  }[]
 }
 
 export function PullCalls() {
@@ -97,6 +103,11 @@ export function PullCalls() {
                   {one.ignored ? (
                     <p className="!mb-1 text-[0.9375rem] !text-ink-56">{one.ignored}</p>
                   ) : null}
+                  {one.problems?.map((problem) => (
+                    <p key={problem} className="!mb-1 text-[0.875rem] text-ink">
+                      {problem}
+                    </p>
+                  ))}
                 </div>
               ))}
 

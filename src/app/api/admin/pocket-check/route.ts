@@ -184,8 +184,11 @@ export async function POST() {
       filed: r.filed,
       unmatched: r.unmatched,
       ignored: r.ignored,
+      problems: r.problems,
     })),
-    note: pulled.error
+    note: pulled.results.some((r) => r.problems?.length)
+      ? 'The call was read but the database refused to store it. The reason is below.'
+      : pulled.error
       ? 'Pocket would not answer.'
       : pulled.results.some((r) => r.filed.length)
         ? 'Filed. Open the members named below and look at their Calls tab.'
