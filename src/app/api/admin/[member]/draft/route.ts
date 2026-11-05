@@ -1,13 +1,21 @@
-import { NextResponse } from 'next/server'
-import { getMemberDetail, requireAdmin } from '@/lib/admin'
-import { since } from '@/lib/format'
-import { currentWeek } from '@/lib/cohort'
-import { getWeek, weeks } from '@/content/programme'
-import { leadStyle } from '@/content/know-thyself'
-import { coreValues, exerciseAnswers } from '@/lib/entry-text'
-import { resolveEntry } from '@/lib/entry'
-import type { EntryData } from '@/content/journal-fields'
-import { CHRIS, EXAMPLES, LANGUAGE, RESTRAINT, RULES, STYLE_NOTES } from '@/content/voice'
+import { NextResponse } from "next/server";
+import { getMemberDetail, requireAdmin } from "@/lib/admin";
+import { isDropIn } from "@/lib/distil";
+import { since } from "@/lib/format";
+import { currentWeek } from "@/lib/cohort";
+import { getWeek, weeks } from "@/content/programme";
+import { leadStyle } from "@/content/know-thyself";
+import { coreValues, exerciseAnswers } from "@/lib/entry-text";
+import { resolveEntry } from "@/lib/entry";
+import type { EntryData } from "@/content/journal-fields";
+import {
+  CHRIS,
+  EXAMPLES,
+  LANGUAGE,
+  RESTRAINT,
+  RULES,
+  STYLE_NOTES,
+} from "@/content/voice";
 
 /**
  * Drafts a message to one member, in Chris's voice.
@@ -26,25 +34,25 @@ import { CHRIS, EXAMPLES, LANGUAGE, RESTRAINT, RULES, STYLE_NOTES } from '@/cont
  * How far back to read. Enough for a thread to show, few enough that this week
  * is not buried under sixteen. A check in is about where somebody is now.
  */
-const RECENT_ENTRIES = 12
+const RECENT_ENTRIES = 12;
 
 /** Where the two values are settled on. */
-const VALUES_ENTRY = 8
+const VALUES_ENTRY = 8;
 
-const MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-opus-5'
-const ENDPOINT = 'https://api.anthropic.com/v1/messages'
+const MODEL = process.env.ANTHROPIC_MODEL ?? "claude-opus-5";
+const ENDPOINT = "https://api.anthropic.com/v1/messages";
 
-type Length = 'short' | 'standard' | 'long'
+type Length = "short" | "standard" | "long";
 
 type Body = {
-  channel?: 'whatsapp' | 'email'
-  intent?: string
-  length?: Length
+  channel?: "whatsapp" | "email";
+  intent?: string;
+  length?: Length;
   /** The draft on screen, when Chris wants it changed rather than replaced. */
-  current?: string
+  current?: string;
   /** What he wants changed about it. */
-  change?: string
-}
+  change?: string;
+};
 
 /*
  * Length as a range rather than a number of words. A message told to be exactly
@@ -52,38 +60,48 @@ type Body = {
  */
 const LENGTHS: Record<Length, { whatsapp: string; email: string }> = {
   short: {
-    whatsapp: 'Two or three lines. One thought, said once.',
-    email: 'Four or five lines. One thought, said once.',
+    whatsapp: "Two or three lines. One thought, said once.",
+    email: "Four or five lines. One thought, said once.",
   },
   standard: {
-    whatsapp: 'Four to six lines.',
-    email: 'Up to about ten lines.',
+    whatsapp: "Four to six lines.",
+    email: "Up to about ten lines.",
   },
   long: {
-    whatsapp: 'Eight to twelve lines. Still a message, not an essay.',
-    email: 'Up to about eighteen lines. Room for two thoughts, not five.',
+    whatsapp: "Eight to twelve lines. Still a message, not an essay.",
+    email: "Up to about eighteen lines. Room for two thoughts, not five.",
   },
-}
+};
 
-function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>): string {
-  const { profile, entries, weeksComplete, secondsSpent, arrivals, conversations, chat } = detail
-  const name = profile.first_name ?? profile.email.split('@')[0]
-  const week = currentWeek()
-  const chapter = getWeek(week)
+function brief(
+  detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>,
+): string {
+  const {
+    profile,
+    entries,
+    weeksComplete,
+    secondsSpent,
+    arrivals,
+    conversations,
+    chat,
+  } = detail;
+  const name = profile.first_name ?? profile.email.split("@")[0];
+  const week = currentWeek();
+  const chapter = getWeek(week);
 
   const lines: string[] = [
     `Name: ${name}`,
-    `Tier: ${profile.tier === 'pro' ? 'Pro (has the group calls and direct access to Chris)' : 'Core (journal, digests and masterclasses, no group calls)'}`,
+    `Tier: ${profile.tier === "pro" ? "Pro (has the group calls and direct access to Chris)" : "Core (journal, digests and masterclasses, no group calls)"}`,
     /*
      * Where the cohort is, as background rather than as a subject. Saying the
      * week was open produced messages announcing that the week was open, which
      * is something the platform already tells them and nobody needs from Chris.
      */
-    `For your own orientation only: the cohort is in week ${week} of ${weeks.length}${chapter ? `, the ${chapter.title} chapter` : ''}. Do not announce this, and do not tell them a week is open or invite them to open it.`,
+    `For your own orientation only: the cohort is in week ${week} of ${weeks.length}${chapter ? `, the ${chapter.title} chapter` : ""}. Do not announce this, and do not tell them a week is open or invite them to open it.`,
     `They have marked ${weeksComplete.length} weeks complete and written ${entries.length} journal entries.`,
     `Last seen on the platform: ${since(profile.last_seen_at)}.`,
     `Time on the platform all told: about ${Math.max(1, Math.round(secondsSpent / 60))} minutes.`,
-  ]
+  ];
 
   /*
    * By when it was written, not by its number.
@@ -96,32 +114,38 @@ function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>)
    */
   const byRecency = [...entries].sort(
     (a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt),
-  )
-  const wrote = byRecency[0]
+  );
+  const wrote = byRecency[0];
   lines.push(
     wrote
       ? `Last wrote something ${since(wrote.updatedAt)}, in entry ${wrote.n}.`
-      : 'They have not written anything in the digital journal. They may well be writing in the printed one.',
-  )
+      : "They have not written anything in the digital journal. They may well be writing in the printed one.",
+  );
 
   const assessment = (profile.assessment ?? {}) as {
-    scorecard?: { scores?: Record<string, number>; notes?: Record<string, string> }
-    preAssessment?: { scores?: Record<string, number>; notes?: Record<string, string> }
-  }
+    scorecard?: {
+      scores?: Record<string, number>;
+      notes?: Record<string, string>;
+    };
+    preAssessment?: {
+      scores?: Record<string, number>;
+      notes?: Record<string, string>;
+    };
+  };
 
-  const style = leadStyle(assessment.scorecard?.scores ?? {})
+  const style = leadStyle(assessment.scorecard?.scores ?? {});
   if (style) {
     lines.push(
-      '',
+      "",
       `Know Thyself: they lead with ${style.name}. ${style.reads}`,
       `Writing to them: ${STYLE_NOTES[style.name] ?? style.respondsTo}`,
-      'This is the strongest steer you have. Let it set the length and the shape of the message, without ever naming it.',
-    )
+      "This is the strongest steer you have. Let it set the length and the shape of the message, without ever naming it.",
+    );
     const scores = Object.entries(assessment.scorecard?.scores ?? {})
       .sort((a, b) => b[1] - a[1])
       .map(([k, v]) => `${k} ${v}`)
-      .join(', ')
-    if (scores) lines.push(`Full spread: ${scores}.`)
+      .join(", ");
+    if (scores) lines.push(`Full spread: ${scores}.`);
   }
 
   /*
@@ -129,24 +153,25 @@ function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>)
    * number. What they wrote at length is the part worth putting in front of a
    * draft; the importance ratings go in as a ranked line rather than a list.
    */
-  const preNotes = Object.entries(assessment.preAssessment?.notes ?? {})
-  const written = preNotes.filter(([, answer]) => answer.length > 60)
+  const preNotes = Object.entries(assessment.preAssessment?.notes ?? {});
+  const written = preNotes.filter(([, answer]) => answer.length > 60);
   const ratings = preNotes
     .filter(([, answer]) => /^\d+(\.\d+)?$/.test(answer.trim()))
-    .sort((a, b) => Number(b[1]) - Number(a[1]))
+    .sort((a, b) => Number(b[1]) - Number(a[1]));
 
   if (written.length) {
-    lines.push('', 'What they said in the pre-assessment, in their own words:')
-    for (const [question, answer] of written) lines.push(`- ${question} ${answer}`)
+    lines.push("", "What they said in the pre-assessment, in their own words:");
+    for (const [question, answer] of written)
+      lines.push(`- ${question} ${answer}`);
   }
   if (ratings.length) {
     lines.push(
-      '',
+      "",
       `What they said matters most, highest first: ${ratings
         .slice(0, 6)
         .map(([question, answer]) => `${question} ${answer}`)
-        .join('; ')}`,
-    )
+        .join("; ")}`,
+    );
   }
 
   /*
@@ -154,10 +179,13 @@ function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>)
    * quoted back and so the one that must not be wrong. Read from the two they
    * narrowed to, never from the long list they ticked on the way there.
    */
-  const valuesRow = entries.find((row) => row.n === VALUES_ENTRY)
-  const values = valuesRow ? coreValues(valuesRow.data as EntryData) : []
+  const valuesRow = entries.find((row) => row.n === VALUES_ENTRY);
+  const values = valuesRow ? coreValues(valuesRow.data as EntryData) : [];
   if (values.length) {
-    lines.push('', `The values they chose for themselves: ${values.join(' and ')}.`)
+    lines.push(
+      "",
+      `The values they chose for themselves: ${values.join(" and ")}.`,
+    );
   }
 
   /*
@@ -171,30 +199,32 @@ function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>)
    * What was wrong before was reciting it back. That is a rule about how to use
    * this, not a reason to withhold it, and the rule lives in content/voice.
    */
-  const recent = byRecency.slice(0, RECENT_ENTRIES)
+  const recent = byRecency.slice(0, RECENT_ENTRIES);
   if (recent.length) {
     lines.push(
-      '',
+      "",
       /*
        * Ranked against the rest of the brief, not against Chris. Saying this
        * mattered more than anything else outranked his own instruction, so
        * asking for a message about this week got one about whatever they last
        * wrote at length.
        */
-      'What they have written, most recently written first. Of everything in this brief, this is the most useful, and the top of the list most of all. It is background for the message, not the subject of it.',
-    )
+      "What they have written, most recently written first. Of everything in this brief, this is the most useful, and the top of the list most of all. It is background for the message, not the subject of it.",
+    );
     for (const row of recent) {
-      const answers = exerciseAnswers(row.n, row.data as EntryData)
-      if (!answers.length) continue
-      const entry = resolveEntry(row.n)
+      const answers = exerciseAnswers(row.n, row.data as EntryData);
+      if (!answers.length) continue;
+      const entry = resolveEntry(row.n);
       lines.push(
-        '',
-        `Entry ${row.n}${entry?.title ? `, ${entry.title}` : ''}, written ${since(row.updatedAt)}:`,
-      )
-      for (const answer of answers) lines.push(`- ${answer.label}: ${answer.text}`)
+        "",
+        `Entry ${row.n}${entry?.title ? `, ${entry.title}` : ""}, written ${since(row.updatedAt)}:`,
+      );
+      for (const answer of answers)
+        lines.push(`- ${answer.label}: ${answer.text}`);
     }
-    const older = entries.length - recent.length
-    if (older > 0) lines.push('', `There are ${older} earlier entries not shown here.`)
+    const older = entries.length - recent.length;
+    if (older > 0)
+      lines.push("", `There are ${older} earlier entries not shown here.`);
   }
 
   /*
@@ -213,56 +243,86 @@ function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>)
    * loud, to him among others, and so fair to have heard, but still said to a
    * room rather than to him.
    */
-  const said = (chat ?? []).slice(0, 15)
+  const said = (chat ?? []).slice(0, 15);
   if (said.length) {
-    lines.push('', 'What they have said in the group chat, most recent first:')
-    for (const line of said) lines.push(`- ${line.sent_on}: ${line.body.replace(/\s+/g, ' ').trim()}`)
+    lines.push("", "What they have said in the group chat, most recent first:");
+    for (const line of said)
+      lines.push(`- ${line.sent_on}: ${line.body.replace(/\s+/g, " ").trim()}`);
     lines.push(
-      'This is the most current thing here and usually the most useful, because people mention in a chat what they never write in an exercise.',
-      'It was said to a room rather than to Chris, so it is something he heard rather than something he was told. Do not quote it back word for word and do not say where it came from.',
-    )
+      "This is the most current thing here and usually the most useful, because people mention in a chat what they never write in an exercise.",
+      "It was said to a room rather than to Chris, so it is something he heard rather than something he was told. Do not quote it back word for word and do not say where it came from.",
+    );
   }
 
-  const call = conversations[0]
-  if (call?.notes) {
-    const { motivation, communication, goals, life, quotes } = call.notes
-    lines.push(
-      '',
-      call.source === 'group'
-        ? `From the group call on ${call.happened_on}, reading only what this member said:`
-        : `From the 1:1 on ${call.happened_on}:`,
-    )
-    if (motivation) lines.push(`What moves them: ${motivation}`)
-    if (communication) lines.push(`How to talk to them: ${communication}`)
-    if (goals?.length) lines.push(`Working towards: ${goals.join('; ')}.`)
-    if (life?.length) lines.push(`Worth remembering: ${life.join('; ')}.`)
-    if (quotes?.length) lines.push(`Things they said: ${quotes.map((q) => `"${q}"`).join(' ')}`)
-    lines.push(
-      'Use this. It is the difference between a message to a member and a message to a person.',
-      'At most one reference to their own life, dropped in as an aside rather than made the subject. Asking after the daughter by name once is warm; building the message around her is not.',
-      'Never quote the call back at them, and never say that Chris made notes on it.',
-    )
+  const call = conversations[0];
+
+  /*
+   * A drop-in and a 1:1 say different things and are given differently.
+   *
+   * A 1:1 is a reading of the person and holds for months, so it is handed
+   * over as what is true about them. A drop-in is a record of one week, under
+   * headings written for that week, so it is handed over as something that
+   * happened recently and was shared with a room.
+   */
+  const notes = call?.notes;
+  if (call && notes) {
+    if (isDropIn(notes)) {
+      lines.push(
+        "",
+        `From the drop-in on ${call.happened_on}, which this member was on:`,
+      );
+      if (notes.headline) lines.push(notes.headline);
+      for (const section of notes.sections ?? []) {
+        lines.push(`${section.title}: ${section.body}`);
+      }
+      lines.push(
+        "This is recent and was said in front of other people, so it is something Chris was part of rather than something he was told in confidence.",
+        "Refer to it the way somebody who was there would: lightly, and only where it is the point. Never recap the call back at them, and never say that notes were made on it.",
+      );
+    } else {
+      const { motivation, communication, goals, life, quotes } = notes;
+      lines.push("", `From the 1:1 on ${call.happened_on}:`);
+      if (motivation) lines.push(`What moves them: ${motivation}`);
+      if (communication) lines.push(`How to talk to them: ${communication}`);
+      if (goals?.length) lines.push(`Working towards: ${goals.join("; ")}.`);
+      if (life?.length) lines.push(`Worth remembering: ${life.join("; ")}.`);
+      if (quotes?.length)
+        lines.push(
+          `Things they said: ${quotes.map((q) => `"${q}"`).join(" ")}`,
+        );
+      lines.push(
+        "Use this. It is the difference between a message to a member and a message to a person.",
+        "At most one reference to their own life, dropped in as an aside rather than made the subject. Asking after the daughter by name once is warm; building the message around her is not.",
+        "Never quote the call back at them, and never say that Chris made notes on it.",
+      );
+    }
   }
 
-  return lines.join('\n')
+  return lines.join("\n");
 }
 
-export async function POST(request: Request, { params }: { params: Promise<{ member: string }> }) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ member: string }> },
+) {
   if (!(await requireAdmin())) {
-    return NextResponse.json({ error: 'Not allowed' }, { status: 404 })
+    return NextResponse.json({ error: "Not allowed" }, { status: 404 });
   }
 
-  const key = process.env.ANTHROPIC_API_KEY
+  const key = process.env.ANTHROPIC_API_KEY;
   if (!key) {
     return NextResponse.json(
-      { error: 'No API key set. Add ANTHROPIC_API_KEY in Vercel and redeploy.' },
+      {
+        error: "No API key set. Add ANTHROPIC_API_KEY in Vercel and redeploy.",
+      },
       { status: 503 },
-    )
+    );
   }
 
-  const { member: id } = await params
-  const detail = await getMemberDetail(id)
-  if (!detail) return NextResponse.json({ error: 'No such member' }, { status: 404 })
+  const { member: id } = await params;
+  const detail = await getMemberDetail(id);
+  if (!detail)
+    return NextResponse.json({ error: "No such member" }, { status: 404 });
 
   /*
    * The privacy notice tells members their entries may inform the messages they
@@ -271,26 +331,29 @@ export async function POST(request: Request, { params }: { params: Promise<{ mem
    */
   if (!detail.profile.personalised_nudges) {
     return NextResponse.json(
-      { error: 'They have turned personalised messages off, so their entries stay here.' },
+      {
+        error:
+          "They have turned personalised messages off, so their entries stay here.",
+      },
       { status: 403 },
-    )
+    );
   }
 
   const {
-    channel = 'whatsapp',
-    intent = '',
-    length = 'standard',
-    current = '',
-    change = '',
-  }: Body = await request.json().catch(() => ({}))
+    channel = "whatsapp",
+    intent = "",
+    length = "standard",
+    current = "",
+    change = "",
+  }: Body = await request.json().catch(() => ({}));
 
-  const size = LENGTHS[length] ?? LENGTHS.standard
+  const size = LENGTHS[length] ?? LENGTHS.standard;
   const shape =
-    channel === 'whatsapp'
+    channel === "whatsapp"
       ? `This is a WhatsApp message. ${size.whatsapp} No subject line, no sign-off.`
-      : `This is an email. ${size.email} Give it a short subject line on the first line, prefixed "Subject: ", then a blank line, then the message, ending with "Chris" on its own line.`
+      : `This is an email. ${size.email} Give it a short subject line on the first line, prefixed "Subject: ", then a blank line, then the message, ending with "Chris" on its own line.`;
 
-  const system = [CHRIS, RULES, RESTRAINT, LANGUAGE, EXAMPLES].join('\n\n')
+  const system = [CHRIS, RULES, RESTRAINT, LANGUAGE, EXAMPLES].join("\n\n");
 
   /*
    * Revising is a different job from writing, and asking for a rewrite with an
@@ -298,30 +361,30 @@ export async function POST(request: Request, { params }: { params: Promise<{ mem
    * change made. Chris has usually already edited the draft by hand by this
    * point, so anything he did not ask about has to survive untouched.
    */
-  const revising = Boolean(current.trim() && change.trim())
+  const revising = Boolean(current.trim() && change.trim());
 
   const task = revising
     ? [
-        'Chris has a draft in front of him and wants one thing about it changed.',
-        '',
-        'The draft as it stands:',
+        "Chris has a draft in front of him and wants one thing about it changed.",
+        "",
+        "The draft as it stands:",
         current.trim(),
-        '',
+        "",
         `What he wants different: ${change.trim()}`,
-        '',
-        'Return the same message with that change made and nothing else altered. Keep every line he has not asked about word for word, including any edits of his own. Do not take the opportunity to improve anything else.',
+        "",
+        "Return the same message with that change made and nothing else altered. Keep every line he has not asked about word for word, including any edits of his own. Do not take the opportunity to improve anything else.",
         shape,
-      ].join('\n')
+      ].join("\n")
     : [
         shape,
         intent.trim()
           ? `To restate it: ${intent.trim()}. Build the message around that. Something from their recent writing may be used to say it in their own terms, but only where it genuinely serves what he asked for. If it does not, leave it out rather than reaching for it.`
           : [
-              'Chris has not said what he wants the message to do, which usually means he just wants to check in.',
-              'So: no agenda, nothing to announce, nothing about the programme or what is open or what to do next.',
-              'Find the one thing in their recent writing worth saying something about, and say it the way you would to someone you know. Then stop.',
-            ].join(' '),
-      ].join('\n')
+              "Chris has not said what he wants the message to do, which usually means he just wants to check in.",
+              "So: no agenda, nothing to announce, nothing about the programme or what is open or what to do next.",
+              "Find the one thing in their recent writing worth saying something about, and say it the way you would to someone you know. Then stop.",
+            ].join(" "),
+      ].join("\n");
 
   /*
    * What Chris asked for goes first, and again at the end.
@@ -332,72 +395,80 @@ export async function POST(request: Request, { params }: { params: Promise<{ mem
    * brief frames everything that follows as material for that job, and
    * restating it last is the version still in view when it starts writing.
    */
-  const asked = intent.trim()
+  const asked = intent.trim();
 
   const prompt = [
     asked
       ? [
           `Chris has asked for one specific thing from this message: ${asked}`,
-          '',
-          'That is the subject. Everything below is background to help you say it well and in their terms. Do not replace it with something else you find more interesting in the brief, and do not quietly widen it: if he asked about this week, the message is about this week.',
-          '',
-        ].join('\n')
-      : '',
-    'Here is what is known about the member. Everything in it is real; anything not in it, you do not know.',
-    '',
+          "",
+          "That is the subject. Everything below is background to help you say it well and in their terms. Do not replace it with something else you find more interesting in the brief, and do not quietly widen it: if he asked about this week, the message is about this week.",
+          "",
+        ].join("\n")
+      : "",
+    "Here is what is known about the member. Everything in it is real; anything not in it, you do not know.",
+    "",
     brief(detail),
-    '',
+    "",
     task,
-    '',
-    asked ? `Once more, because it is the point of the message: ${asked}` : '',
-    '',
-    'Reply with JSON only, no other text, in this shape:',
+    "",
+    asked ? `Once more, because it is the point of the message: ${asked}` : "",
+    "",
+    "Reply with JSON only, no other text, in this shape:",
     '{"angle": "one short line telling Chris why you took this approach", "message": "the message itself"}',
   ]
     .filter(Boolean)
-    .join('\n')
+    .join("\n");
 
   const response = await fetch(ENDPOINT, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'content-type': 'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
+      "content-type": "application/json",
+      "x-api-key": key,
+      "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
       model: MODEL,
       max_tokens: 2500,
       system,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: "user", content: prompt }],
     }),
-  })
+  });
 
   if (!response.ok) {
-    const detailText = await response.text()
+    const detailText = await response.text();
     return NextResponse.json(
-      { error: `The model refused that (${response.status}).`, detail: detailText.slice(0, 400) },
+      {
+        error: `The model refused that (${response.status}).`,
+        detail: detailText.slice(0, 400),
+      },
       { status: 502 },
-    )
+    );
   }
 
-  const payload = (await response.json()) as { content?: { type: string; text?: string }[] }
+  const payload = (await response.json()) as {
+    content?: { type: string; text?: string }[];
+  };
   const text = (payload.content ?? [])
-    .filter((block) => block.type === 'text')
-    .map((block) => block.text ?? '')
-    .join('')
-    .trim()
+    .filter((block) => block.type === "text")
+    .map((block) => block.text ?? "")
+    .join("")
+    .trim();
 
   // Asked for JSON, but a stray sentence around it should not lose the draft.
-  const start = text.indexOf('{')
-  const end = text.lastIndexOf('}')
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
   if (start !== -1 && end > start) {
     try {
-      const parsed = JSON.parse(text.slice(start, end + 1)) as { angle?: string; message?: string }
+      const parsed = JSON.parse(text.slice(start, end + 1)) as {
+        angle?: string;
+        message?: string;
+      };
       if (parsed.message) {
         return NextResponse.json({
           message: plainDashes(parsed.message.trim()),
-          angle: parsed.angle ?? '',
-        })
+          angle: parsed.angle ?? "",
+        });
       }
     } catch {
       // Fall through to salvage.
@@ -410,10 +481,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ mem
    * meant to read. Pull the message out by hand instead: a draft missing its
    * last sentence is still a draft, and he can see that it is short.
    */
-  const salvaged = salvage(text)
-  if (salvaged) return NextResponse.json({ message: plainDashes(salvaged), angle: '' })
+  const salvaged = salvage(text);
+  if (salvaged)
+    return NextResponse.json({ message: plainDashes(salvaged), angle: "" });
 
-  return NextResponse.json({ message: plainDashes(text), angle: '' })
+  return NextResponse.json({ message: plainDashes(text), angle: "" });
 }
 
 /**
@@ -424,37 +496,37 @@ export async function POST(request: Request, { params }: { params: Promise<{ mem
  * this is the belt to that braces.
  */
 function plainDashes(text: string): string {
-  return text.replace(/\s*[—–]\s*/g, ' - ')
+  return text.replace(/\s*[—–]\s*/g, " - ");
 }
 
 /** The message out of a JSON reply that did not finish. Null when there is none. */
 function salvage(text: string): string | null {
-  const at = text.search(/"message"\s*:\s*"/)
-  if (at === -1) return null
+  const at = text.search(/"message"\s*:\s*"/);
+  if (at === -1) return null;
 
-  const from = text.indexOf('"', text.indexOf(':', at)) + 1
-  let out = ''
+  const from = text.indexOf('"', text.indexOf(":", at)) + 1;
+  let out = "";
   for (let i = from; i < text.length; i += 1) {
-    const c = text[i]
-    if (c === '\\') {
-      const next = text[i + 1]
+    const c = text[i];
+    if (c === "\\") {
+      const next = text[i + 1];
       // \u0027 and friends: models reach for them on apostrophes and quotes.
-      if (next === 'u') {
-        const code = text.slice(i + 2, i + 6)
+      if (next === "u") {
+        const code = text.slice(i + 2, i + 6);
         if (/^[0-9a-fA-F]{4}$/.test(code)) {
-          out += String.fromCharCode(parseInt(code, 16))
-          i += 5
-          continue
+          out += String.fromCharCode(parseInt(code, 16));
+          i += 5;
+          continue;
         }
       }
-      out += next === 'n' ? '\n' : next === 't' ? '\t' : (next ?? '')
-      i += 1
-      continue
+      out += next === "n" ? "\n" : next === "t" ? "\t" : (next ?? "");
+      i += 1;
+      continue;
     }
     // An unescaped quote ends the string, whether or not the reply got that far.
-    if (c === '"') break
-    out += c
+    if (c === '"') break;
+    out += c;
   }
 
-  return out.trim() || null
+  return out.trim() || null;
 }

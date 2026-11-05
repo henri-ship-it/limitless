@@ -16,6 +16,33 @@ export type ConversationNotes = {
   quotes?: string[]
 }
 
+/**
+ * A drop-in is read differently from a 1:1.
+ *
+ * The fixed headings of a 1:1 describe a person: what moves them, how to talk
+ * to them, what they are working towards. Those stay true for months, which is
+ * why they are the same headings every time.
+ *
+ * A drop-in is not about a person, it is about a week. One week is flow, the
+ * next is something else, and forcing each into "what moves them" produces a
+ * thin version of the same four paragraphs for everybody, week after week, in
+ * which nothing is distinctive enough to be worth reading. So this returns its
+ * own headings, written for the call that actually happened.
+ */
+export type DropInNotes = {
+  /** One sentence on what the call was about, in the week's own terms. */
+  headline?: string
+  /** Headings written for this call, not chosen from a list. */
+  sections?: { title: string; body: string }[]
+}
+
+/** Either kind of reading. Only a drop-in has sections. */
+export type AnyNotes = ConversationNotes | DropInNotes
+
+export function isDropIn(notes: AnyNotes | null | undefined): notes is DropInNotes {
+  return Boolean(notes && 'sections' in notes && Array.isArray((notes as DropInNotes).sections))
+}
+
 const ENDPOINT = 'https://api.anthropic.com/v1/messages'
 
 /**
@@ -121,6 +148,99 @@ export async function distil(
 
   try {
     return clean(JSON.parse(reply.slice(start, end + 1)) as ConversationNotes)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * What a member took from a drop-in, under headings that suit the call.
+ *
+ * `focus` is the member this is written for; everybody else on the call is
+ * context. `week` and `chapter` say which part of the programme it belongs to,
+ * which steers the reading towards the material rather than away from it: a
+ * call during the flow chapter is mostly about flow, and saying so stops a
+ * theme being invented that the room never discussed.
+ */
+export async function distilDropIn(
+  transcript: string,
+  key: string,
+  model = 'claude-opus-5',
+  focus?: string,
+  week?: number,
+  chapter?: string,
+): Promise<DropInNotes | null> {
+  const who = focus ?? 'the member'
+  const about = chapter
+    ? `That week of the programme was week ${week}, "${chapter}", so expect the call to lean on it.`
+    : ''
+
+  const brief = [
+    `This is a transcript of a Limitless drop-in call. Chris Bodman, who runs the programme, is on it with several members. You are reading it for one of them: ${who}.`,
+    about,
+    '',
+    'Summarise the call as it mattered to that member. Not a profile of them: a record of what was covered and where they came into it, so that in a month somebody can read this and remember the session.',
+    '',
+    'Return JSON only, in this shape:',
+    '{',
+    '  "headline": "One sentence on what this call was actually about, in the terms the room used.",',
+    '  "sections": [{ "title": "A heading you write yourself", "body": "A short paragraph." }]',
+    '}',
+    '',
+    'Rules:',
+    '- Write the headings yourself, from this call. Two to four of them. They should be specific enough that somebody reading only the headings knows which week this was.',
+    '- Never use the headings "What moves them", "How to talk to them", "What they are working towards", "Worth remembering" or "In their words". Those belong to a different kind of record and this is not it.',
+    `- At least one section must be about ${who} specifically: what they asked, what they said, where they got stuck. If they barely spoke, say that plainly in one line rather than inventing a contribution.`,
+    '- The rest can be about the call itself: what was taught, what the room worked through, anything Chris said that is worth keeping.',
+    `- Only what is in the transcript. Work out who is speaking before you attribute anything, and never put another member's words in ${who}'s mouth.`,
+    '- Plain sentences, written for Chris to read. No coaching language, no bullet-point personality profiling.',
+    '- Never use an em dash or an en dash.',
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+  const response = await fetch(ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 2000,
+      messages: [{ role: 'user', content: `${brief}\n\nTranscript:\n\n${transcript}` }],
+    }),
+  })
+
+  if (!response.ok) return null
+
+  const payload = (await response.json()) as { content?: { type: string; text?: string }[] }
+  const reply = (payload.content ?? [])
+    .filter((block) => block.type === 'text')
+    .map((block) => block.text ?? '')
+    .join('')
+
+  const start = reply.indexOf('{')
+  const end = reply.lastIndexOf('}')
+  if (start === -1 || end <= start) return null
+
+  try {
+    const parsed = JSON.parse(reply.slice(start, end + 1)) as DropInNotes
+    const sections = (parsed.sections ?? [])
+      .map((section) => ({
+        title: plain(String(section?.title ?? '')).trim(),
+        body: plain(String(section?.body ?? '')).trim(),
+      }))
+      .filter((section) => section.title && section.body)
+
+    /* Sections are the whole point; a reading without them is not one. */
+    if (!sections.length) return null
+
+    return {
+      headline: parsed.headline ? plain(String(parsed.headline)).trim() : undefined,
+      sections,
+    }
   } catch {
     return null
   }

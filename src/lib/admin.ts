@@ -7,7 +7,7 @@ import { weeks, type Tier } from '@/content/programme'
 import { journalEntries } from '@/content/journal'
 import { eliteJournalEntry } from '@/content/elite-journal'
 import { ELITE } from '@/content/elite'
-import type { ConversationNotes } from './distil'
+import type { AnyNotes, ConversationNotes } from './distil'
 
 export { since, readable } from './format'
 
@@ -159,15 +159,23 @@ function latest(a: string | null, b: string | null): string | null {
  * `notes` is null when the reading failed, which does not lose anything: the
  * transcript is still there and can be read again.
  */
-export type { ConversationNotes } from './distil'
+export type { AnyNotes, ConversationNotes, DropInNotes } from './distil'
 
 export type Conversation = {
   id: string
   happened_on: string
   transcript: string
-  notes: ConversationNotes | null
+  notes: AnyNotes | null
   /** one-to-one for a call with Chris alone, group for the weekly drop-in. */
   source?: string
+  /**
+   * Which week of the programme it belongs to.
+   *
+   * Worked out from the day it happened rather than stored, so it stays right
+   * if the cohort's dates are ever corrected, and so an old call never claims
+   * a week it was not in.
+   */
+  week?: number
 }
 
 /** One thing a member said in the group chat. */
@@ -235,7 +243,10 @@ export async function getMemberDetail(id: string) {
     profile: { ...profile, last_seen_at: latest(profile.last_seen_at, signedIn) },
     time: (time ?? []).sort((a, b) => b.seconds - a.seconds),
     arrivals: arrivals ?? [],
-    conversations: (conversations ?? []) as Conversation[],
+    conversations: ((conversations ?? []) as Conversation[]).map((call) => ({
+      ...call,
+      week: currentWeek(new Date(`${call.happened_on}T12:00:00Z`)),
+    })),
     chat: (chat ?? []) as ChatLine[],
     secondsSpent: (time ?? []).reduce((sum, row) => sum + row.seconds, 0),
     weeksComplete: (progress ?? []).map((p) => p.week_number).sort((a, b) => a - b),

@@ -1,4 +1,6 @@
-import { distil } from '@/lib/distil'
+import { distilDropIn } from '@/lib/distil'
+import { currentWeek } from '@/lib/cohort'
+import { getWeek } from '@/content/programme'
 import { matchSpeaker } from '@/lib/speakers'
 
 /**
@@ -233,6 +235,15 @@ export async function fileCall(
     }
   }
 
+  /*
+   * The week the call belongs to, worked out from the day it happened rather
+   * than from today, so a call collected late is still filed under its own
+   * week. It names the record and steers the reading towards that week's
+   * material, which is most of what the room actually talked about.
+   */
+  const week = currentWeek(new Date(`${happenedOn}T12:00:00Z`))
+  const chapter = getWeek(week)?.title
+
   const filed: string[] = []
   const problems: string[] = []
 
@@ -256,7 +267,14 @@ export async function fileCall(
      * be made again; notes can be rebuilt from it at any time.
      */
     const notes = anthropicKey
-      ? await distil(transcript, anthropicKey, model, member.firstName ?? member.label)
+      ? await distilDropIn(
+          transcript,
+          anthropicKey,
+          model,
+          member.firstName ?? member.label,
+          week,
+          chapter,
+        )
       : null
 
     const { error } = await supabase.from('member_conversations').upsert(

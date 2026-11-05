@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import type { Conversation } from '@/lib/admin'
+import type { Conversation, ConversationNotes, DropInNotes } from '@/lib/admin'
+import { isDropIn } from '@/lib/distil'
 import { Grow } from '@/components/Grow'
 
 /**
@@ -80,7 +81,8 @@ export function Conversations({
     <div>
       {conversations.length === 0 && !adding ? (
         <p className="!mb-6 text-[0.9375rem] leading-relaxed !text-ink-56">
-          Nothing from a call with {name} yet. Paste a transcript in and it will be read into the
+          Nothing from a call with {name} yet. Drop-ins arrive on their own; for a 1:1, paste a
+        transcript in and it will be read into the
           things that change how you write to them.
         </p>
       ) : null}
@@ -88,7 +90,14 @@ export function Conversations({
       {conversations.map((conversation) => (
         <article key={conversation.id} className="!mb-8 border-b border-line pb-8 last:border-0">
           <div className="!mb-4 flex flex-wrap items-center gap-2">
-            <span className="pill !text-ink">{formatDay(conversation.happened_on)}</span>
+            <span className="pill !text-ink">
+              {conversation.source === 'group' && conversation.week
+                ? `Week ${conversation.week} drop-in`
+                : formatDay(conversation.happened_on)}
+            </span>
+            {conversation.source === 'group' && conversation.week ? (
+              <span className="label !text-ink-40">{formatDay(conversation.happened_on)}</span>
+            ) : null}
             <button
               type="button"
               onClick={() => reread(conversation.id)}
@@ -107,7 +116,11 @@ export function Conversations({
           </div>
 
           {conversation.notes ? (
-            <Notes notes={conversation.notes} />
+            isDropIn(conversation.notes) ? (
+              <DropIn notes={conversation.notes} />
+            ) : (
+              <Notes notes={conversation.notes as ConversationNotes} />
+            )
           ) : (
             <p className="!mb-4 text-[0.9375rem] !text-ink-56">
               This one was saved but could not be read into notes. The transcript is below.
@@ -184,7 +197,31 @@ export function Conversations({
   )
 }
 
-function Notes({ notes }: { notes: NonNullable<Conversation['notes']> }) {
+/**
+ * A drop-in, under the headings the call itself suggested.
+ *
+ * Deliberately not the fixed headings of a 1:1. Those describe a person and
+ * hold for months; this describes one week, and one week of flow has nothing
+ * in common with the next week's chapter. Writing them fresh each time is what
+ * keeps a year of these from reading as the same four paragraphs.
+ */
+function DropIn({ notes }: { notes: DropInNotes }) {
+  return (
+    <div>
+      {notes.headline ? (
+        <p className="!mb-5 text-[1.0625rem] leading-relaxed text-ink">{notes.headline}</p>
+      ) : null}
+      {(notes.sections ?? []).map((section) => (
+        <div key={section.title} className="!mb-5">
+          <p className="label !text-ink-40 !mb-1">{section.title}</p>
+          <p className="!mb-0 text-[0.9375rem] leading-relaxed text-ink-72">{section.body}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function Notes({ notes }: { notes: ConversationNotes }) {
   return (
     <div className="flex flex-col gap-5">
       {notes.motivation ? <Line label="What moves them" text={notes.motivation} /> : null}
