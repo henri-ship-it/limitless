@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { pullRecentCalls } from '@/lib/pocket'
+import { pullRecentCalls, shouldPull } from '@/lib/pocket'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 
 /**
@@ -92,20 +92,29 @@ export async function GET(request: Request) {
   const photos = await prunePhotos(supabase)
 
   /*
-   * The catch-up pass for the Wednesday call. The webhook is what normally
-   * brings it in; this finds anything that push missed, which happens when a
-   * deploy is mid-flight or a signature is misconfigured. Everything already on
-   * file is skipped, so on almost every day this is one listing request and
-   * nothing else.
+   * The catch-up pass for the Wednesday call, once a week rather than daily.
+   *
+   * The webhook is what normally brings a call in, within a minute of it
+   * finishing. This is the net under it, for the times push fails: a deploy
+   * mid-flight, a signature misconfigured, a retry window that ran out. The
+   * calls are weekly, so looking daily meant six runs asking a question whose
+   * answer could not have changed.
+   *
+   * It runs on the Thursday, not the Wednesday, because the call is on a
+   * Wednesday evening and a job that runs that morning runs before the thing
+   * it is looking for exists. The pruning above still runs every day: it is
+   * about storage rather than calls and has nothing to do with this.
    */
   const apiKey = process.env.POCKET_API_KEY
-  const calls = apiKey
-    ? await pullRecentCalls(supabase, {
-        apiKey,
-        anthropicKey: process.env.ANTHROPIC_API_KEY,
-        model: process.env.ANTHROPIC_MODEL ?? 'claude-opus-5',
-      })
-    : { checked: 0, results: [], error: 'No Pocket API key set.' }
+  const calls = !apiKey
+    ? { checked: 0, results: [], error: 'No Pocket API key set.' }
+    : !shouldPull()
+      ? { checked: 0, results: [], skipped: 'Not the day the calls are collected.' }
+      : await pullRecentCalls(supabase, {
+          apiKey,
+          anthropicKey: process.env.ANTHROPIC_API_KEY,
+          model: process.env.ANTHROPIC_MODEL ?? 'claude-opus-5',
+        })
 
   return NextResponse.json({ photos, calls })
 }

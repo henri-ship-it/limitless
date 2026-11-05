@@ -1,4 +1,4 @@
-import { onCallDay, titleAllows, titlePatterns, worthReading } from '../src/lib/pocket'
+import { onCallDay, shouldPull, titleAllows, titlePatterns, worthReading } from '../src/lib/pocket'
 
 /**
  * Which of Chris's recordings the platform opens.
@@ -101,6 +101,39 @@ is('a named call is opened off its day', worthReading({ title: 'Limitless Pro, m
 is('casing does not matter', titleAllows('LIMITLESS PRO', moved), true)
 is('but other calls are still not', worthReading({ title: 'Ultimate Founder Catch Up', happenedOn: '2026-11-02' }, moved), false)
 is('and an untitled one off its day is not', worthReading({ title: null, happenedOn: '2026-11-05' }, moved), false)
+
+/*
+ * When the catch-up runs. Thursday, not Wednesday: the call is on a Wednesday
+ * evening, so a Wednesday morning run looks for something that does not exist
+ * yet and then does not look again for a week. Getting this one day wrong
+ * means the net under the webhook is never actually there.
+ */
+for (const [day, name] of [
+  ['2026-11-08', 'Sunday'],
+  ['2026-11-09', 'Monday'],
+  ['2026-11-10', 'Tuesday'],
+  ['2026-11-11', 'Wednesday'],
+  ['2026-11-12', 'Thursday'],
+  ['2026-11-13', 'Friday'],
+  ['2026-11-14', 'Saturday'],
+] as const) {
+  is(`the pull on ${name}`, shouldPull(new Date(`${day}T04:00:00Z`)), name === 'Thursday')
+}
+
+/*
+ * And the two must not be the same day. A pull that happens on the day the
+ * calls happen would run before the evening and find nothing, which is the
+ * mistake this pair of checks exists to prevent.
+ */
+is('the call day is a Wednesday', onCallDay('2026-11-11'), true)
+is('and the pull is not that day', shouldPull(new Date('2026-11-11T04:00:00Z')), false)
+is('the pull day is the day after', shouldPull(new Date('2026-11-12T04:00:00Z')), true)
+is('and a call recorded then is still filed', onCallDay('2026-11-11'), true)
+
+// The cron fires at 04:00 UTC; the day must not depend on local time drifting it.
+is('just after midnight UTC on Thursday', shouldPull(new Date('2026-11-12T00:01:00Z')), true)
+is('just before midnight UTC on Thursday', shouldPull(new Date('2026-11-12T23:59:00Z')), true)
+is('one minute earlier is Wednesday', shouldPull(new Date('2026-11-11T23:59:00Z')), false)
 
 if (fail.length) {
   console.error('FAILED\n' + fail.join('\n'))

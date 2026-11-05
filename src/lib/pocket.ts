@@ -47,6 +47,28 @@ const API = 'https://public.heypocketai.com/api/v1/public'
 const CALL_DAY = 3
 
 /**
+ * The day the catch-up runs. The morning after the call, rather than the day of it.
+ *
+ * The calls are on a Wednesday evening, so a job that runs on Wednesday runs
+ * before the thing it is looking for exists. Thursday is the first run that
+ * can see it, with the night in between for the recording to finish syncing
+ * off the device, which is not instant and is not something this controls.
+ */
+const PULL_DAY = 4
+
+/**
+ * Whether today is the day to go looking.
+ *
+ * Once a week rather than daily, because the calls are weekly and six of the
+ * seven runs were asking Pocket a question whose answer could not have
+ * changed. The webhook is still what normally brings a call in, within a
+ * minute of it finishing; this is only the net under it.
+ */
+export function shouldPull(now: Date = new Date()): boolean {
+  return now.getUTCDay() === PULL_DAY
+}
+
+/**
  * How many members must be heard before a recording is filed as the call.
  *
  * Two rather than one, because one member's name coming up in a conversation
