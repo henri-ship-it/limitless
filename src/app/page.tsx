@@ -9,7 +9,7 @@ import { Timeline } from '@/components/Timeline'
 import { LockIcon } from '@/components/icons'
 import { CopyEmail } from '@/components/CopyEmail'
 import { checklistFor } from '@/content/checklist'
-import { COHORT, modules, weeks } from '@/content/programme'
+import { COHORT, modeFor, modules, weeks } from '@/content/programme'
 import { SUPPORT_EMAIL } from '@/content/assets'
 import { getMember, getProgress, getStreak } from '@/lib/member'
 import { clockFor, currentWeek, entryForToday, unlockedThrough, type Clock } from '@/lib/cohort'
@@ -27,8 +27,8 @@ function tocFor(setUp: boolean) {
 
 export default async function StartGuide() {
   const member = await getMember()
-  // Elite runs to its own clock and has its own front door.
-  if (member?.tier === 'elite') redirect('/elite')
+  // The year long journal runs to its own clock and has its own front door.
+  if (member && modeFor(member.tier) === 'elite') redirect('/elite')
   const progress = member
     ? await getProgress(member.id)
     : { completedItems: new Set<string>(), completedWeeks: new Set<number>() }

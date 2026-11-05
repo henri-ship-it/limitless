@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/admin'
 import { currentWeek } from '@/lib/cohort'
-import { getWeek, weeks } from '@/content/programme'
+import { getWeek, modeFor, weeks } from '@/content/programme'
 import { resolveEntry } from '@/lib/entry'
 import { entriesForWeek } from '@/content/journal'
 import { exerciseAnswers } from '@/lib/entry-text'
@@ -70,7 +70,8 @@ export async function POST(request: Request) {
    * week's chapter and reporting the mismatch as a member falling behind.
    */
   const cohort = (people ?? []).filter((p) => {
-    if (p.is_admin || p.tier === 'elite') return false
+    // The year long journal has its own agenda, so nobody on it belongs here.
+    if (p.is_admin || modeFor(p.tier) === 'elite') return false
     return audience === 'all' || p.tier === 'pro'
   })
   const ids = cohort.map((p) => p.id)

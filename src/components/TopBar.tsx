@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { modules, weeks, type Tier } from '@/content/programme'
+import { modules, weeks, tierInfo, type Tier } from '@/content/programme'
 import { chaptersInModule } from '@/content/elite'
 import { AccountIcon, ChevronIcon, NowIndicator } from './icons'
 import { Streak } from './Streak'
-import { ProgrammeToggle } from './ProgrammeToggle'
+import { ViewAs } from './ViewAs'
 import type { Mode } from '@/lib/programme-mode'
 import { WeekMarker } from './WeekMarker'
 
@@ -22,6 +22,8 @@ type Props = {
   streak: number
   /** Which programme is being shown. Only admins can change it. */
   mode: Mode
+  /** The product being looked at, which for everyone but an admin is their own. */
+  viewing: Tier
   /** Which Elite chapter is open, when Elite is the programme being shown. */
   eliteChapter?: number
 }
@@ -34,6 +36,7 @@ export function TopBar({
   completedWeeks,
   streak,
   mode,
+  viewing,
   eliteChapter = 0,
 }: Props) {
   const [open, setOpen] = useState(false)
@@ -133,8 +136,10 @@ export function TopBar({
                     Pro
                   </Link>
                 ) : (
-                  <span className="tier-tag" data-tier="core">
-                    Core
+                  /* Every other product names itself. Only Pro has somewhere
+                   * of its own to go, so only Pro is a link. */
+                  <span className="tier-tag" data-tier={tier}>
+                    {tierInfo(tier).label}
                   </span>
                 )}
               </div>
@@ -218,7 +223,7 @@ export function TopBar({
 
         <div className="ml-auto flex items-center gap-2">
           {/* Beside the account icon, the way a theme switch sits. */}
-          {isAdmin ? <ProgrammeToggle mode={mode} /> : null}
+          {isAdmin ? <ViewAs viewing={viewing} /> : null}
           <Link
             href="/account"
             /*

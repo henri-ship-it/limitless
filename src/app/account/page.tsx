@@ -10,9 +10,34 @@ import { getMember } from '@/lib/member'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseConfigured } from '@/lib/env'
 import { SUPPORT_EMAIL } from '@/content/assets'
-import { COHORT } from '@/content/programme'
+import { COHORT, tierInfo, type Tier } from '@/content/programme'
 
 export const metadata = { title: 'Your account · Limitless' }
+
+/*
+ * What each product is, in the member's own terms.
+ *
+ * Keyed by tier and typed as a complete record on purpose. These used to be a
+ * nested ternary that fell through to Core, which meant a product nobody had
+ * written copy for would quietly describe itself as Core and tell its members
+ * the drop-in calls were Pro only. A Record makes the compiler ask for the copy
+ * when a sixth product is added, which is the moment somebody knows what to say.
+ */
+const MEMBERSHIP: Record<Tier, string> = {
+  core: 'Core. You have the journal, the weekly digests, every chapter masterclass and the recording of each module workshop. The drop-in calls, the WhatsApp community and the live workshops are Pro only.',
+  pro: 'Pro. You join the four module workshops live, the drop-in call in every chapter week, and the WhatsApp community, and you can reach Chris directly there.',
+  elite: 'Elite. Twelve chapters across a year, four printed journals, a check-in with Chris in every chapter, and him directly on WhatsApp the whole way through. There is no group: the support is one to one.',
+  elevate: 'Elevate. The same twelve chapters and four printed journals as Elite, worked through at your own pace. The check-ins with Chris are the part Elite adds.',
+  threesixtyfive: '365. The twelve chapters and four printed journals, for members who have already been through Limitless. Coaching with Chris is there when you want it, booked a call at a time.',
+}
+
+const SUPPORT: Record<Tier, string> = {
+  core: 'Email Chris, or reply to any email he sends. He reads and answers every one.',
+  pro: 'Message the WhatsApp community, or email Chris for anything you would rather keep private.',
+  elite: 'Message Chris directly on WhatsApp, or email him. Either reaches him, and there is no group in between.',
+  elevate: 'Email Chris, or reply to any email he sends. He reads and answers every one.',
+  threesixtyfive: 'Email Chris, or reply to any email he sends. A coaching call can be booked whenever you want one.',
+}
 
 /** Blueprint is Pro only, so the rail is built per member rather than fixed. */
 function tocFor(tier: string) {
@@ -57,11 +82,7 @@ export default async function AccountPage() {
 
       <Section id="membership" label="Membership">
         <p>
-          {member.tier === 'elite'
-            ? 'Elite. Twelve chapters across a year, four printed journals, a check-in with Chris in every chapter, and him directly on WhatsApp the whole way through. There is no group: the support is one to one.'
-            : member.tier === 'pro'
-              ? 'Pro. You join the four module workshops live, the drop-in call in every chapter week, and the WhatsApp community, and you can reach Chris directly there.'
-              : 'Core. You have the journal, the weekly digests, every chapter masterclass and the recording of each module workshop. The drop-in calls, the WhatsApp community and the live workshops are Pro only.'}
+          {MEMBERSHIP[tierInfo(member.tier).key]}
         </p>
         {member.tier === 'core' ? (
           <p className="!text-ink-56 text-[0.8125rem]">
@@ -110,11 +131,7 @@ export default async function AccountPage() {
 
       <Section id="support" label="Support">
         <p>
-          {member.tier === 'elite'
-            ? 'Message Chris directly on WhatsApp, or email him. Either reaches him, and there is no group in between.'
-            : member.tier === 'pro'
-              ? 'Message the WhatsApp community, or email Chris for anything you would rather keep private.'
-              : 'Email Chris, or reply to any email he sends. He reads and answers every one.'}
+          {SUPPORT[tierInfo(member.tier).key]}
         </p>
         <CopyEmail address={SUPPORT_EMAIL} />
       </Section>

@@ -7,6 +7,7 @@ import { getMode } from '@/lib/programme-mode'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseConfigured } from '@/lib/env'
 import { SUPPORT_EMAIL } from '@/content/assets'
+import { modeFor } from '@/content/programme'
 import {
   BLUEPRINT_SLOT,
   isBlueprint,
@@ -38,7 +39,7 @@ export default async function BlueprintPage() {
    * tier page was making.
    */
   const mode = await getMode(member.tier, member.isAdmin)
-  const elite = mode === 'elite' || member.tier === 'elite'
+  const elite = mode === 'elite' || modeFor(member.tier) === 'elite'
   const tier = elite ? 'elite' : 'pro'
   const label = elite ? 'Limitless Elite' : 'Limitless Pro'
 

@@ -1,7 +1,8 @@
 import { getMember, getProgress, getStreak } from '@/lib/member'
 import { supabaseConfigured } from '@/lib/env'
 import { clockFor, currentWeek, unlockedThrough } from '@/lib/cohort'
-import { getMode } from '@/lib/programme-mode'
+import { viewingAs } from '@/lib/programme-mode'
+import { modeFor, tierInfo } from '@/content/programme'
 import { currentEliteChapter } from '@/content/elite'
 import { TopBar } from './TopBar'
 import { Sidebar } from './Sidebar'
@@ -30,7 +31,18 @@ export async function Shell({
   const clock = clockFor(member)
   const active = currentWeek(new Date(), clock)
   const isAdmin = member?.isAdmin ?? false
-  const mode = await getMode(tier, isAdmin)
+  /*
+   * The product being drawn. A member's own, and for an admin whichever one
+   * they have picked, which is the whole of what the switcher does: the rest of
+   * this component reads `viewing` and so draws Core's platform for an admin
+   * looking at Core, not just Core's journal.
+   *
+   * It does not widen or narrow what anybody is allowed to reach. Route guards
+   * read the real tier and isAdmin, so an admin looking at Core keeps every
+   * door an admin has.
+   */
+  const viewing = await viewingAs(tier, isAdmin)
+  const mode = modeFor(viewing)
   const openThrough = unlockedThrough(new Date(), isAdmin, clock)
   const completed = [...progress.completedWeeks]
   /*
@@ -48,7 +60,8 @@ export async function Shell({
       {/* Preview mode has a stub member but no client to report to. */}
       {member && supabaseConfigured ? <TimeOnPage /> : null}
       <TopBar
-        tier={tier}
+        tier={viewing}
+        viewing={viewing}
         isAdmin={isAdmin}
         currentWeek={active}
         openThrough={openThrough}
@@ -64,7 +77,8 @@ export async function Shell({
           currentWeek={active}
           openThrough={openThrough}
           completedWeeks={completed}
-          isPro={tier === 'pro'}
+          isPro={tierInfo(viewing).groupCalls}
+          viewing={viewing}
           isAdmin={isAdmin}
           eliteChapter={eliteChapter}
         />

@@ -3,11 +3,120 @@
 // source of truth for chapter names, entry numbering and deload spacing.
 
 /*
- * Elite is the year long programme, sold as Elevate as well. It is not a rung
- * above Pro: it is a different programme with its own journal and its own
- * clock, so anything that treats tiers as a ladder has to name it explicitly.
+ * Five products across two journals.
+ *
+ * Core and Pro work through the sixteen week book. Elite, Elevate and 365 work
+ * through the year long one, and it is the same three hundred and thirty six
+ * entries in all three cases. So a tier is not a rung on a ladder: it names a
+ * product, and there are two separate questions worth asking of one. Which
+ * journal does it read, and what is wrapped around it.
+ *
+ * Those two are kept apart below because they stopped having the same answer.
+ * While Elite was the only year long product, "is this member on Elite" and "is
+ * this member on the year long journal" were the same test, and the platform
+ * asked the first everywhere it meant the second. Elevate and 365 break that,
+ * so the second question now has a name of its own.
  */
-export type Tier = 'core' | 'pro' | 'elite'
+export type Tier = 'core' | 'pro' | 'elite' | 'elevate' | 'threesixtyfive'
+
+/*
+ * Which journal a product reads.
+ *
+ * Named for the two programmes rather than for their lengths. 'limitless' is
+ * what the sixteen week one is called in the cookie, the sidebar and half the
+ * components already, and renaming it here would help nobody.
+ */
+export type Mode = 'limitless' | 'elite'
+
+export type TierInfo = {
+  key: Tier
+  /** What a member is told they are on. */
+  label: string
+  /** Which of the two journals they work through. */
+  mode: Mode
+  /** One line, so nobody running the platform holds the matrix in their head. */
+  summary: string
+  /** Chris's own check-ins, twice a month. Elite buys his time, nothing else does. */
+  oneToOne: boolean
+  /** The group calls and the WhatsApp group that run alongside a cohort. */
+  groupCalls: boolean
+  /** Coaching bought a call at a time rather than included in the price. */
+  coachingOnDemand: boolean
+}
+
+/*
+ * A list rather than a record keyed by tier, because the order matters twice
+ * over: it is the order the products are sold in and the order the admin
+ * switcher lists them. A record would leave both to whatever the runtime did
+ * with its keys.
+ *
+ * Note that nothing here says whether a member runs on a cohort or their own
+ * date. That is `enrolment` on their profile, because Core is sold both ways
+ * and the tier genuinely does not know.
+ */
+export const TIERS: TierInfo[] = [
+  {
+    key: 'core',
+    label: 'Core',
+    mode: 'limitless',
+    summary: 'The sixteen weeks, begun whenever they buy.',
+    oneToOne: false,
+    groupCalls: false,
+    coachingOnDemand: false,
+  },
+  {
+    key: 'pro',
+    label: 'Pro',
+    mode: 'limitless',
+    summary: 'The sixteen weeks with the group calls, run as a cohort.',
+    oneToOne: false,
+    groupCalls: true,
+    coachingOnDemand: false,
+  },
+  {
+    key: 'elite',
+    label: 'Elite',
+    mode: 'elite',
+    summary: 'The year long journal, with Chris twice a month.',
+    oneToOne: true,
+    groupCalls: false,
+    coachingOnDemand: false,
+  },
+  {
+    key: 'elevate',
+    label: 'Elevate',
+    mode: 'elite',
+    summary: 'The same year long journal, worked through on their own.',
+    oneToOne: false,
+    groupCalls: false,
+    coachingOnDemand: false,
+  },
+  {
+    key: 'threesixtyfive',
+    label: '365',
+    mode: 'elite',
+    summary: 'The year long journal for alumni, coaching bought a call at a time.',
+    oneToOne: false,
+    groupCalls: false,
+    coachingOnDemand: true,
+  },
+]
+
+/*
+ * Anything unrecognised reads as Core.
+ *
+ * Core is the least a member can be on, so a row written by something that has
+ * not been taught about a new product shows the smallest thing rather than
+ * throwing a page away or, worse, handing out the most.
+ */
+export function tierInfo(tier: string): TierInfo {
+  return TIERS.find((t) => t.key === tier) ?? TIERS[0]
+}
+
+/** Which journal this tier reads, which is what most of the platform is asking. */
+export function modeFor(tier: string): Mode {
+  return tierInfo(tier).mode
+}
 export type WeekType = 'chapter' | 'deload'
 
 export type Module = {

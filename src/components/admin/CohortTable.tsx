@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import type { MemberRow } from '@/lib/admin'
 import { readable, since } from '@/lib/format'
-import { weeks } from '@/content/programme'
+import { TIERS, tierInfo, weeks, type Tier } from '@/content/programme'
 
 type Key = 'name' | 'tier' | 'lastSeen' | 'wrote' | 'time' | 'weeks' | 'entries'
 
@@ -34,7 +34,7 @@ const at = (iso: string | null) => (iso ? Date.parse(iso) : 0)
 export function CohortTable({ members }: { members: MemberRow[] }) {
   const [sort, setSort] = useState<Key>('lastSeen')
   const [ascending, setAscending] = useState(false)
-  const [tier, setTier] = useState<'all' | 'pro' | 'core' | 'elite'>('all')
+  const [tier, setTier] = useState<'all' | Tier>('all')
   const [search, setSearch] = useState('')
 
   /*
@@ -44,6 +44,19 @@ export function CohortTable({ members }: { members: MemberRow[] }) {
    */
   const cohorts = [...new Set(members.map((m) => m.cohort))].sort().reverse()
   const [cohort, setCohort] = useState(cohorts[0] ?? '4.0')
+
+  /*
+   * Only the products somebody is actually on, in the order they are sold.
+   *
+   * There are five of them and three are not launched, so listing all five
+   * would put three buttons here that can only ever return nothing. Built from
+   * the rows instead, so each one appears the day it has a member and nobody
+   * has to come back and add it.
+   */
+  const tiersPresent = useMemo(
+    () => TIERS.filter((t) => members.some((m) => m.tier === t.key)).map((t) => t.key),
+    [members],
+  )
 
   const rows = useMemo(() => {
     const term = search.trim().toLowerCase()
@@ -110,7 +123,7 @@ export function CohortTable({ members }: { members: MemberRow[] }) {
           className="w-full max-w-56 border border-line bg-surface px-3 py-2 text-[0.875rem] outline-none focus:border-ink"
         />
         <div className="flex gap-1.5">
-          {(['all', 'pro', 'core', 'elite'] as const).map((option) => (
+          {(['all', ...tiersPresent] as const).map((option) => (
             <button
               key={option}
               type="button"
@@ -122,7 +135,7 @@ export function CohortTable({ members }: { members: MemberRow[] }) {
                   : 'hover:!border-line-strong hover:!text-ink'
               }`}
             >
-              {option}
+              {option === 'all' ? 'all' : tierInfo(option).label}
             </button>
           ))}
         </div>

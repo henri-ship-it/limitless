@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { modules, weeks } from '@/content/programme'
+import { modules, tierInfo, weeks, type Tier } from '@/content/programme'
 import { chaptersInModule } from '@/content/elite'
 import { AdminIcon, GuideIcon, JournalIcon, NowIndicator, ProIcon, BlueprintIcon } from './icons'
 import { WeekMarker } from './WeekMarker'
@@ -22,6 +22,8 @@ type Props = {
    * start date and this is a client component with no way to read it.
    */
   eliteChapter?: number
+  /** The product being looked at, which names the year long link. */
+  viewing?: Tier
 }
 
 export function Sidebar({
@@ -32,6 +34,7 @@ export function Sidebar({
   isPro,
   isAdmin,
   eliteChapter = 0,
+  viewing = 'core',
 }: Props) {
   const pathname = usePathname()
   const done = new Set(completedWeeks)
@@ -55,14 +58,16 @@ export function Sidebar({
             active={pathname.startsWith('/journal')}
           />
           {/*
-            * Named for the tier it belongs to. An Elite member has no Pro
-            * anything - no group, no drop-in, no workshops - so a link labelled
-            * Pro would send them to a page about a programme they are not on.
+            * Named for the product it belongs to. Nobody on the year long
+            * journal has Pro anything - no group, no drop-in, no workshops - so
+            * a link labelled Pro would send them to a page about a programme
+            * they are not on. It takes its name from the product rather than
+            * the book, because Elevate and 365 are not Elite.
             */}
           {isPro || mode === 'elite' ? (
             <TopLink
               href="/pro"
-              label={mode === 'elite' ? 'Elite' : 'Pro'}
+              label={mode === 'elite' ? tierInfo(viewing).label : 'Pro'}
               icon={<ProIcon />}
               active={pathname === '/pro'}
             />

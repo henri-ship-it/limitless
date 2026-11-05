@@ -139,7 +139,28 @@ database without them it would have read every member as having no profile.
 6. **The digest band.** The gamified lines from part 1, which by then have a
    per-member clock to count against.
 
-### The one that needs deciding
+### Decided: the platform sends
+
+**Henri chose platform sending on 5 November 2026.** The reasoning below stands,
+and what it costs is worth writing down before anybody starts:
+
+- **An hourly cron.** The comment on `/api/cron/daily` says the plan allows one
+  a day, which is the Vercel Hobby limit. Per-member hours need a job that runs
+  at least hourly, so the plan has to go up before any of this works. Confirm
+  this first, because nothing else matters if it does not change.
+- **A sender and a warmed domain.** There is no email dependency in the project
+  at all today. Kit's sending domain is authenticated and has a reputation; a
+  new one has neither on its first morning.
+- **A send log.** A cron that runs hourly will run twice over the same member if
+  anything retries, so what was sent and when has to be written down rather than
+  inferred from the clock.
+- **Unsubscribes and bounces**, which Kit currently handles and which do not
+  stop being legally required when the sending moves.
+
+What Kit keeps: the list, the broadcasts, and everything that is not the weekly
+digest.
+
+### The reasoning, kept
 
 Everything today goes out of Kit, as sequences. Kit can trigger a sequence on a
 tag, so "starts when they start" is handled. What it cannot do is let each
@@ -156,3 +177,48 @@ the subscriber. So a member choosing when their digest lands means either
 The second is more to build and the only one that holds up past a handful of
 slots. It is also the one that makes the personalised top band possible, since
 those lines have to be computed per member at send time.
+
+## The five products
+
+Built 5 November 2026, alongside the above and separately from it.
+
+Core and Pro are the sixteen week book. Elite, Elevate and 365 are the year long
+one, and it is the same three hundred and thirty six entries in all three cases.
+So the platform stopped asking whether a member is on Elite and started asking
+which journal their product reads, which were the same question only for as long
+as Elite was the only year long thing sold.
+
+`TIERS` in `src/content/programme.ts` is the one place that knows. Each product
+carries its label, its journal, a line of description for the admin switcher,
+and the three things that are not implied by the journal:
+
+| | Journal | One to one | Group calls | Coaching on demand |
+|---|---|---|---|---|
+| Core | Sixteen weeks | | | |
+| Pro | Sixteen weeks | | yes | |
+| Elite | Year long | yes | | |
+| Elevate | Year long | | | |
+| 365 | Year long | | | yes |
+
+Nothing in that table says whether a member runs on a cohort or their own date.
+That is `enrolment` on the profile, because Core is sold both ways and the tier
+genuinely does not know.
+
+An unrecognised tier reads as Core. That matters more than it looks: it is what
+stops a row written by something that has not been taught about a new product
+from handing out the year long journal to somebody who did not buy it.
+`scripts/check-tiers.ts` holds that down, along with the journal each product
+reads and which parts of the Elite setup list are Elite's alone.
+
+**The admin control.** The 16wk/Elite pill is gone. Five products will not fit
+across a header bar that already carries a menu, a streak and an account icon,
+so it reads out instead: the product you are in, and the rest behind it grouped
+by journal. The grouping is the part that earns its place, because three of the
+five draw the same entries and an admin should know that before they pick, not
+after. It is presentation only. Route guards still read the real tier and
+`isAdmin`, so an admin looking at Core keeps every door an admin has.
+
+**`supabase/migrations/0017_tiers.sql` is written and not applied.** It adds
+`elevate` and `threesixtyfive` to `member_tier`. Postgres cannot drop an enum
+value again, and nothing needs it until there is a checkout that writes one, so
+it waits.

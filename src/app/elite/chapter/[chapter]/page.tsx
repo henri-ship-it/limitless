@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
 import { MarkWeekDone } from '@/components/MarkWeekDone'
 import { getMember, getProgress } from '@/lib/member'
-import { modules, weeks as programmeWeeks } from '@/content/programme'
+import { modeFor, modules, weeks as programmeWeeks } from '@/content/programme'
 import {
   ELITE,
   currentEliteChapter,
@@ -39,7 +39,7 @@ export default async function EliteChapterPage({
   params: Promise<{ chapter: string }>
 }) {
   const member = await getMember()
-  if (!member || (!member.isAdmin && member.tier !== 'elite')) notFound()
+  if (!member || (!member.isAdmin && modeFor(member.tier) !== 'elite')) notFound()
 
   const { chapter: raw } = await params
   const n = Number(raw)

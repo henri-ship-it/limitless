@@ -3,6 +3,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { getMember } from '@/lib/member'
 import { getMode } from '@/lib/programme-mode'
 import { BLUEPRINT_BUCKET, blueprintPdfPath } from '@/content/blueprint'
+import { modeFor } from '@/content/programme'
 
 /**
  * Issues a short lived signed URL for this member's blueprint PDF.
@@ -23,7 +24,8 @@ export async function GET() {
 
   if (!member) return NextResponse.redirect(new URL('/sign-in?next=/blueprint', site))
   // Gated on the programme rather than the tier, to match the page itself.
-  const elite = (await getMode(member.tier, member.isAdmin)) === 'elite' || member.tier === 'elite'
+  const elite =
+    (await getMode(member.tier, member.isAdmin)) === 'elite' || modeFor(member.tier) === 'elite'
   if (!elite && member.tier !== 'pro') return new NextResponse('Not found', { status: 404 })
 
   const admin = createServiceClient(

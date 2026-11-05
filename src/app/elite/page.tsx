@@ -9,7 +9,8 @@ import { EliteTimeline } from '@/components/EliteTimeline'
 import { CopyEmail } from '@/components/CopyEmail'
 import { MessageChris } from '@/components/MessageChris'
 import { checklistFor } from '@/content/checklist'
-import { modules } from '@/content/programme'
+import { viewingAs } from '@/lib/programme-mode'
+import { modeFor, modules, tierInfo } from '@/content/programme'
 import { SUPPORT_EMAIL } from '@/content/assets'
 import {
   ELITE,
@@ -48,11 +49,22 @@ const TOC = [
  */
 export default async function ElitePage() {
   const member = await getMember()
-  if (!member || (!member.isAdmin && member.tier !== 'elite')) notFound()
+  if (!member || (!member.isAdmin && modeFor(member.tier) !== 'elite')) notFound()
 
   const progress = await getProgress(member.id)
   const streak = await getStreak()
-  const items = checklistFor('elite')
+
+  /*
+   * Which of the three year long products this is.
+   *
+   * The page used to be Elite's alone and said so in every heading. Elevate and
+   * 365 read the same journal and are not Elite, so the page now takes its name
+   * from the product rather than from the book, and the two parts that are
+   * Chris's time rather than the journal are drawn only for whoever bought them.
+   */
+  const viewing = await viewingAs(member.tier, member.isAdmin)
+  const product = tierInfo(viewing)
+  const items = checklistFor(viewing)
   const settingUp = items.some((item) => !progress.completedItems.has(item.key))
 
   /*
@@ -72,13 +84,13 @@ export default async function ElitePage() {
   return (
     <Shell toc={TOC}>
       <PageHeader
-        eyebrow="Limitless Elite"
-        title={member.firstName ? `Welcome, ${member.firstName}` : 'Elite'}
+        eyebrow={`Limitless ${product.label}`}
+        title={member.firstName ? `Welcome, ${member.firstName}` : product.label}
         lede="Twelve chapters over a year, four modules, four journals. This page covers how the programme runs and where you are in it."
         pills={
           <>
             <Streak days={streak} />
-            <span className="pill">elite</span>
+            <span className="pill">{product.label.toLowerCase()}</span>
             {settingUp ? (
               <span className="pill">
                 Setting up {progress.completedItems.size} of {items.length}
@@ -157,10 +169,12 @@ export default async function ElitePage() {
             <span className="label w-28 shrink-0 pt-0.5">End of week</span>
             <span>The huddle. What worked, what did not, what changes.</span>
           </li>
-          <li className="flex gap-5 border-t border-line py-3">
-            <span className="label w-28 shrink-0 pt-0.5">Twice a chapter</span>
-            <span>A check-in with Chris.</span>
-          </li>
+          {product.oneToOne ? (
+            <li className="flex gap-5 border-t border-line py-3">
+              <span className="label w-28 shrink-0 pt-0.5">Twice a chapter</span>
+              <span>A check-in with Chris.</span>
+            </li>
+          ) : null}
           <li className="flex gap-5 border-t border-line py-3">
             <span className="label w-28 shrink-0 pt-0.5">Every four weeks</span>
             <span>The next chapter opens here, with its digest.</span>
@@ -176,8 +190,14 @@ export default async function ElitePage() {
 
       <Section id="support" label="Support">
         <p>Any questions, please reach out.</p>
-        <MessageChris />
-        <p className="mt-8 text-[0.9375rem]">Or by email, if it is easier.</p>
+        {/* WhatsApp is part of what Elite buys. Offering it to the other two
+          * would be promising access to Chris that nobody has paid for. */}
+        {product.oneToOne ? (
+          <>
+            <MessageChris />
+            <p className="mt-8 text-[0.9375rem]">Or by email, if it is easier.</p>
+          </>
+        ) : null}
         <CopyEmail address={SUPPORT_EMAIL} />
       </Section>
 

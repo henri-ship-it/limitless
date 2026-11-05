@@ -1,4 +1,4 @@
-import { COHORT, type Tier } from './programme'
+import { COHORT, tierInfo, type Tier } from './programme'
 
 export type ChecklistItem = {
   key: string
@@ -6,6 +6,14 @@ export type ChecklistItem = {
   detail?: string
   /** Pro items are hidden from Core members and never counted in their total. */
   tier?: Tier
+  /**
+   * Only for the products that buy Chris's own time.
+   *
+   * Elite, Elevate and 365 share a journal and so share this list, but not all
+   * of it is theirs to do. Telling an Elevate member to book a welcome call
+   * that is not part of what they bought is worse than leaving it out.
+   */
+  oneToOne?: boolean
   /** A link shown alongside the item. */
   link?: { label: string; href: string }
   /** An asset that becomes a link once its URL is filled in. */
@@ -55,6 +63,7 @@ export const eliteChecklist: ChecklistItem[] = [
     key: 'elite-welcome-call',
     label: 'Have your welcome call with Chris',
     detail: 'Where you are starting from, and what the year is for.',
+    oneToOne: true,
   },
   {
     key: 'elite-journal',
@@ -69,10 +78,21 @@ export const eliteChecklist: ChecklistItem[] = [
   {
     key: 'elite-whatsapp',
     label: 'Save Chris on WhatsApp',
+    oneToOne: true,
   },
 ]
 
 export function checklistFor(tier: Tier): ChecklistItem[] {
-  if (tier === 'elite') return eliteChecklist
+  const info = tierInfo(tier)
+
+  /*
+   * Which list, then which of its items. The journal decides the list, because
+   * setting up four books is a different job from setting up one, and the
+   * product decides what inside it applies.
+   */
+  if (info.mode === 'elite') {
+    return eliteChecklist.filter((item) => !item.oneToOne || info.oneToOne)
+  }
+
   return checklist.filter((item) => !item.tier || item.tier === tier)
 }
