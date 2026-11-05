@@ -2,11 +2,14 @@ export function PageHeader({
   eyebrow,
   title,
   lede,
+  under,
   pills,
 }: {
   eyebrow?: string
   title: string
   lede?: string
+  /** Sits between the lede and the pills. Used for the member contact row. */
+  under?: React.ReactNode
   pills?: React.ReactNode
 }) {
   return (
@@ -18,6 +21,7 @@ export function PageHeader({
       {lede ? (
         <p className="mt-4 max-w-2xl text-[1.0625rem] leading-relaxed text-ink-72">{lede}</p>
       ) : null}
+      {under}
       {pills ? <div className="mt-6 flex flex-wrap items-center gap-2">{pills}</div> : null}
     </div>
   )

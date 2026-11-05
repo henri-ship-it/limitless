@@ -187,7 +187,20 @@ export function DraftMessage({
             </button>
           </div>
 
+          {/*
+            * Copying leads, because that is what actually happens with these:
+            * the draft gets pasted into whatever thread is already open. It was
+            * second and called "Copy", which read as copying something about
+            * the draft rather than the draft itself.
+            */}
           <div className="mt-3 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={copy}
+              className="label !text-white bg-ink px-4 py-2.5 hover:bg-ink-72"
+            >
+              {copied ? 'Copied' : 'Copy text'}
+            </button>
             <a
               href={sendHref}
               target="_blank"
@@ -196,13 +209,6 @@ export function DraftMessage({
             >
               Open in {channel === 'whatsapp' ? 'WhatsApp' : 'your mail'}
             </a>
-            <button
-              type="button"
-              onClick={copy}
-              className="label border border-line px-4 py-2.5 hover:border-ink hover:!text-ink"
-            >
-              {copied ? 'Copied' : 'Copy'}
-            </button>
           </div>
 
         </div>

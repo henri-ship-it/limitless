@@ -74,13 +74,30 @@ function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>)
   const lines: string[] = [
     `Name: ${name}`,
     `Tier: ${profile.tier === 'pro' ? 'Pro (has the group calls and direct access to Chris)' : 'Core (journal, digests and masterclasses, no group calls)'}`,
-    `The cohort is in week ${week} of ${weeks.length}${chapter ? `, the ${chapter.title} chapter` : ''}, and that week is open to them now.`,
+    /*
+     * Where the cohort is, as background rather than as a subject. Saying the
+     * week was open produced messages announcing that the week was open, which
+     * is something the platform already tells them and nobody needs from Chris.
+     */
+    `For your own orientation only: the cohort is in week ${week} of ${weeks.length}${chapter ? `, the ${chapter.title} chapter` : ''}. Do not announce this, and do not tell them a week is open or invite them to open it.`,
     `They have marked ${weeksComplete.length} weeks complete and written ${entries.length} journal entries.`,
     `Last seen on the platform: ${since(profile.last_seen_at)}.`,
     `Time on the platform all told: about ${Math.max(1, Math.round(secondsSpent / 60))} minutes.`,
   ]
 
-  const wrote = entries.at(-1)
+  /*
+   * By when it was written, not by its number.
+   *
+   * The rows arrive ordered by entry number, and this took the last of them as
+   * the latest, which is only the same thing for somebody working straight
+   * through. Anybody who goes back to fill in a page they skipped had that work
+   * treated as old, and the draft went on talking about whatever carried the
+   * highest number instead.
+   */
+  const byRecency = [...entries].sort(
+    (a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt),
+  )
+  const wrote = byRecency[0]
   lines.push(
     wrote
       ? `Last wrote something ${since(wrote.updatedAt)}, in entry ${wrote.n}.`
@@ -154,14 +171,20 @@ function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>)
    * What was wrong before was reciting it back. That is a rule about how to use
    * this, not a reason to withhold it, and the rule lives in content/voice.
    */
-  const recent = [...entries].sort((a, b) => b.n - a.n).slice(0, RECENT_ENTRIES)
+  const recent = byRecency.slice(0, RECENT_ENTRIES)
   if (recent.length) {
-    lines.push('', 'What they have written, newest first. This matters more than anything else here.')
+    lines.push(
+      '',
+      'What they have written, most recently written first. This matters more than anything else here, and the top of this list matters most of all.',
+    )
     for (const row of recent) {
       const answers = exerciseAnswers(row.n, row.data as EntryData)
       if (!answers.length) continue
       const entry = resolveEntry(row.n)
-      lines.push('', `Entry ${row.n}${entry?.title ? `, ${entry.title}` : ''}:`)
+      lines.push(
+        '',
+        `Entry ${row.n}${entry?.title ? `, ${entry.title}` : ''}, written ${since(row.updatedAt)}:`,
+      )
       for (const answer of answers) lines.push(`- ${answer.label}: ${answer.text}`)
     }
     const older = entries.length - recent.length
@@ -264,7 +287,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ mem
         shape,
         intent.trim()
           ? `Chris wants this message to do the following: ${intent.trim()}`
-          : 'Chris has not said what he wants the message to do. Pick the one thing most worth saying to this person this week, based on the brief.',
+          : [
+              'Chris has not said what he wants the message to do, which usually means he just wants to check in.',
+              'So: no agenda, nothing to announce, nothing about the programme or what is open or what to do next.',
+              'Find the one thing in their recent writing worth saying something about, and say it the way you would to someone you know. Then stop.',
+            ].join(' '),
       ].join('\n')
 
   const prompt = [

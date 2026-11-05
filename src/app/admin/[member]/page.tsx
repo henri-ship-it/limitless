@@ -5,7 +5,6 @@ import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
 import { getMemberDetail, readable, requireAdmin, since } from '@/lib/admin'
 import { resolveEntry } from '@/lib/entry'
-import { whatsappHref } from '@/lib/whatsapp'
 import { getWeek } from '@/content/programme'
 import { HUDDLE_QUESTIONS } from '@/content/entry-fields'
 import { SITE } from '@/content/site'
@@ -22,6 +21,8 @@ import { TheirBlueprint } from '@/components/admin/TheirBlueprint'
 import { BLUEPRINT_SLOT } from '@/content/blueprint'
 import { AltEmail } from '@/components/admin/AltEmail'
 import { DraftMessage } from '@/components/admin/DraftMessage'
+import { MemberContact } from '@/components/admin/MemberContact'
+import { BackToMembers } from '@/components/admin/BackToMembers'
 
 export const metadata = { title: 'Member · Limitless' }
 
@@ -43,7 +44,9 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
       <PageHeader
         eyebrow="Admin only"
         title={name}
-        lede={profile.email}
+        under={
+          <MemberContact email={profile.email} phone={profile.phone} memberId={profile.id} />
+        }
         pills={
           <>
             <span className="tier-tag" data-tier={profile.tier}>
@@ -60,32 +63,7 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
         }
       />
 
-      <Section label="Get in touch">
-        <div className="!mb-4 flex flex-wrap gap-3">
-          <a
-            href={`mailto:${profile.email}?subject=Limitless`}
-            className="label !no-underline border border-line px-4 py-2.5 hover:border-ink hover:!text-ink"
-          >
-            Email {name}
-          </a>
-          {profile.phone ? (
-            <a
-              href={whatsappHref({ phone: profile.phone })}
-              target="_blank"
-              rel="noreferrer"
-              className="label !no-underline border border-line px-4 py-2.5 hover:border-ink hover:!text-ink"
-            >
-              WhatsApp {name}
-            </a>
-          ) : null}
-          <a
-            href={`/api/admin/${profile.id}/markdown`}
-            className="label !no-underline border border-line px-4 py-2.5 hover:border-ink hover:!text-ink"
-          >
-            Export markdown
-          </a>
-        </div>
-      </Section>
+      <BackToMembers name={name} />
 
       <Section label="Other address">
         <AltEmail memberId={profile.id} current={profile.alt_email} />
@@ -104,6 +82,12 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
         <MemberTabs
           tabs={[
             {
+              key: 'written',
+              label: 'What they have written',
+              note: entries.length ? String(entries.length) : undefined,
+              panel: <Written entries={entries} />,
+            },
+            {
               key: 'style',
               label: 'Behavioural style',
               panel: <BehaviouralStyle filled={assessment.scorecard} />,
@@ -120,12 +104,6 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
                   />
                 </>
               ),
-            },
-            {
-              key: 'written',
-              label: 'What they have written',
-              note: entries.length ? String(entries.length) : undefined,
-              panel: <Written entries={entries} />,
             },
             {
               key: 'calls',
