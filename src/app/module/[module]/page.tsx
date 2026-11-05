@@ -6,7 +6,7 @@ import { Section } from '@/components/Section'
 import { LockIcon, TickIcon } from '@/components/icons'
 import { getModule, getWeek, modules } from '@/content/programme'
 import { getMember, getProgress } from '@/lib/member'
-import { formatWeekStart, isUnlocked } from '@/lib/cohort'
+import { clockFor, formatWeekStart, isUnlocked } from '@/lib/cohort'
 import { getMode } from '@/lib/programme-mode'
 import {
   ELITE,
@@ -25,6 +25,7 @@ export default async function ModulePage({ params }: { params: Promise<{ module:
   if (!module) notFound()
 
   const member = await getMember()
+  const clock = clockFor(member)
   const progress = member
     ? await getProgress(member.id)
     : { completedWeeks: new Set<number>(), completedItems: new Set<string>() }
@@ -126,7 +127,7 @@ export default async function ModulePage({ params }: { params: Promise<{ module:
         <ul className="!list-none !pl-0">
           {module.weeks.map((n) => {
             const week = getWeek(n)!
-            const unlocked = isUnlocked(n, member?.isAdmin ?? false)
+            const unlocked = isUnlocked(n, member?.isAdmin ?? false, new Date(), clock)
             const done = progress.completedWeeks.has(n)
             const inner = (
               <>
@@ -136,7 +137,7 @@ export default async function ModulePage({ params }: { params: Promise<{ module:
                     <span className="block text-[1.0625rem]">{week.title}</span>
                     <span className="mt-2 flex flex-wrap items-center gap-2">
                       <span className="pill">{week.topic ?? 'Integration'}</span>
-                      <span className="label">{formatWeekStart(n)}</span>
+                      <span className="label">{formatWeekStart(n, clock)}</span>
                     </span>
                   </span>
                 </span>

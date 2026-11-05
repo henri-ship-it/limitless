@@ -8,7 +8,7 @@ import { entriesForWeek } from '@/content/journal'
 import { resolveEntry } from '@/lib/entry'
 import { JournalVisual } from '@/components/JournalVisual'
 import Link from 'next/link'
-import { currentWeek, isUnlocked } from '@/lib/cohort'
+import { clockFor, currentWeek, isUnlocked } from '@/lib/cohort'
 import { getMember } from '@/lib/member'
 import { getMode } from '@/lib/programme-mode'
 import { EliteJournalIndex, ELITE_TOC } from '@/components/EliteJournalIndex'
@@ -24,8 +24,9 @@ const TOC = modules.map((m) => ({
 }))
 
 export default async function JournalPage() {
-  const active = currentWeek()
   const member = await getMember()
+  const clock = clockFor(member)
+  const active = currentWeek(new Date(), clock)
   const isAdmin = member?.isAdmin ?? false
   const mode = await getMode(member?.tier ?? 'core', isAdmin)
 
@@ -116,7 +117,7 @@ export default async function JournalPage() {
           {m.weeks.map((n) => {
             const week = weeks.find((w) => w.number === n)!
             const entries = entriesForWeek(n)
-            const unlocked = isUnlocked(n, isAdmin)
+            const unlocked = isUnlocked(n, isAdmin, new Date(), clock)
 
             return (
               <section

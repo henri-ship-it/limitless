@@ -8,7 +8,7 @@ import { resolveEntry } from '@/lib/entry'
 import { HUDDLE_QUESTIONS } from '@/content/entry-fields'
 import { SCHEDULE_HOURS, type EntryData } from '@/content/journal-fields'
 import { customExercise } from '@/content/entry-extras'
-import { isUnlocked } from '@/lib/cohort'
+import { clockFor, isUnlocked } from '@/lib/cohort'
 
 /**
  * A member's week, as markdown they can keep.
@@ -28,7 +28,7 @@ export async function GET(
 
   const member = await getMember()
   if (!member) return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
-  if (!isUnlocked(weekNumber, member?.isAdmin ?? false)) {
+  if (!isUnlocked(weekNumber, member?.isAdmin ?? false, new Date(), clockFor(member))) {
     return NextResponse.json({ error: 'That week has not opened yet' }, { status: 403 })
   }
 

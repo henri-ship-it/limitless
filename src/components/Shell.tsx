@@ -1,6 +1,6 @@
 import { getMember, getProgress, getStreak } from '@/lib/member'
 import { supabaseConfigured } from '@/lib/env'
-import { currentWeek, unlockedThrough } from '@/lib/cohort'
+import { clockFor, currentWeek, unlockedThrough } from '@/lib/cohort'
 import { getMode } from '@/lib/programme-mode'
 import { currentEliteChapter } from '@/content/elite'
 import { TopBar } from './TopBar'
@@ -22,10 +22,16 @@ export async function Shell({
     : { completedWeeks: new Set<number>(), completedItems: new Set<string>() }
   const tier = member?.tier ?? 'core'
   const streak = member ? await getStreak() : 0
-  const active = currentWeek()
+  /*
+   * The sidebar is drawn against this member's own clock. On a cohort member
+   * that is the cohort's, which is every 4.0 member and how this read before
+   * Core was sold on its own.
+   */
+  const clock = clockFor(member)
+  const active = currentWeek(new Date(), clock)
   const isAdmin = member?.isAdmin ?? false
   const mode = await getMode(tier, isAdmin)
-  const openThrough = unlockedThrough(new Date(), isAdmin)
+  const openThrough = unlockedThrough(new Date(), isAdmin, clock)
   const completed = [...progress.completedWeeks]
   /*
    * Only meaningful in Elite mode, and only from the member's own start date.

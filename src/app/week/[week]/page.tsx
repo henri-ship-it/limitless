@@ -8,9 +8,9 @@ import { ChapterVisual } from '@/components/ChapterVisual'
 import { VideoEmbed } from '@/components/VideoEmbed'
 import { DriveEmbed } from '@/components/DriveEmbed'
 import { DigestBody } from '@/components/DigestBody'
-import { DigestEnd } from '@/components/DigestEnd'
 import { StyleRadar } from '@/components/StyleRadar'
-import { MarkWeekDone } from '@/components/MarkWeekDone'
+import { WeekEntries } from '@/components/WeekEntries'
+import { LastWeek } from '@/components/LastWeek'
 import { LockIcon } from '@/components/icons'
 import type { TocItem } from '@/components/OnThisPage'
 import { getWeek, moduleForWeek, weeks, COHORT } from '@/content/programme'
@@ -19,7 +19,15 @@ import { leadStyle } from '@/content/know-thyself'
 import { entriesForWeek } from '@/content/journal'
 import { workshopRecordings } from '@/content/assets'
 import { getMember, getMyScores, getProgress } from '@/lib/member'
-import { currentWeek, formatWeekRelease, formatWeekStart, isUnlocked } from '@/lib/cohort'
+import {
+  clockFor,
+  currentWeek,
+  entryForToday,
+  formatWeekRelease,
+  formatWeekStart,
+  isUnlocked,
+} from '@/lib/cohort'
+import { getWeekClose } from '@/lib/week-close'
 
 export function generateStaticParams() {
   return weeks.map((w) => ({ week: String(w.number) }))
@@ -46,8 +54,10 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
   const tier = member?.tier ?? 'core'
   const isAdmin = member?.isAdmin ?? false
 
-  if (!isUnlocked(n, isAdmin)) {
-    const open = currentWeek()
+  const clock = clockFor(member)
+
+  if (!isUnlocked(n, isAdmin, new Date(), clock)) {
+    const open = currentWeek(new Date(), clock)
     return (
       <Shell>
         <PageHeader
@@ -60,10 +70,19 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
           }
         />
         <Section label="Not yet">
-          <p>
-            This week opens on {formatWeekRelease(n)}, alongside the digest in your inbox. The
-            programme is released a week at a time.
-          </p>
+          {clock.start ? (
+            <p>
+              This week opens on {formatWeekRelease(n, clock)}, alongside the digest in your inbox.
+              The programme is released a week at a time.
+            </p>
+          ) : (
+            /* No start date, so there is no day to name. Naming one from the
+             * cohort would promise a date that is not theirs. */
+            <p>
+              Your programme has not started yet. Choose the day you want to begin and this chapter
+              opens the evening before.
+            </p>
+          )}
           {open >= 1 && open <= weeks.length ? (
             <p>
               <Link href={`/week/${open}`}>Go to the current week</Link>
@@ -84,7 +103,20 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
   const recording = workshopRecordings[n]
   const quote = digest?.quote
   const prev = n > 1 ? getWeek(n - 1) : undefined
-  const next = n < weeks.length && isUnlocked(n + 1, isAdmin) ? getWeek(n + 1) : undefined
+  const next =
+    n < weeks.length && isUnlocked(n + 1, isAdmin, new Date(), clock) ? getWeek(n + 1) : undefined
+
+  /*
+   * This week's entries, and the week before it.
+   *
+   * Both are read here rather than in the components so the two round trips go
+   * out together. The week before is only read when there is one: nobody has a
+   * last week in week one.
+   */
+  const close = member ? await getWeekClose(member.id, n) : null
+  const lastClose = member && prev ? await getWeekClose(member.id, prev.number) : null
+  // Only the week in hand has a day to be on.
+  const today = n === currentWeek(new Date(), clock) ? entryForToday(n, new Date(), clock) : undefined
 
   const toc: TocItem[] = [
     { id: 'overview', label: 'Overview' },
@@ -94,7 +126,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
       label: week.type === 'deload' ? 'Workshop keynote' : 'Video masterclass',
     },
     { id: 'digest', label: 'Weekly digest' },
-    { id: 'journal', label: 'To close' },
+    ...(quote ? [{ id: 'journal', label: 'To close' }] : []),
     ...(n === 16 ? [{ id: 'workshop', label: 'Finishing the programme' }] : []),
   ]
 
@@ -110,10 +142,14 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
             <span className="pill">
               {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
             </span>
-            <span className="pill">{formatWeekStart(n)}</span>
+            <span className="pill">{formatWeekStart(n, clock)}</span>
           </>
         }
       />
+
+      {lastClose && prev ? (
+        <LastWeek week={prev.number} title={prev.title} progress={lastClose} />
+      ) : null}
 
       <Section id="overview">
         {week.opening.map((p, i) => (
@@ -184,7 +220,6 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
                 <StyleRadar scores={scores} lead={leadStyle(scores)?.name} />
               </div>
             ) : null}
-            <DigestEnd week={n} done={progress.completedWeeks.has(n)} />
           </>
         ) : (
           <p className="!text-ink-56">
@@ -192,14 +227,21 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
             and appears here at the same time.
           </p>
         )}
+
+        {/*
+          * The week's entries, which is what the foot of the digest is for.
+          * Outside the conditional above on purpose: a week whose digest has
+          * not been loaded still has seven entries to write.
+          */}
+        {close ? <WeekEntries progress={close} today={today} /> : null}
       </Section>
 
-      <Section id="journal" label="To close">
-        {quote ? <Quote lines={quote.lines} author={quote.author} /> : null}
-        <p className={quote ? 'mt-10' : ''}>
-          <Link href={`/journal#week-${n}`}>See this week&rsquo;s entries</Link>
-        </p>
-      </Section>
+      {/* The entries are listed at the foot of the digest, so this is the quote. */}
+      {quote ? (
+        <Section id="journal" label="To close">
+          <Quote lines={quote.lines} author={quote.author} />
+        </Section>
+      ) : null}
 
       {n === 16 ? (
         <Section id="workshop" label="Finishing the programme">
@@ -211,8 +253,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
         </Section>
       ) : null}
 
-      <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-8 sm:px-10">
-        <MarkWeekDone week={n} done={progress.completedWeeks.has(n)} />
+      <div className="flex flex-wrap items-center justify-end gap-4 px-6 py-8 sm:px-10">
         <div className="flex gap-6">
           {prev ? (
             <Link href={`/week/${prev.number}`} className="label hover:!text-ink">

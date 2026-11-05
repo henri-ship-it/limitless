@@ -12,7 +12,7 @@ import type { EntryData } from '@/content/journal-fields'
 import { resolveEntry, resolveEliteEntry } from '@/lib/entry'
 import { customExercise } from '@/content/entry-extras'
 import { getJournalEntry, getMember } from '@/lib/member'
-import { isUnlocked } from '@/lib/cohort'
+import { clockFor, isUnlocked } from '@/lib/cohort'
 import { BulkPhotos } from '@/components/BulkPhotos'
 import { supabaseConfigured } from '@/lib/env'
 import { getMode } from '@/lib/programme-mode'
@@ -48,7 +48,9 @@ export default async function EntryPage({ params }: { params: Promise<{ entry: s
   const module = moduleForWeek(entry.week)!
 
   const isAdmin = member?.isAdmin ?? false
-  if (!isUnlocked(entry.week, isAdmin)) {
+  const clock = clockFor(member)
+
+  if (!isUnlocked(entry.week, isAdmin, new Date(), clock)) {
     return (
       <Shell>
         <PageHeader
@@ -127,12 +129,12 @@ export default async function EntryPage({ params }: { params: Promise<{ entry: s
           All entries
         </Link>
         <div className="flex gap-6">
-          {prev && isUnlocked(prev.week, isAdmin) ? (
+          {prev && isUnlocked(prev.week, isAdmin, new Date(), clock) ? (
             <Link href={`/journal/${prev.n}`} className="label hover:!text-ink">
               ← Entry {prev.n}
             </Link>
           ) : null}
-          {next && isUnlocked(next.week, isAdmin) ? (
+          {next && isUnlocked(next.week, isAdmin, new Date(), clock) ? (
             <Link href={`/journal/${next.n}`} className="label hover:!text-ink">
               Entry {next.n} →
             </Link>

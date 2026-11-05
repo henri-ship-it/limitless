@@ -20,6 +20,19 @@ export type Member = {
    * programme, which the Elite pages treat as not yet started.
    */
   eliteStartDate: string | null
+  /** How they came in. A cohort member shares a start date, an evergreen one
+   * picks their own. */
+  enrolment: 'cohort' | 'evergreen'
+  /**
+   * First day of this member's sixteen weeks, or null to run on their cohort's
+   * date. Null on an evergreen member means onboarding is not finished.
+   */
+  programmeStartDate: string | null
+  /** The hour, UK, their weekly digest lands. Null is the house default. */
+  digestSendHour: number | null
+  /** Whether the printed journal was in the basket. */
+  journalOrdered: boolean
+  onboardedAt: string | null
 }
 
 /** Below this, seeing someone again is not worth a write. */
@@ -40,6 +53,11 @@ export const getMember = cache(async (): Promise<Member | null> => {
       isAdmin: true,
       personalisedNudges: true,
       eliteStartDate: '2026-08-31',
+      enrolment: 'cohort',
+      programmeStartDate: null,
+      digestSendHour: null,
+      journalOrdered: true,
+      onboardedAt: '2026-08-24T10:00:00Z',
     }
   }
 
@@ -59,7 +77,9 @@ export const getMember = cache(async (): Promise<Member | null> => {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('first_name, tier, cohort, is_admin, personalised_nudges, last_seen_at, elite_start_date')
+    // One literal, however long: the generated types read this string to work
+    // out the shape of the row, and anything built up in pieces reads as text.
+    .select('first_name, tier, cohort, is_admin, personalised_nudges, last_seen_at, elite_start_date, enrolment, programme_start_date, digest_send_hour, journal_ordered, onboarded_at')
     .eq('id', user.id)
     .single()
 
@@ -86,6 +106,13 @@ export const getMember = cache(async (): Promise<Member | null> => {
     isAdmin: profile?.is_admin ?? false,
     personalisedNudges: profile?.personalised_nudges ?? true,
     eliteStartDate: (profile?.elite_start_date as string | null) ?? null,
+    // A row written before 5.0 has none of these, and reads as a cohort member
+    // on the cohort's date, which is what it is.
+    enrolment: (profile?.enrolment as Member['enrolment']) ?? 'cohort',
+    programmeStartDate: (profile?.programme_start_date as string | null) ?? null,
+    digestSendHour: (profile?.digest_send_hour as number | null) ?? null,
+    journalOrdered: profile?.journal_ordered ?? false,
+    onboardedAt: (profile?.onboarded_at as string | null) ?? null,
   }
 })
 

@@ -12,7 +12,7 @@ import { checklistFor } from '@/content/checklist'
 import { COHORT, modules, weeks } from '@/content/programme'
 import { SUPPORT_EMAIL } from '@/content/assets'
 import { getMember, getProgress, getStreak } from '@/lib/member'
-import { currentWeek, entryForToday, unlockedThrough } from '@/lib/cohort'
+import { clockFor, currentWeek, entryForToday, unlockedThrough, type Clock } from '@/lib/cohort'
 import { resolveEntry } from '@/lib/entry'
 
 function tocFor(setUp: boolean) {
@@ -34,8 +34,9 @@ export default async function StartGuide() {
     : { completedItems: new Set<string>(), completedWeeks: new Set<number>() }
   const tier = member?.tier ?? 'core'
   const items = checklistFor(tier)
-  const active = currentWeek()
-  const openThrough = unlockedThrough(new Date(), member?.isAdmin ?? false)
+  const clock = clockFor(member)
+  const active = currentWeek(new Date(), clock)
+  const openThrough = unlockedThrough(new Date(), member?.isAdmin ?? false, clock)
   const streak = member ? await getStreak() : 0
 
   /*
@@ -49,7 +50,7 @@ export default async function StartGuide() {
   return (
     <Shell toc={tocFor(settingUp)}>
       <PageHeader
-        eyebrow={`Cohort ${COHORT.label}`}
+        eyebrow={`Cohort ${member?.cohort ?? COHORT.label}`}
         title={member?.firstName ? `Welcome, ${member.firstName}` : 'Start Guide'}
         lede="Sixteen weeks, four modules, one journal. This page covers how the programme runs and where you are in it."
         pills={
@@ -81,7 +82,7 @@ export default async function StartGuide() {
         completed={[...progress.completedItems]}
         settingUp={settingUp}
       >
-        <WhereYouAre week={Math.max(1, active)} />
+        <WhereYouAre week={Math.max(1, active)} clock={clock} />
       </GetStarted>
 
       <Section id="how-it-works" label="How it works">
@@ -194,7 +195,7 @@ export default async function StartGuide() {
 }
 
 /** The week in hand, and the way into it. */
-function WhereYouAre({ week }: { week: number }) {
+function WhereYouAre({ week, clock }: { week: number; clock: Clock }) {
   const chapter = weeks.find((w) => w.number === week)
   if (!chapter) {
     return (
@@ -205,8 +206,25 @@ function WhereYouAre({ week }: { week: number }) {
     )
   }
 
+  /*
+   * Somebody who has bought Core on its own and not yet said when they are
+   * starting. There is no week in hand to show them, and showing week one
+   * would be the platform picking a start date on their behalf.
+   */
+  if (!clock.start) {
+    return (
+      <div className="border border-line p-6">
+        <p className="label">Not started yet</p>
+        <p className="mt-3">
+          Your sixteen weeks begin on the day you choose. Pick a start date and the first chapter
+          opens the evening before, with the weekly digest landing at the hour you set.
+        </p>
+      </div>
+    )
+  }
+
   const module = modules.find((m) => m.weeks.includes(week))!
-  const entry = entryForToday(week)
+  const entry = entryForToday(week, new Date(), clock)
   const today = resolveEntry(entry)
 
   return (
