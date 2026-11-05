@@ -1,8 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { distil } from '@/lib/distil'
-import { matchSpeaker } from '@/lib/speakers'
+import { fileCall } from '@/lib/pocket'
 
 /**
  * Takes the Wednesday group call off the recorder and files it per member.
@@ -98,87 +97,23 @@ export async function POST(request: Request) {
 
   const supabase = createClient(url, service, { auth: { persistSession: false } })
 
-  /*
-   * Everyone who could be on the call. Admins are excluded because Chris is on
-   * every one of these and is not a member of it, and anybody who has turned
-   * personalised messages off is excluded because this is exactly the kind of
-   * thing that switch is about.
-   */
-  const { data: people } = await supabase
-    .from('profiles')
-    .select('id, first_name, recording_name, is_admin, personalised_nudges')
-
-  const members = (people ?? []).filter((p) => !p.is_admin && p.personalised_nudges)
-
-  /*
-   * The whole conversation, written out once. Every member who was on the call
-   * gets the same text: reading only your own lines back would lose the half of
-   * the call that explains them.
-   */
-  const named = segments.map((s) => {
-    const who = s.speakerName ?? (s.speaker ? body.speakers?.[s.speaker]?.name : '') ?? 'Unknown'
-    return `${who}: ${(s.text ?? '').trim()}`
+  const { filed, unmatched } = await fileCall(supabase, {
+    recordingId,
+    segments,
+    speakers: body.speakers,
+    happenedOn:
+      (body.recording?.recordingAt ?? body.recording?.createdAt ?? '').slice(0, 10) ||
+      new Date().toISOString().slice(0, 10),
+    anthropicKey: key,
+    model: MODEL,
   })
-  const transcript = named.filter((line) => !line.endsWith(': ')).join('\n')
-
-  const heard = [
-    ...new Set(
-      segments
-        .map((s) => s.speakerName ?? (s.speaker ? body.speakers?.[s.speaker]?.name : ''))
-        .filter((n): n is string => Boolean(n && n.trim())),
-    ),
-  ]
-
-  const happenedOn = (body.recording?.recordingAt ?? body.recording?.createdAt ?? '').slice(0, 10)
-
-  const filed: string[] = []
-  const unmatched: string[] = []
-
-  for (const speaker of heard) {
-    const member = matchSpeaker(
-      speaker,
-      members.map((p) => ({
-        id: p.id,
-        firstName: p.first_name,
-        recordingName: p.recording_name,
-        row: p,
-      })),
-    )
-    if (!member) {
-      unmatched.push(speaker)
-      continue
-    }
-
-    /*
-     * The reading is per member and the transcript is shared, so this costs one
-     * model call each. A failed reading still files the transcript: that is the
-     * part that cannot be made again, and the notes can be rebuilt from it at
-     * any time.
-     */
-    const notes = key
-      ? await distil(transcript, key, MODEL, member.firstName ?? speaker)
-      : null
-
-    const { error } = await supabase.from('member_conversations').upsert(
-      {
-        member_id: member.id,
-        happened_on: happenedOn || new Date().toISOString().slice(0, 10),
-        transcript,
-        notes,
-        source: 'group',
-        external_id: recordingId,
-      },
-      { onConflict: 'member_id,external_id' },
-    )
-    if (!error) filed.push(member.firstName ?? member.id)
-  }
 
   /*
    * Reported rather than silently dropped. A speaker nobody matched is usually
    * a member whose Pocket label is not their first name, and the fix is to put
    * it in recording_name. Without this the call just quietly misses them.
    */
-  return NextResponse.json({ ok: true, recordingId, filed, unmatched, heard })
+  return NextResponse.json({ ok: true, recordingId, filed, unmatched })
 }
 
 /**
@@ -192,6 +127,7 @@ export function GET() {
   return NextResponse.json({
     configured: Boolean(secret),
     secretLength: secret.length,
+    pollingConfigured: Boolean(process.env.POCKET_API_KEY),
     distillingConfigured: Boolean(process.env.ANTHROPIC_API_KEY),
     databaseConfigured: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
     expects: WANTED,
