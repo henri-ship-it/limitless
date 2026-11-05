@@ -66,7 +66,7 @@ const LENGTHS: Record<Length, { whatsapp: string; email: string }> = {
 }
 
 function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>): string {
-  const { profile, entries, weeksComplete, secondsSpent, arrivals, conversations } = detail
+  const { profile, entries, weeksComplete, secondsSpent, arrivals, conversations, chat } = detail
   const name = profile.first_name ?? profile.email.split('@')[0]
   const week = currentWeek()
   const chapter = getWeek(week)
@@ -205,10 +205,33 @@ function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>)
    * remembering it is the ordinary courtesy of having listened. It is the one
    * personal thing in this brief, and the most useful.
    */
+  /*
+   * What they have said in the group, which is the third thing Chris knows
+   * about somebody and sits between the other two. The journal is written to
+   * themselves and quoting it back reads as having been watched. A call is a
+   * conversation he was in. A group message is somewhere between: said out
+   * loud, to him among others, and so fair to have heard, but still said to a
+   * room rather than to him.
+   */
+  const said = (chat ?? []).slice(0, 15)
+  if (said.length) {
+    lines.push('', 'What they have said in the group chat, most recent first:')
+    for (const line of said) lines.push(`- ${line.sent_on}: ${line.body.replace(/\s+/g, ' ').trim()}`)
+    lines.push(
+      'This is the most current thing here and usually the most useful, because people mention in a chat what they never write in an exercise.',
+      'It was said to a room rather than to Chris, so it is something he heard rather than something he was told. Do not quote it back word for word and do not say where it came from.',
+    )
+  }
+
   const call = conversations[0]
   if (call?.notes) {
     const { motivation, communication, goals, life, quotes } = call.notes
-    lines.push('', `From the 1:1 on ${call.happened_on}:`)
+    lines.push(
+      '',
+      call.source === 'group'
+        ? `From the group call on ${call.happened_on}, reading only what this member said:`
+        : `From the 1:1 on ${call.happened_on}:`,
+    )
     if (motivation) lines.push(`What moves them: ${motivation}`)
     if (communication) lines.push(`How to talk to them: ${communication}`)
     if (goals?.length) lines.push(`Working towards: ${goals.join('; ')}.`)

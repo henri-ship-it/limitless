@@ -166,6 +166,15 @@ export type Conversation = {
   happened_on: string
   transcript: string
   notes: ConversationNotes | null
+  /** one-to-one for a call with Chris alone, group for the weekly drop-in. */
+  source?: string
+}
+
+/** One thing a member said in the group chat. */
+export type ChatLine = {
+  id: string
+  sent_on: string
+  body: string
 }
 
 export async function getMemberDetail(id: string) {
@@ -202,9 +211,21 @@ export async function getMemberDetail(id: string) {
 
   const { data: conversations } = await supabase
     .from('member_conversations')
-    .select('id, happened_on, transcript, notes')
+    .select('id, happened_on, transcript, notes, source')
     .eq('member_id', id)
     .order('happened_on', { ascending: false })
+
+  /*
+   * What they have said in the group, newest first and capped. A busy chat runs
+   * to thousands of lines and nobody reads to the bottom of that; the recent
+   * ones are what a message would ever draw on.
+   */
+  const { data: chat } = await supabase
+    .from('member_messages')
+    .select('id, sent_on, body')
+    .eq('member_id', id)
+    .order('sent_on', { ascending: false })
+    .limit(200)
 
   if (!profile) return null
 
@@ -215,6 +236,7 @@ export async function getMemberDetail(id: string) {
     time: (time ?? []).sort((a, b) => b.seconds - a.seconds),
     arrivals: arrivals ?? [],
     conversations: (conversations ?? []) as Conversation[],
+    chat: (chat ?? []) as ChatLine[],
     secondsSpent: (time ?? []).reduce((sum, row) => sum + row.seconds, 0),
     weeksComplete: (progress ?? []).map((p) => p.week_number).sort((a, b) => a - b),
     entries: (journal ?? []).map((row) => ({

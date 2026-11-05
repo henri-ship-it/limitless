@@ -16,6 +16,7 @@ import {
 } from '@/components/admin/Assessments'
 import { MemberTabs } from '@/components/admin/MemberTabs'
 import { Conversations } from '@/components/admin/Conversations'
+import { ChatLines } from '@/components/admin/ChatLines'
 import { EntryList } from '@/components/admin/EntryList'
 import { TheirBlueprint } from '@/components/admin/TheirBlueprint'
 import { BLUEPRINT_SLOT } from '@/content/blueprint'
@@ -34,8 +35,18 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
   const detail = await getMemberDetail(id)
   if (!detail) notFound()
 
-  const { profile, weeksComplete, entries, totalUnits, unitName, time, secondsSpent, arrivals, conversations } =
-    detail
+  const {
+    profile,
+    weeksComplete,
+    entries,
+    totalUnits,
+    unitName,
+    time,
+    secondsSpent,
+    arrivals,
+    conversations,
+    chat,
+  } = detail
   const name = profile.first_name ?? profile.email.split('@')[0]
   const assessment = (profile.assessment ?? {}) as AssessmentData
 
@@ -106,8 +117,14 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
               ),
             },
             {
+              key: 'chat',
+              label: 'Group chat',
+              note: chat.length ? String(chat.length) : undefined,
+              panel: <ChatLines name={name} lines={chat} />,
+            },
+            {
               key: 'calls',
-              label: 'The 1:1s',
+              label: 'Calls',
               note: conversations.length ? String(conversations.length) : undefined,
               panel: (
                 <Conversations memberId={profile.id} name={name} conversations={conversations} />
