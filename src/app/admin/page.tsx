@@ -5,6 +5,7 @@ import { Section } from '@/components/Section'
 import { CohortTable } from '@/components/admin/CohortTable'
 import { GroupMessage } from '@/components/admin/GroupMessage'
 import { CallAgenda } from '@/components/admin/CallAgenda'
+import { PullCalls } from '@/components/admin/PullCalls'
 import { getCohort, requireAdmin } from '@/lib/admin'
 import { weekStartDate } from '@/lib/cohort'
 import { getWeek, weeks } from '@/content/programme'
@@ -13,6 +14,7 @@ export const metadata = { title: 'Admin · Limitless' }
 
 const TOC = [
   { id: 'agenda', label: 'Call agenda' },
+  { id: 'recording', label: 'Call recording' },
   { id: 'group', label: 'Group message' },
   { id: 'members', label: 'Members' },
 ]
@@ -52,6 +54,10 @@ export default async function AdminPage() {
 
       <Section id="agenda" label="Call agenda">
         <CallAgenda week={groupWeek} />
+      </Section>
+
+      <Section id="recording" label="Call recording">
+        <PullCalls />
       </Section>
 
       <Section id="group" label="Group message">

@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { pullRecentCalls } from '@/lib/pocket'
 import { requireAdmin } from '@/lib/admin'
 import { MIN_MEMBERS, titlePatterns, worthReading } from '@/lib/pocket'
 
@@ -121,5 +123,73 @@ export async function GET() {
         : wanted
           ? `The key works. Only the Wednesday recordings above are opened, and one is filed only if at least ${MIN_MEMBERS} members are heard on it.`
           : 'The key works, but none of these happened on a Wednesday, so none would be opened. If the call moved, set POCKET_TITLE_MATCH to a phrase from its title.',
+  })
+}
+
+/**
+ * Runs the pull now instead of waiting for tonight.
+ *
+ * Exactly what the daily cron does, through the same function, with the same
+ * two gates: Wednesday off the listing, and at least two members heard before
+ * anything is stored. Nothing is special-cased for being triggered by hand,
+ * because a button that files calls differently from the job that normally
+ * files them is a button that proves nothing.
+ *
+ * Safe to press twice. A recording already on a member's record is skipped
+ * before the reading is made, so a second press costs a listing and nothing
+ * else.
+ *
+ * It is here rather than on a member's page because a call is not a member's:
+ * one recording lands on everyone who was heard on it.
+ */
+export async function POST() {
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: 'Not allowed' }, { status: 404 })
+  }
+
+  const apiKey = process.env.POCKET_API_KEY
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const service = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!apiKey) return NextResponse.json({ error: 'No Pocket API key is set.' }, { status: 503 })
+  if (!url || !service) return NextResponse.json({ error: 'No database.' }, { status: 503 })
+
+  /*
+   * The service key, because this writes a row for every member heard on the
+   * call and an admin's own session cannot write to somebody else's record.
+   * The gate is requireAdmin above.
+   */
+  const supabase = createServiceClient(url, service, { auth: { persistSession: false } })
+
+  const pulled = await pullRecentCalls(supabase, {
+    apiKey,
+    anthropicKey: process.env.ANTHROPIC_API_KEY,
+    model: process.env.ANTHROPIC_MODEL ?? 'claude-opus-5',
+  })
+
+  /*
+   * Reported per recording, including the ones that were opened and then left
+   * alone. A call dropped for having too few members on it is the failure
+   * worth seeing: it usually means Pocket labelled somebody by a name that is
+   * not on their profile, and the fix is recording_name rather than anything
+   * here.
+   */
+  return NextResponse.json({
+    ok: true,
+    checked: pulled.checked,
+    skippedWithoutOpening: pulled.skipped ?? 0,
+    error: pulled.error,
+    results: pulled.results.map((r) => ({
+      recordingId: r.recordingId,
+      filed: r.filed,
+      unmatched: r.unmatched,
+      ignored: r.ignored,
+    })),
+    note: pulled.error
+      ? 'Pocket would not answer.'
+      : pulled.results.some((r) => r.filed.length)
+        ? 'Filed. Open the members named below and look at their Calls tab.'
+        : pulled.results.length
+          ? 'A recording was opened but nothing was filed. See ignored and unmatched below: a name Pocket used that is not on a profile goes in that member\'s recording_name.'
+          : 'Nothing was opened. Nothing on the recorder happened on a Wednesday within the last month.',
   })
 }
