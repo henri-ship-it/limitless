@@ -18,6 +18,29 @@ export type ConversationNotes = {
 
 const ENDPOINT = 'https://api.anthropic.com/v1/messages'
 
+/**
+ * The brief for a 1:1, where there are two voices and only one of them is the
+ * member. `focus` names the person when there are more, which is the only thing
+ * that changes: everything about what to look for and what to leave out is the
+ * same whether they said it alone or in front of three other people.
+ */
+function instruction(focus?: string): string {
+  if (!focus) return INSTRUCTION
+  return [
+    `This is a transcript of a Limitless group call. Chris Bodman, who runs the programme, is on it with several members. You are reading it for one of them only: ${focus}.`,
+    '',
+    `Everything you return is about ${focus}. Not about Chris, and not about any of the other members on the call. Work out who is speaking before you attribute anything. The other members are there for context, so you understand what ${focus} was responding to, and for nothing else.`,
+    '',
+    `A group call is not a 1:1 and should not be read as one. People say less, and they say it with an audience. Where ${focus} barely spoke, say so by leaving fields empty rather than by reading a lot into a little. Somebody who said three sentences has told you about one thing at most.`,
+    '',
+    INSTRUCTION.split('\n').slice(4).join('\n'),
+    '',
+    `Two more rules, because of the audience:`,
+    `- Never attribute something another member said to ${focus}. If you are not certain which of them said a line, leave it out.`,
+    `- The quotes field is for ${focus} alone, and the bar is higher here than in a 1:1: several voices means more chance of mishearing which is which. No quotes is the right answer most of the time.`,
+  ].join('\n')
+}
+
 const INSTRUCTION = [
   'This is a transcript of a one to one coaching call between Chris Bodman, who runs the Limitless programme, and one of his members.',
   'Chris was in the room. Read it the way he would remember it: not to summarise the call, but to come away knowing how to write to this person.',
@@ -65,6 +88,8 @@ export async function distil(
   transcript: string,
   key: string,
   model = 'claude-opus-5',
+  /** Whose notes these are, when more than one member was on the call. */
+  focus?: string,
 ): Promise<ConversationNotes | null> {
   const response = await fetch(ENDPOINT, {
     method: 'POST',
@@ -76,7 +101,9 @@ export async function distil(
     body: JSON.stringify({
       model,
       max_tokens: 2000,
-      messages: [{ role: 'user', content: `${INSTRUCTION}\n\nTranscript:\n\n${transcript}` }],
+      messages: [
+        { role: 'user', content: `${instruction(focus)}\n\nTranscript:\n\n${transcript}` },
+      ],
     }),
   })
 

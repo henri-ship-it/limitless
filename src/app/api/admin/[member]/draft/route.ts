@@ -175,7 +175,13 @@ function brief(detail: NonNullable<Awaited<ReturnType<typeof getMemberDetail>>>)
   if (recent.length) {
     lines.push(
       '',
-      'What they have written, most recently written first. This matters more than anything else here, and the top of this list matters most of all.',
+      /*
+       * Ranked against the rest of the brief, not against Chris. Saying this
+       * mattered more than anything else outranked his own instruction, so
+       * asking for a message about this week got one about whatever they last
+       * wrote at length.
+       */
+      'What they have written, most recently written first. Of everything in this brief, this is the most useful, and the top of the list most of all. It is background for the message, not the subject of it.',
     )
     for (const row of recent) {
       const answers = exerciseAnswers(row.n, row.data as EntryData)
@@ -286,7 +292,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ mem
     : [
         shape,
         intent.trim()
-          ? `Chris wants this message to do the following: ${intent.trim()}`
+          ? `To restate it: ${intent.trim()}. Build the message around that. Something from their recent writing may be used to say it in their own terms, but only where it genuinely serves what he asked for. If it does not, leave it out rather than reaching for it.`
           : [
               'Chris has not said what he wants the message to do, which usually means he just wants to check in.',
               'So: no agenda, nothing to announce, nothing about the programme or what is open or what to do next.',
@@ -294,16 +300,39 @@ export async function POST(request: Request, { params }: { params: Promise<{ mem
             ].join(' '),
       ].join('\n')
 
+  /*
+   * What Chris asked for goes first, and again at the end.
+   *
+   * It used to be one line after a brief running to thousands of words, which
+   * is a losing position: a model reading all that arrives at the instruction
+   * having already decided what the message is about. Stating it before the
+   * brief frames everything that follows as material for that job, and
+   * restating it last is the version still in view when it starts writing.
+   */
+  const asked = intent.trim()
+
   const prompt = [
+    asked
+      ? [
+          `Chris has asked for one specific thing from this message: ${asked}`,
+          '',
+          'That is the subject. Everything below is background to help you say it well and in their terms. Do not replace it with something else you find more interesting in the brief, and do not quietly widen it: if he asked about this week, the message is about this week.',
+          '',
+        ].join('\n')
+      : '',
     'Here is what is known about the member. Everything in it is real; anything not in it, you do not know.',
     '',
     brief(detail),
     '',
     task,
     '',
+    asked ? `Once more, because it is the point of the message: ${asked}` : '',
+    '',
     'Reply with JSON only, no other text, in this shape:',
     '{"angle": "one short line telling Chris why you took this approach", "message": "the message itself"}',
-  ].join('\n')
+  ]
+    .filter(Boolean)
+    .join('\n')
 
   const response = await fetch(ENDPOINT, {
     method: 'POST',
