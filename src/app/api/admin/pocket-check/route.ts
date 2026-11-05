@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/admin'
-import { isGroupCall, titlePatterns } from '@/lib/pocket'
+import { MIN_MEMBERS, titlePatterns, worthReading } from '@/lib/pocket'
 
 /**
  * Whether the Pocket key works, asked without changing anything.
@@ -91,12 +91,15 @@ export async function GET() {
    * thing on this page that needs acting on immediately.
    */
   const patterns = titlePatterns()
-  const seen = recordings.map((r) => ({
-    on: (r.recording_at ?? r.created_at ?? '').slice(0, 10),
-    title: r.title ?? '(no title)',
-    filed: isGroupCall(r.title, patterns),
-  }))
-  const wanted = seen.filter((r) => r.filed).length
+  const seen = recordings.map((r) => {
+    const on = (r.recording_at ?? r.created_at ?? '').slice(0, 10)
+    return {
+      on,
+      title: r.title ?? '(no title)',
+      wouldOpen: worthReading({ title: r.title, happenedOn: on }, patterns),
+    }
+  })
+  const wanted = seen.filter((r) => r.wouldOpen).length
 
   return NextResponse.json({
     ok: true,
@@ -105,16 +108,18 @@ export async function GET() {
     recordings: recordings.length,
     shapeUnderstood,
     withIds: recordings.filter((r) => r.id).length,
-    filesOnlyTitlesContaining: patterns,
-    wouldFile: wanted,
-    wouldIgnore: seen.length - wanted,
+    filesCallsOn: 'Wednesday',
+    alsoOpensTitlesContaining: patterns,
+    membersNeededOnIt: MIN_MEMBERS,
+    wouldOpen: wanted,
+    wouldSkip: seen.length - wanted,
     seen,
     note: !shapeUnderstood
       ? 'Pocket answered, but not in a shape this reads. The listing field may have been renamed.'
       : !recordings.length
         ? 'The key works, but Pocket has no recordings in the last thirty days.'
         : wanted
-          ? 'The key works, and only the group calls would be filed.'
-          : 'The key works, but nothing matched the title filter, so no call would be filed. If a group call is in the list above, its title has changed and POCKET_TITLE_MATCH needs updating.',
+          ? `The key works. Only the Wednesday recordings above are opened, and one is filed only if at least ${MIN_MEMBERS} members are heard on it.`
+          : 'The key works, but none of these happened on a Wednesday, so none would be opened. If the call moved, set POCKET_TITLE_MATCH to a phrase from its title.',
   })
 }

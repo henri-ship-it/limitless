@@ -17,38 +17,80 @@ import { matchSpeaker } from '@/lib/speakers'
 const API = 'https://public.heypocketai.com/api/v1/public'
 
 /**
- * Only the Wednesday group call belongs on the platform.
+ * Which of Chris's recordings belong to the programme.
  *
- * The recorder is Chris's, not the programme's, and it records his day: a
+ * The recorder is his, not the programme's, and it records his day: a
  * partnership call, a catch up with a founder, whatever else he is in. Those
- * recordings mention members by name, so without a filter they would be filed
- * against whoever was named and read back as context the next time a message
- * was drafted. That is somebody else's private conversation landing on a
- * member's record.
+ * recordings mention people by name, so without a gate they would be filed
+ * against whichever member was named and read back as context the next time a
+ * message was drafted. That is a private conversation landing on a member's
+ * record.
  *
- * Matched on the title, because that is the only thing the listing and the
- * webhook both carry. Pocket writes those titles itself from the content, so
- * they are not a guarantee, which is why this fails closed: a recording with
- * no title, or a title that matches nothing, is left alone. A call that does
- * not arrive is a thing somebody notices and asks about. A call that arrives
- * on the wrong record is not.
+ * Not matched on the title. Pocket writes titles itself from the content, so
+ * they describe what was discussed rather than name the call: the Pro call on
+ * the fourth of November came out as "Mindset Matters Group Flow State
+ * Coaching", which is a sentence about that week rather than a label, and next
+ * week's will be a sentence about next week. A filter built on it would file
+ * the right call once and then quietly stop.
+ *
+ * So the gate is the two things that are actually true of this call and not of
+ * his others. It happens on a Wednesday, and the people on it are members. The
+ * first is cheap and is checked off the listing, before any transcript is
+ * fetched. The second is the one that matters and is checked in `fileCall`,
+ * which has to work out who spoke anyway.
+ *
+ * Both have to hold. A private call on a Wednesday fails the second; a call
+ * full of members on a Tuesday is not this call and fails the first.
  */
-const DEFAULT_MATCH = 'mindset matters'
 
-/** The phrases in force, from the environment or the default. */
+/** The day the programme's calls happen. Sunday is 0. */
+const CALL_DAY = 3
+
+/**
+ * How many members must be heard before a recording is filed as the call.
+ *
+ * Two rather than one, because one member's name coming up in a conversation
+ * about them is exactly what a private call sounds like, and that is the case
+ * this is here to stop.
+ */
+export const MIN_MEMBERS = 2
+
+/** Whether a date falls on the day the calls happen. Anything unparseable does not. */
+export function onCallDay(date: string | null | undefined): boolean {
+  const when = (date ?? '').slice(0, 10)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(when)) return false
+  const parsed = new Date(`${when}T12:00:00Z`)
+  if (Number.isNaN(parsed.getTime())) return false
+  return parsed.getUTCDay() === CALL_DAY
+}
+
+/**
+ * An optional override, for a call moved off its usual day.
+ *
+ * Unset it matches nothing and changes nothing, so the day alone decides. Set
+ * to a phrase it lets that recording through whatever day it happened on, for
+ * the week the call moves to a Thursday and would otherwise be lost.
+ */
 export function titlePatterns(configured = process.env.POCKET_TITLE_MATCH): string[] {
-  const given = (configured ?? '')
+  return (configured ?? '')
     .split(',')
     .map((phrase) => phrase.trim().toLowerCase())
     .filter(Boolean)
-  return given.length ? given : [DEFAULT_MATCH]
 }
 
-/** Whether a recording with this title is the group call. */
-export function isGroupCall(title: string | null | undefined, patterns = titlePatterns()): boolean {
+/** Whether a title matches a configured override. No phrases means no. */
+export function titleAllows(title: string | null | undefined, patterns = titlePatterns()): boolean {
   const found = (title ?? '').trim().toLowerCase()
   if (!found) return false
   return patterns.some((phrase) => found.includes(phrase))
+}
+
+/** Whether a recording is worth opening at all: the right day, or named explicitly. */
+export function worthReading(
+  recording: { title?: string | null; happenedOn?: string | null },
+  patterns = titlePatterns(),
+): boolean {
+  return onCallDay(recording.happenedOn) || titleAllows(recording.title, patterns)
 }
 
 export type Segment = { speaker?: string; speakerName?: string; text?: string }
@@ -63,7 +105,13 @@ type Person = {
   personalised_nudges: boolean
 }
 
-export type Filed = { recordingId: string; filed: string[]; unmatched: string[] }
+export type Filed = {
+  recordingId: string
+  filed: string[]
+  unmatched: string[]
+  /** Set when the recording was read and then left alone, saying why. */
+  ignored?: string
+}
 
 /*
  * Only what this file actually calls, rather than the full client type.
@@ -133,15 +181,37 @@ export async function fileCall(
 
   const heard = [...new Set(segments.map((s) => speakerOf(s, speakers)).filter(Boolean))]
 
-  const filed: string[] = []
+  /*
+   * Who was on it, worked out before anything is written.
+   *
+   * This is the gate that actually protects members. The day a recording
+   * happened says it might be the call; the people on it say it is. A private
+   * conversation on a Wednesday will mention a member by name but will not
+   * have two of them speaking in it, so it stops here, having been read into
+   * memory and never stored.
+   */
   const unmatched: string[] = []
+  /* The label is kept beside the member so a failed name lookup can fall back to it. */
+  const present: { id: string; firstName: string | null; label: string }[] = []
 
   for (const speaker of heard) {
     const member = matchSpeaker(speaker, members)
-    if (!member) {
-      unmatched.push(speaker)
-      continue
+    if (member) present.push({ ...member, label: speaker })
+    else unmatched.push(speaker)
+  }
+
+  if (present.length < MIN_MEMBERS) {
+    return {
+      recordingId,
+      filed: [],
+      unmatched,
+      ignored: `Only ${present.length} member${present.length === 1 ? '' : 's'} heard, so this was not the call.`,
     }
+  }
+
+  const filed: string[] = []
+
+  for (const member of present) {
 
     /*
      * Skipped where this recording is already on file. The reading is the
@@ -161,7 +231,7 @@ export async function fileCall(
      * be made again; notes can be rebuilt from it at any time.
      */
     const notes = anthropicKey
-      ? await distil(transcript, anthropicKey, model, member.firstName ?? speaker)
+      ? await distil(transcript, anthropicKey, model, member.firstName ?? member.label)
       : null
 
     const { error } = await supabase.from('member_conversations').upsert(
@@ -230,7 +300,11 @@ export async function pullRecentCalls(
      * then costs nothing: its transcript is never pulled, so Chris's other
      * calls are not read by this at all, let alone stored.
      */
-    if (!isGroupCall(row.title)) {
+    const happenedOn =
+      (row.recording_at ?? row.created_at ?? '').slice(0, 10) ||
+      new Date().toISOString().slice(0, 10)
+
+    if (!worthReading({ title: row.title, happenedOn })) {
       skipped += 1
       continue
     }
@@ -254,8 +328,7 @@ export async function pullRecentCalls(
         recordingId: row.id,
         segments,
         speakers: inner.speakers,
-        happenedOn: (row.recording_at ?? row.created_at ?? '').slice(0, 10) ||
-          new Date().toISOString().slice(0, 10),
+        happenedOn,
         anthropicKey,
         model,
       }),

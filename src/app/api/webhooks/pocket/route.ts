@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { fileCall, isGroupCall, titlePatterns } from '@/lib/pocket'
+import { fileCall, MIN_MEMBERS, titlePatterns, worthReading } from '@/lib/pocket'
 
 /**
  * Takes the Wednesday group call off the recorder and files it per member.
@@ -94,8 +94,12 @@ export async function POST(request: Request) {
    * retrying, and goes no further: not filed, not distilled, not stored. This
    * is the earliest point the title is known, which is where it should happen.
    */
-  if (!isGroupCall(body.recording?.title)) {
-    return NextResponse.json({ ok: true, ignored: 'not the group call' })
+  const happenedOn =
+    (body.recording?.recordingAt ?? body.recording?.createdAt ?? '').slice(0, 10) ||
+    new Date().toISOString().slice(0, 10)
+
+  if (!worthReading({ title: body.recording?.title, happenedOn })) {
+    return NextResponse.json({ ok: true, ignored: 'not the day the calls happen' })
   }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -107,13 +111,11 @@ export async function POST(request: Request) {
 
   const supabase = createClient(url, service, { auth: { persistSession: false } })
 
-  const { filed, unmatched } = await fileCall(supabase, {
+  const { filed, unmatched, ignored } = await fileCall(supabase, {
     recordingId,
     segments,
     speakers: body.speakers,
-    happenedOn:
-      (body.recording?.recordingAt ?? body.recording?.createdAt ?? '').slice(0, 10) ||
-      new Date().toISOString().slice(0, 10),
+    happenedOn,
     anthropicKey: key,
     model: MODEL,
   })
@@ -123,7 +125,7 @@ export async function POST(request: Request) {
    * a member whose Pocket label is not their first name, and the fix is to put
    * it in recording_name. Without this the call just quietly misses them.
    */
-  return NextResponse.json({ ok: true, recordingId, filed, unmatched })
+  return NextResponse.json({ ok: true, recordingId, filed, unmatched, ignored })
 }
 
 /**
@@ -141,7 +143,9 @@ export function GET() {
     distillingConfigured: Boolean(process.env.ANTHROPIC_API_KEY),
     databaseConfigured: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
     expects: WANTED,
-    filesOnlyTitlesContaining: titlePatterns(),
+    filesCallsOn: 'Wednesday',
+    alsoFilesTitlesContaining: titlePatterns(),
+    membersNeededOnIt: MIN_MEMBERS,
     environment: process.env.VERCEL_ENV ?? 'not on Vercel',
   })
 }
