@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { fileCall } from '@/lib/pocket'
+import { fileCall, isGroupCall, titlePatterns } from '@/lib/pocket'
 
 /**
  * Takes the Wednesday group call off the recorder and files it per member.
@@ -88,6 +88,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, ignored: 'nothing to file' })
   }
 
+  /*
+   * Chris's recorder records his day, and only the Wednesday group call
+   * belongs to the programme. Everything else is acknowledged so Pocket stops
+   * retrying, and goes no further: not filed, not distilled, not stored. This
+   * is the earliest point the title is known, which is where it should happen.
+   */
+  if (!isGroupCall(body.recording?.title)) {
+    return NextResponse.json({ ok: true, ignored: 'not the group call' })
+  }
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const service = process.env.SUPABASE_SERVICE_ROLE_KEY
   const key = process.env.ANTHROPIC_API_KEY
@@ -131,6 +141,7 @@ export function GET() {
     distillingConfigured: Boolean(process.env.ANTHROPIC_API_KEY),
     databaseConfigured: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
     expects: WANTED,
+    filesOnlyTitlesContaining: titlePatterns(),
     environment: process.env.VERCEL_ENV ?? 'not on Vercel',
   })
 }

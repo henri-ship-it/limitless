@@ -16,6 +16,41 @@ import { matchSpeaker } from '@/lib/speakers'
 
 const API = 'https://public.heypocketai.com/api/v1/public'
 
+/**
+ * Only the Wednesday group call belongs on the platform.
+ *
+ * The recorder is Chris's, not the programme's, and it records his day: a
+ * partnership call, a catch up with a founder, whatever else he is in. Those
+ * recordings mention members by name, so without a filter they would be filed
+ * against whoever was named and read back as context the next time a message
+ * was drafted. That is somebody else's private conversation landing on a
+ * member's record.
+ *
+ * Matched on the title, because that is the only thing the listing and the
+ * webhook both carry. Pocket writes those titles itself from the content, so
+ * they are not a guarantee, which is why this fails closed: a recording with
+ * no title, or a title that matches nothing, is left alone. A call that does
+ * not arrive is a thing somebody notices and asks about. A call that arrives
+ * on the wrong record is not.
+ */
+const DEFAULT_MATCH = 'mindset matters'
+
+/** The phrases in force, from the environment or the default. */
+export function titlePatterns(configured = process.env.POCKET_TITLE_MATCH): string[] {
+  const given = (configured ?? '')
+    .split(',')
+    .map((phrase) => phrase.trim().toLowerCase())
+    .filter(Boolean)
+  return given.length ? given : [DEFAULT_MATCH]
+}
+
+/** Whether a recording with this title is the group call. */
+export function isGroupCall(title: string | null | undefined, patterns = titlePatterns()): boolean {
+  const found = (title ?? '').trim().toLowerCase()
+  if (!found) return false
+  return patterns.some((phrase) => found.includes(phrase))
+}
+
 export type Segment = { speaker?: string; speakerName?: string; text?: string }
 
 export type Speakers = Record<string, { name?: string }> | undefined
@@ -146,7 +181,13 @@ export async function fileCall(
   return { recordingId, filed, unmatched }
 }
 
-type Listed = { id: string; recording_at?: string; created_at?: string; state?: string }
+type Listed = {
+  id: string
+  title?: string
+  recording_at?: string
+  created_at?: string
+  state?: string
+}
 
 /**
  * Anything recorded in the last few days that is not on file yet.
@@ -164,7 +205,7 @@ export async function pullRecentCalls(
     model,
     days = 8,
   }: { apiKey: string; anthropicKey?: string; model: string; days?: number },
-): Promise<{ checked: number; results: Filed[]; error?: string }> {
+): Promise<{ checked: number; skipped?: number; results: Filed[]; error?: string }> {
   const from = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10)
 
   const listing = await fetch(`${API}/recordings?start_date=${from}&limit=50`, {
@@ -179,8 +220,20 @@ export async function pullRecentCalls(
 
   const results: Filed[] = []
 
+  let skipped = 0
+
   for (const row of recordings) {
     if (!row.id) continue
+
+    /*
+     * Checked before the detail is fetched, not after. An unwanted recording
+     * then costs nothing: its transcript is never pulled, so Chris's other
+     * calls are not read by this at all, let alone stored.
+     */
+    if (!isGroupCall(row.title)) {
+      skipped += 1
+      continue
+    }
 
     const detail = await fetch(`${API}/recordings/${row.id}?include_transcript=true`, {
       headers: { Authorization: `Bearer ${apiKey}` },
@@ -209,5 +262,5 @@ export async function pullRecentCalls(
     )
   }
 
-  return { checked: recordings.length, results }
+  return { checked: recordings.length, skipped, results }
 }

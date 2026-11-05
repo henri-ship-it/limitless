@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/admin'
+import { isGroupCall, titlePatterns } from '@/lib/pocket'
 
 /**
  * Whether the Pocket key works, asked without changing anything.
@@ -82,6 +83,21 @@ export async function GET() {
    */
   const shapeUnderstood = Array.isArray(payload.data) || Array.isArray(payload.recordings)
 
+  /*
+   * Listed with the verdict against each one, because the filter is the part
+   * most worth seeing. Everything on the recorder shows up here, including the
+   * calls that are none of the platform's business, and each says plainly
+   * whether it would be filed. A private call marked `filed: true` is the one
+   * thing on this page that needs acting on immediately.
+   */
+  const patterns = titlePatterns()
+  const seen = recordings.map((r) => ({
+    on: (r.recording_at ?? r.created_at ?? '').slice(0, 10),
+    title: r.title ?? '(no title)',
+    filed: isGroupCall(r.title, patterns),
+  }))
+  const wanted = seen.filter((r) => r.filed).length
+
   return NextResponse.json({
     ok: true,
     status: listing.status,
@@ -89,13 +105,16 @@ export async function GET() {
     recordings: recordings.length,
     shapeUnderstood,
     withIds: recordings.filter((r) => r.id).length,
-    latest: recordings
-      .slice(0, 5)
-      .map((r) => ({ on: (r.recording_at ?? r.created_at ?? '').slice(0, 10), title: r.title })),
-    note: shapeUnderstood
-      ? recordings.length
-        ? 'The key works and recordings are visible.'
-        : 'The key works, but Pocket has no recordings in the last thirty days.'
-      : 'Pocket answered, but not in a shape this reads. The listing field may have been renamed.',
+    filesOnlyTitlesContaining: patterns,
+    wouldFile: wanted,
+    wouldIgnore: seen.length - wanted,
+    seen,
+    note: !shapeUnderstood
+      ? 'Pocket answered, but not in a shape this reads. The listing field may have been renamed.'
+      : !recordings.length
+        ? 'The key works, but Pocket has no recordings in the last thirty days.'
+        : wanted
+          ? 'The key works, and only the group calls would be filed.'
+          : 'The key works, but nothing matched the title filter, so no call would be filed. If a group call is in the list above, its title has changed and POCKET_TITLE_MATCH needs updating.',
   })
 }
