@@ -15,7 +15,13 @@ import { useRouter } from 'next/navigation'
  * not on their profile, and nothing else in the product would ever say so.
  */
 
+type Spoke = { label: string; lines: number }
+
 type Result = {
+  recording?: { on?: string; title?: string }
+  segments?: number
+  distinctSpeakers?: number
+  spoke?: Spoke[]
   ok?: boolean
   error?: string
   checked?: number
@@ -29,11 +35,11 @@ export function PullCalls() {
   const [working, setWorking] = useState(false)
   const [result, setResult] = useState<Result | null>(null)
 
-  async function pull() {
+  async function run(method: 'POST' | 'PUT') {
     setWorking(true)
     setResult(null)
     try {
-      const response = await fetch('/api/admin/pocket-check', { method: 'POST' })
+      const response = await fetch('/api/admin/pocket-check', { method })
       const payload = (await response.json()) as Result
       setResult(payload)
       if (payload.results?.some((r) => r.filed.length)) router.refresh()
@@ -49,17 +55,29 @@ export function PullCalls() {
   return (
     <div>
       <p className="!mb-4 text-[0.9375rem] !text-ink-56">
-        The call is collected on its own once a day. This fetches it now.
+        The call is collected on its own once a day. This fetches it now. If nothing is
+        filed, ask who it heard: the answer is almost always that Pocket did not name the
+        people on it.
       </p>
 
-      <button
-        type="button"
-        onClick={pull}
-        disabled={working}
-        className="label border border-line px-4 py-2.5 hover:border-ink hover:!text-ink disabled:opacity-40"
-      >
-        {working ? 'Fetching…' : 'Fetch the latest call'}
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={() => run('POST')}
+          disabled={working}
+          className="label border border-line px-4 py-2.5 hover:border-ink hover:!text-ink disabled:opacity-40"
+        >
+          {working ? 'Working…' : 'Fetch the latest call'}
+        </button>
+        <button
+          type="button"
+          onClick={() => run('PUT')}
+          disabled={working}
+          className="label hover:!text-ink disabled:opacity-40"
+        >
+          Who did it hear?
+        </button>
+      </div>
 
       {result ? (
         <div className="mt-5 border-t border-line pt-5">
@@ -81,6 +99,17 @@ export function PullCalls() {
                   ) : null}
                 </div>
               ))}
+
+              {result.spoke?.length ? (
+                <ul className="!list-none !pl-0 !mb-4">
+                  {result.spoke.map((one) => (
+                    <li key={one.label} className="flex gap-3 border-t border-line py-2">
+                      <span className="text-[0.9375rem] !text-ink-72">{one.label}</span>
+                      <span className="label !text-ink-40 ml-auto">{one.lines} lines</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
 
               {unmatched.length ? (
                 <p className="!mb-0 text-[0.875rem] !text-ink-56">

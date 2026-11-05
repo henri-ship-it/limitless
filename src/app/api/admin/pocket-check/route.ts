@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { pullRecentCalls } from '@/lib/pocket'
 import { requireAdmin } from '@/lib/admin'
-import { MIN_MEMBERS, titlePatterns, worthReading } from '@/lib/pocket'
+import type { Segment, Speakers } from '@/lib/pocket'
+import { MIN_MEMBERS, onCallDay, titlePatterns, worthReading } from '@/lib/pocket'
 
 /**
  * Whether the Pocket key works, asked without changing anything.
@@ -191,5 +192,96 @@ export async function POST() {
         : pulled.results.length
           ? 'A recording was opened but nothing was filed. See ignored and unmatched below: a name Pocket used that is not on a profile goes in that member\'s recording_name.'
           : 'Nothing was opened. Nothing on the recorder happened on a Wednesday within the last month.',
+  })
+}
+
+/**
+ * What Pocket actually says about who was speaking.
+ *
+ * The first real pull filed nothing and reported one name, Chris, which either
+ * means the room was silent or means Pocket names the person holding the
+ * recorder and nobody else. Those need completely different answers, and the
+ * difference is not something to infer from an empty result.
+ *
+ * So this opens the most recent call and reports the speaker labels verbatim:
+ * how many distinct ones, what they are called, and how many lines each said.
+ * No transcript text, because who spoke is the question and the content of a
+ * call is not something to print into a debugging endpoint. Nothing is stored.
+ */
+export async function PUT() {
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: 'Not allowed' }, { status: 404 })
+  }
+
+  const apiKey = process.env.POCKET_API_KEY
+  if (!apiKey) return NextResponse.json({ error: 'No Pocket API key is set.' }, { status: 503 })
+
+  const from = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10)
+  const listing = await fetch(`${API}/recordings?start_date=${from}&limit=50`, {
+    headers: { Authorization: `Bearer ${apiKey}` },
+    cache: 'no-store',
+  })
+  if (!listing.ok) {
+    return NextResponse.json({ error: `Pocket would not list recordings (${listing.status}).` })
+  }
+
+  const payload = (await listing.json().catch(() => ({}))) as {
+    data?: Listed[]
+    recordings?: Listed[]
+  }
+  const all = payload.data ?? payload.recordings ?? []
+
+  const call = all.find((r) =>
+    onCallDay((r.recording_at ?? r.created_at ?? '').slice(0, 10)),
+  )
+  if (!call?.id) {
+    return NextResponse.json({ ok: true, note: 'No recording on a Wednesday in the last month.' })
+  }
+
+  const detail = await fetch(`${API}/recordings/${call.id}?include_transcript=true`, {
+    headers: { Authorization: `Bearer ${apiKey}` },
+    cache: 'no-store',
+  })
+  if (!detail.ok) {
+    return NextResponse.json({ error: `Pocket would not open it (${detail.status}).` })
+  }
+
+  const body = (await detail.json().catch(() => ({}))) as {
+    data?: { transcript?: { segments?: Segment[] }; speakers?: Speakers }
+    transcript?: { segments?: Segment[] }
+    speakers?: Speakers
+  }
+  const inner = body.data ?? body
+  const segments = inner.transcript?.segments ?? []
+
+  /*
+   * Counted by the raw label rather than the resolved name, so a speaker Pocket
+   * knows only as an id still shows up here as that id. The whole point is to
+   * see what is there, including the parts the normal path throws away.
+   */
+  const lines = new Map<string, number>()
+  for (const segment of segments) {
+    const label =
+      segment.speakerName ??
+      (segment.speaker ? (inner.speakers?.[segment.speaker]?.name ?? segment.speaker) : null) ??
+      '(no label at all)'
+    lines.set(label, (lines.get(label) ?? 0) + 1)
+  }
+
+  const spoke = [...lines.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, count]) => ({ label, lines: count }))
+
+  return NextResponse.json({
+    ok: true,
+    recording: { on: (call.recording_at ?? call.created_at ?? '').slice(0, 10), title: call.title },
+    segments: segments.length,
+    distinctSpeakers: spoke.length,
+    spoke,
+    speakersBlock: inner.speakers ?? null,
+    note:
+      spoke.length <= 1
+        ? 'Pocket is not separating the people on this call. Matching members to what they said is not possible from this, however the names are configured.'
+        : 'Pocket is separating speakers. Any label below that is a member needs to be that member\'s recording name.',
   })
 }
