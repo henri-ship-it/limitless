@@ -77,6 +77,23 @@ body {
   letter-spacing: -0.005em;
 }
 
+/*
+ * A hand on anything clickable.
+ *
+ * Tailwind v4 sets `cursor: default` on buttons in its preflight, on the
+ * grounds that it matches the browser's own default. That is true of a native
+ * form button and wrong for this platform, where almost every button is a
+ * control that looks like one and nothing on the page says so when the pointer
+ * passes over it. Links already get a hand; this gives buttons the same.
+ *
+ * Disabled is left alone, because there a plain arrow is the correct answer.
+ */
+button:not(:disabled),
+[role='button']:not(:disabled),
+summary {
+  cursor: pointer;
+}
+
 /* Mono label. Column headers, counters, week numbers, section eyebrows. */
 .label {
   font-family: var(--font-mono);
