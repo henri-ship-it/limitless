@@ -22,11 +22,66 @@
 const LOOP =
   'M108 32C108 38.28 106.75 44.53 104.35 48.97C101.94 53.41 98.38 56 93.94 56C89.5 56 84.17 53.41 78.37 48.97C72.56 44.53 66.28 38.28 60 32C53.72 25.72 47.44 19.47 41.63 15.03C35.83 10.59 30.5 8 26.06 8C21.62 8 18.06 10.59 15.65 15.03C13.25 19.47 12 25.72 12 32C12 38.28 13.25 44.53 15.65 48.97C18.06 53.41 21.62 56 26.06 56C30.5 56 35.83 53.41 41.63 48.97C47.44 44.53 53.72 38.28 60 32C66.28 25.72 72.56 19.47 78.37 15.03C84.17 10.59 89.5 8 93.94 8C98.38 8 101.94 10.59 104.35 15.03C106.75 19.47 108 25.72 108 32Z'
 
-/** How long one lap takes, in seconds. The whole animation is timed off it. */
-const LAP = 2.6
+/**
+ * How long one lap takes.
+ *
+ * This is the whole clock: the symbol is complete when the first lap ends, so
+ * the figure is really "how long before a member sees a finished mark". Most
+ * of the platform answers inside a second, and a loader that has not got round
+ * its own shape by the time the page arrives has shown a squiggle rather than
+ * a logo. Under a second means the common case completes.
+ */
+const LAP = 0.9
 
 /** The lit head, in thousandths of a lap. Short enough to read as a point. */
 const HEAD = 20
+
+/**
+ * Where the head is at each moment of a lap, as `[percent, thousandths]`.
+ *
+ * Not a constant pace. The head falls and climbs like a bead on a wire, which
+ * is the one easing a figure of eight asks for by itself: it has two descents
+ * and two climbs per lap, so an even pace is the only version that ignores the
+ * shape it is drawing. Speed comes from conservation of energy,
+ * v = sqrt(v_top^2 + 2g(y - y_top)), with the constant chosen so the bottom of
+ * a lobe runs at two and a half times the speed of the top. The result swings
+ * between roughly 0.6 and 1.45 of an even pace, slowest at the top of each
+ * lobe and quickest at the bottom.
+ *
+ * Twenty five readings rather than a formula because CSS cannot evaluate one.
+ * They were taken by walking the curve by true arc length, integrating
+ * ds / v(s) for the time, and inverting that to ask where the head has got to
+ * at each equal instant. Linear interpolation between them is finer than the
+ * frame rate at this duration, so the joins are not visible. Both halves are
+ * identical by symmetry, which is the quickest check that the table is right.
+ */
+const PROFILE: readonly (readonly [number, number])[] = [
+  [0, 0.0],
+  [4.17, 51.6],
+  [8.33, 111.3],
+  [12.5, 170.8],
+  [16.67, 224.4],
+  [20.83, 271.4],
+  [25.0, 311.6],
+  [29.17, 345.4],
+  [33.33, 373.8],
+  [37.5, 398.9],
+  [41.67, 425.1],
+  [45.83, 458.0],
+  [50.0, 500.0],
+  [54.17, 551.6],
+  [58.33, 611.3],
+  [62.5, 670.8],
+  [66.67, 724.4],
+  [70.83, 771.4],
+  [75.0, 811.6],
+  [79.17, 845.4],
+  [83.33, 873.8],
+  [87.5, 898.9],
+  [91.67, 925.1],
+  [95.83, 958.0],
+  [100, 1000.0],
+]
 
 /**
  * The tail, as nested dashes that all finish at the head.
@@ -58,6 +113,19 @@ const BLOOM = 120
  * it begins. So every layer runs the same lap, displaced by its own length.
  */
 const startsAt = (length: number) => length - HEAD
+
+/**
+ * One layer's flight: the shared profile, shifted to where that layer starts.
+ *
+ * The track is the same movement read the other way round. It is drawn by
+ * revealing thousandths 0 to `1000 - offset`, so starting it a whole lap back
+ * makes its leading edge sit exactly under the head, and the line appears to
+ * be laid down by the thing flying ahead of it.
+ */
+const flight = (name: string, from: number) =>
+  `@keyframes ${name}{` +
+  PROFILE.map(([at, gone]) => `${at}%{stroke-dashoffset:${+(from - gone).toFixed(1)}}`).join('') +
+  '}'
 
 export function Unlocking({ label = 'Unlocking' }: { label?: string }) {
   return (
@@ -95,10 +163,7 @@ export function Unlocking({ label = 'Unlocking' }: { label?: string }) {
           </filter>
         </defs>
 
-        {/*
-         * The wake. One iteration, held on its last frame, and linear so its
-         * leading edge stays under the head rather than racing or lagging it.
-         */}
+        {/* The wake. One lap, held on its last frame. */}
         <path
           d={LOOP}
           pathLength="1000"
@@ -146,7 +211,7 @@ export function Unlocking({ label = 'Unlocking' }: { label?: string }) {
          * two that drift read as something alive.
          */
         .loop {
-          animation: loop-breathe 7.1s ease-in-out infinite;
+          animation: loop-breathe 4.3s ease-in-out infinite;
           will-change: transform;
         }
 
@@ -154,10 +219,7 @@ export function Unlocking({ label = 'Unlocking' }: { label?: string }) {
           stroke-dasharray: 1000;
           animation: loop-draw ${LAP}s linear both;
         }
-        @keyframes loop-draw {
-          from { stroke-dashoffset: 1000; }
-          to   { stroke-dashoffset: 0; }
-        }
+        ${flight('loop-draw', 1000)}
 
         .loop-step { will-change: stroke-dashoffset; }
 
@@ -168,29 +230,23 @@ export function Unlocking({ label = 'Unlocking' }: { label?: string }) {
           opacity: ${step.opacity};
           animation: loop-fly-${step.length} ${LAP}s linear infinite;
         }
-        @keyframes loop-fly-${step.length} {
-          from { stroke-dashoffset: ${startsAt(step.length)}; }
-          to   { stroke-dashoffset: ${startsAt(step.length) - 1000}; }
-        }`,
+        ${flight(`loop-fly-${step.length}`, startsAt(step.length))}`,
         ).join('')}
 
         .loop-glow {
           stroke-dasharray: ${BLOOM} ${1000 - BLOOM};
           animation:
             loop-fly-glow ${LAP}s linear infinite,
-            loop-flare 3.1s ease-in-out infinite;
+            loop-flare 2.3s ease-in-out infinite;
         }
-        @keyframes loop-fly-glow {
-          from { stroke-dashoffset: ${startsAt(BLOOM)}; }
-          to   { stroke-dashoffset: ${startsAt(BLOOM) - 1000}; }
-        }
+        ${flight('loop-fly-glow', startsAt(BLOOM))}
         @keyframes loop-flare {
           0%, 100% { opacity: 0.32; }
           50%      { opacity: 0.58; }
         }
 
-        .loop-comet { animation: loop-arrive 600ms ease-out both; }
-        .loop-label { animation: loop-arrive 700ms ease-out both; }
+        .loop-comet { animation: loop-arrive 220ms ease-out both; }
+        .loop-label { animation: loop-arrive 420ms ease-out both; }
         @keyframes loop-arrive {
           from { opacity: 0; filter: blur(3px); }
           to   { opacity: 1; filter: none; }
