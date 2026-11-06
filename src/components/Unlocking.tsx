@@ -1,53 +1,221 @@
 /**
  * The loading state.
  *
- * A padlock shackle lifting clear of its body, drawn in the same hairline the
- * rest of the interface uses. It borrows the padlock from the locked weeks, so
- * waiting for a page reads as the same idea as a chapter opening rather than a
- * decoration bolted on.
+ * The Limitless mark drawing itself: a lit stroke flies around a figure of
+ * eight and the hairline follows in its wake, so one lap completes the symbol
+ * and every lap after it keeps running. It replaces a padlock springing open,
+ * which said "you have been let in" — true of a week unlocking, wrong for a
+ * page that is merely on its way. The loop says the thing the programme says,
+ * which is that there is no finish line.
+ *
+ * The geometry is a lemniscate of Gerono, x = cos t, y = sin 2t, sampled into
+ * sixteen cubic segments. Taking the curve from its parametrisation rather
+ * than drawing two circles by eye is what puts the crossing at a true forty
+ * five degrees and keeps the lobes equal.
+ *
+ * Every layer is the same path at `pathLength="1000"`, so all the figures
+ * below are thousandths of a lap and the comet can be assembled by arithmetic
+ * rather than by trial.
  */
+
+/** One lap, 292.67 user units long, normalised to 1000 by `pathLength`. */
+const LOOP =
+  'M108 32C108 38.28 106.75 44.53 104.35 48.97C101.94 53.41 98.38 56 93.94 56C89.5 56 84.17 53.41 78.37 48.97C72.56 44.53 66.28 38.28 60 32C53.72 25.72 47.44 19.47 41.63 15.03C35.83 10.59 30.5 8 26.06 8C21.62 8 18.06 10.59 15.65 15.03C13.25 19.47 12 25.72 12 32C12 38.28 13.25 44.53 15.65 48.97C18.06 53.41 21.62 56 26.06 56C30.5 56 35.83 53.41 41.63 48.97C47.44 44.53 53.72 38.28 60 32C66.28 25.72 72.56 19.47 78.37 15.03C84.17 10.59 89.5 8 93.94 8C98.38 8 101.94 10.59 104.35 15.03C106.75 19.47 108 25.72 108 32Z'
+
+/** How long one lap takes, in seconds. The whole animation is timed off it. */
+const LAP = 2.6
+
+/** The lit head, in thousandths of a lap. Short enough to read as a point. */
+const HEAD = 20
+
+/**
+ * The tail, as nested dashes that all finish at the head.
+ *
+ * A single dash cannot fade out: SVG has no gradient along a stroke, so a
+ * lone trail ends in a round cap, and a hard-edged comet is the thing that
+ * gives a loading state away. Stacking lengths instead means the alpha
+ * compounds where they overlap, so the stroke builds from a tenth at the far
+ * end to solid at the head: roughly 0.10, 0.23, 0.38, 0.57, 0.81, 1. Six
+ * steps over a fifth of the lap, which the bloom then smooths into a ramp.
+ */
+const TAIL = [
+  { length: 230, opacity: 0.1 },
+  { length: 170, opacity: 0.14 },
+  { length: 120, opacity: 0.2 },
+  { length: 78, opacity: 0.3 },
+  { length: 44, opacity: 0.55 },
+  { length: HEAD, opacity: 1 },
+]
+
+/** The soft bloom, which hugs the head and the brightest part of the tail. */
+const BLOOM = 120
+
+/**
+ * Where a dash of this length must start so that it ends with the head.
+ *
+ * The head occupies thousandths `s` to `s + HEAD`; a dash of length L ending
+ * there begins at `s + HEAD - L`, and a dash offset is the negative of where
+ * it begins. So every layer runs the same lap, displaced by its own length.
+ */
+const startsAt = (length: number) => length - HEAD
+
 export function Unlocking({ label = 'Unlocking' }: { label?: string }) {
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6" role="status">
-      <svg viewBox="-14 -12 76 72" className="h-20 w-20" fill="none" aria-hidden>
-        <g
-          stroke="var(--color-ink)"
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-7" role="status">
+      {/*
+       * The viewBox is the loop's own 96 by 48 plus twenty units of air on
+       * every side. The bloom is a blurred copy of the stroke rather than a
+       * shadow, so it spreads well past the line and would be clipped square
+       * at the edges without the margin.
+       */}
+      <svg viewBox="-20 -20 176 104" className="loop w-[164px]" fill="none" aria-hidden>
+        <defs>
+          {/*
+           * Laid across the loop in user space, not along the stroke, which
+           * SVG cannot do. Fixing the gradient to the geometry is what makes
+           * the head change colour as it travels: deep in the bottom left,
+           * brand green through the middle, almost white off the top right.
+           * A gradient that travelled with the head would hold one colour and
+           * the flight would go flat.
+           *
+           * The lightest stop is held well short of white. Taken further it
+           * lifted prettily off a screenshot and then vanished into the page
+           * for the stretch across the top right, which is a quarter of every
+           * lap spent with the brightest thing on screen being the faintest.
+           */}
+          <linearGradient id="loop-flow" gradientUnits="userSpaceOnUse" x1="12" y1="56" x2="108" y2="8">
+            <stop offset="0%" stopColor="#049e87" />
+            <stop offset="40%" stopColor="#04dfbf" />
+            <stop offset="74%" stopColor="#3de7d1" />
+            <stop offset="100%" stopColor="#04c6a9" />
+          </linearGradient>
+
+          <filter id="loop-bloom" x="-30%" y="-55%" width="160%" height="210%">
+            <feGaussianBlur stdDeviation="3.4" />
+          </filter>
+        </defs>
+
+        {/*
+         * The wake. One iteration, held on its last frame, and linear so its
+         * leading edge stays under the head rather than racing or lagging it.
+         */}
+        <path
+          d={LOOP}
+          pathLength="1000"
+          className="loop-track"
+          stroke="var(--color-ink-12)"
           strokeWidth="1.5"
           strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          {/* The shackle lifts, tilts open, and settles back. */}
-          <path d="M15 22V14a9 9 0 0 1 18 0v8" className="shackle" />
-          <rect x="8" y="22" width="32" height="26" rx="3" />
+        />
+
+        {/*
+         * The comet. It fades in over the time the tail needs to clear the
+         * start, because until then the tail wraps round a loop that has not
+         * been drawn yet and lights the far end of nothing.
+         */}
+        <g className="loop-comet">
+          <path
+            d={LOOP}
+            pathLength="1000"
+            className="loop-glow"
+            stroke="url(#loop-flow)"
+            strokeWidth="5"
+            strokeLinecap="round"
+            filter="url(#loop-bloom)"
+          />
+          {TAIL.map((step) => (
+            <path
+              key={step.length}
+              d={LOOP}
+              pathLength="1000"
+              className={`loop-step loop-step-${step.length}`}
+              stroke="url(#loop-flow)"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+            />
+          ))}
         </g>
-        <circle cx="24" cy="33" r="3" fill="var(--color-accent)" className="tumbler" />
       </svg>
 
-      <p className="label">{label}</p>
+      <p className="loop-label label">{label}</p>
 
       <style>{`
-        .shackle {
-          /* Hinged on the right leg, so it swings out rather than lifting. */
-          transform-origin: 33px 22px;
-          animation: swing 2.2s ease-in-out infinite;
+        /*
+         * A breath on the whole mark, at a period that shares no factor with
+         * the lap. Two motions that line up read as one mechanism ticking;
+         * two that drift read as something alive.
+         */
+        .loop {
+          animation: loop-breathe 7.1s ease-in-out infinite;
+          will-change: transform;
         }
-        .tumbler {
-          transform-origin: 24px 33px;
-          animation: pulse 2.2s ease-in-out infinite;
+
+        .loop-track {
+          stroke-dasharray: 1000;
+          animation: loop-draw ${LAP}s linear both;
         }
-        @keyframes swing {
-          0%, 15%   { transform: rotate(0deg); }
-          50%, 72%  { transform: rotate(58deg); }
-          100%      { transform: rotate(0deg); }
+        @keyframes loop-draw {
+          from { stroke-dashoffset: 1000; }
+          to   { stroke-dashoffset: 0; }
         }
-        @keyframes pulse {
-          0%, 20%   { opacity: 0.15; transform: scale(0.7); }
-          50%       { opacity: 1; transform: scale(1); }
-          100%      { opacity: 0.15; transform: scale(0.7); }
+
+        .loop-step { will-change: stroke-dashoffset; }
+
+        ${TAIL.map(
+          (step) => `
+        .loop-step-${step.length} {
+          stroke-dasharray: ${step.length} ${1000 - step.length};
+          opacity: ${step.opacity};
+          animation: loop-fly-${step.length} ${LAP}s linear infinite;
         }
+        @keyframes loop-fly-${step.length} {
+          from { stroke-dashoffset: ${startsAt(step.length)}; }
+          to   { stroke-dashoffset: ${startsAt(step.length) - 1000}; }
+        }`,
+        ).join('')}
+
+        .loop-glow {
+          stroke-dasharray: ${BLOOM} ${1000 - BLOOM};
+          animation:
+            loop-fly-glow ${LAP}s linear infinite,
+            loop-flare 3.1s ease-in-out infinite;
+        }
+        @keyframes loop-fly-glow {
+          from { stroke-dashoffset: ${startsAt(BLOOM)}; }
+          to   { stroke-dashoffset: ${startsAt(BLOOM) - 1000}; }
+        }
+        @keyframes loop-flare {
+          0%, 100% { opacity: 0.32; }
+          50%      { opacity: 0.58; }
+        }
+
+        .loop-comet { animation: loop-arrive 600ms ease-out both; }
+        .loop-label { animation: loop-arrive 700ms ease-out both; }
+        @keyframes loop-arrive {
+          from { opacity: 0; filter: blur(3px); }
+          to   { opacity: 1; filter: none; }
+        }
+
+        @keyframes loop-breathe {
+          0%, 100% { transform: scale(1); }
+          50%      { transform: scale(1.025); }
+        }
+
+        /*
+         * Still, but not empty. The loop stays, drawn in the accent it would
+         * have been traced in, so the mark is the same mark.
+         */
         @media (prefers-reduced-motion: reduce) {
-          .shackle, .tumbler { animation: none; }
-          .tumbler { opacity: 0.5; }
+          .loop,
+          .loop-track,
+          .loop-comet,
+          .loop-label { animation: none; }
+          .loop-track {
+            stroke: url(#loop-flow);
+            stroke-dasharray: none;
+            opacity: 0.8;
+          }
+          .loop-comet { display: none; }
         }
       `}</style>
     </div>
