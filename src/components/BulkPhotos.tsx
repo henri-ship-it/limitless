@@ -46,7 +46,26 @@ async function shrink(file: File): Promise<{ data: string; type: string } | null
   return { data: url.slice(url.indexOf(',') + 1), type: 'image/jpeg' }
 }
 
-export function BulkPhotos({ week }: { week: number }) {
+export function BulkPhotos({
+  week,
+  showIntro = true,
+  label = 'Add this week’s pages',
+}: {
+  week: number
+  /*
+   * Both of these exist because this is offered in two places that mean
+   * different weeks. On the entry it is the week you are in; at the top of a
+   * digest it is the one just gone, where "this week" names the wrong seven
+   * days and the surrounding band has already explained itself.
+   *
+   * A boolean rather than a replacement node. Passing an empty fragment from a
+   * server component looked like the tidier way to suppress the paragraph and
+   * does not survive the crossing: it serialises to null, so a `??` default
+   * puts the paragraph straight back.
+   */
+  showIntro?: boolean
+  label?: string
+}) {
   const router = useRouter()
   const input = useRef<HTMLInputElement>(null)
   const [working, setWorking] = useState(false)
@@ -111,11 +130,13 @@ export function BulkPhotos({ week }: { week: number }) {
 
   return (
     <div>
-      <p className="!mb-4 max-w-xl text-[0.9375rem] leading-relaxed text-ink-72">
-        Writing on paper this week? Photograph the spreads and add them all at once. Each one is
-        read and filed against the entry it belongs to. Anything you have already typed is left
-        alone.
-      </p>
+      {showIntro ? (
+        <p className="!mb-4 max-w-xl text-[0.9375rem] leading-relaxed text-ink-72">
+          Writing on paper this week? Photograph the spreads and add them all at once. Each one is
+          read and filed against the entry it belongs to. Anything you have already typed is left
+          alone.
+        </p>
+      ) : null}
 
       <input
         ref={input}
@@ -134,7 +155,7 @@ export function BulkPhotos({ week }: { week: number }) {
         }`}
       >
         <CameraIcon />
-        {working ? `Reading ${done} of ${total}` : 'Add this week’s pages'}
+        {working ? `Reading ${done} of ${total}` : label}
       </label>
 
       {problem ? <p className="mt-3 !mb-0 text-[0.875rem] text-ink">{problem}</p> : null}

@@ -11,6 +11,7 @@ import { DigestBody } from '@/components/DigestBody'
 import { StyleRadar } from '@/components/StyleRadar'
 import { WeekEntries } from '@/components/WeekEntries'
 import { LastWeek } from '@/components/LastWeek'
+import { ProgrammeProgress } from '@/components/ProgrammeProgress'
 import { LockIcon } from '@/components/icons'
 import type { TocItem } from '@/components/OnThisPage'
 import { getWeek, moduleForWeek, weeks, COHORT } from '@/content/programme'
@@ -147,8 +148,17 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
         }
       />
 
+      {/* Where they are, then the week just gone. Both before the chapter
+        * itself, because both are about arriving rather than reading. */}
+      <ProgrammeProgress completedWeeks={[...progress.completedWeeks]} />
+
       {lastClose && prev ? (
-        <LastWeek week={prev.number} title={prev.title} progress={lastClose} />
+        <LastWeek
+          week={prev.number}
+          title={prev.title}
+          progress={lastClose}
+          ticked={progress.completedWeeks.has(prev.number)}
+        />
       ) : null}
 
       <Section id="overview">
