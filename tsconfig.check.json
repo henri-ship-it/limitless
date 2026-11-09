@@ -1,0 +1,5 @@
+{
+  "//": "For the checks that render a component. Next compiles JSX itself, so tsconfig.json leaves it alone with \"jsx\": \"preserve\"; tsx then falls back to the classic transform and a component's JSX asks for a React global that nobody imported. This turns on the modern transform for those scripts and changes nothing about the build.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "jsx": "react-jsx" }
+}

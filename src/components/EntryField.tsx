@@ -10,7 +10,16 @@ type Value = string | string[]
 type Props = {
   field: Field
   path: string
-  value: Value | undefined
+  /**
+   * Every answer on the entry, keyed by path.
+   *
+   * The whole record rather than this field's own value, because a group has
+   * to hand each child the answer at the child's path. Passing one value down
+   * is how a group came to hand every child its own, which nothing ever
+   * writes, so each box inside a group read back empty however much was
+   * typed into it.
+   */
+  values: Record<string, Value>
   onChange: (path: string, value: Value) => void
 }
 
@@ -37,7 +46,9 @@ function Label({ field }: { field: Field }) {
 const inputClass =
   'w-full border border-line bg-surface px-3 py-2.5 text-[0.9375rem] outline-none focus:border-ink'
 
-export function EntryField({ field, path, value, onChange }: Props) {
+export function EntryField({ field, path, values, onChange }: Props) {
+  const value = values[path]
+
   if (field.kind === 'note') {
     return <p className="text-[0.9375rem] leading-relaxed text-ink-72"><EntryText text={field.text} /></p>
   }
@@ -52,7 +63,7 @@ export function EntryField({ field, path, value, onChange }: Props) {
               key={`${path}.${i}`}
               field={child}
               path={`${path}.${i}`}
-              value={value}
+              values={values}
               onChange={onChange}
             />
           ))}

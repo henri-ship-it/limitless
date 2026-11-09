@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "check": "tsx scripts/check-dwell.ts && tsx scripts/check-week-close.ts && tsx scripts/check-clock.ts && tsx scripts/check-tiers.ts && tsx scripts/check-elite.ts && tsx scripts/check-elite-titles.ts && tsx scripts/check-speakers.ts && tsx scripts/check-whatsapp-export.ts && tsx scripts/check-pocket-filter.ts"
+    "check": "tsx scripts/check-dwell.ts && tsx scripts/check-week-close.ts && tsx scripts/check-clock.ts && tsx scripts/check-tiers.ts && tsx scripts/check-elite.ts && tsx scripts/check-elite-titles.ts && tsx scripts/check-speakers.ts && tsx scripts/check-whatsapp-export.ts && tsx scripts/check-pocket-filter.ts && tsx --tsconfig tsconfig.check.json scripts/check-group-fields.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

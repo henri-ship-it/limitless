@@ -341,7 +341,7 @@ export function DailyJournal({
                   key={i}
                   field={field}
                   path={String(i)}
-                  value={data.fields?.[String(i)]}
+                  values={data.fields ?? {}}
                   onChange={setField}
                 />
               ))
