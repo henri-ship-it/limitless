@@ -20,11 +20,13 @@ export type ResolvedEntry = {
   intro: string[]
   fields: Field[]
   outro: string[]
-  caption: { lines: string[]; author?: string } | null
+  caption: { lines: string[]; author?: string; authorCqw?: number } | null
   visual: { src: string; width: number; height: number; scale: number } | null
   link: { label: string; url: string } | null
   /** True where the page carries a QR code but no link is known yet. */
   awaitingLink: boolean
+  /** Show the diagram a second time, at the head of the exercise. */
+  repeatVisual: boolean
   hasExercise: boolean
 }
 
@@ -79,6 +81,7 @@ export function resolveEntry(n: number): ResolvedEntry | null {
       : null,
     link,
     awaitingLink: entry.qr && !link,
+    repeatVisual: Boolean(override?.repeatVisual),
     hasExercise: Boolean(fields.length || intro.length || custom),
   }
 }
@@ -173,6 +176,8 @@ export function resolveEliteEntry(n: number): ResolvedEntry | null {
     visual: art ? { src: art.src, width: art.width, height: art.height, scale: 0.5 } : null,
     link: eliteLinkFor(n),
     awaitingLink: entry.qr && !eliteLinkFor(n),
+    // The Elite book has no entry that asks for it yet.
+    repeatVisual: false,
     hasExercise: Boolean(prompts.length || intro.length || eliteCustomExercise(n)),
   }
 }

@@ -57,6 +57,12 @@ CLIPS = {
     # points, so anything wider brings half a sentence with it.
     32: (30, 101, 284, 343),
     33: (136, 101, 374, 343),
+    # The two flow charts, and only them. Found automatically, the box ran to
+    # 398, which is past the chart's own ink at 343 and takes in both the
+    # prompt printed at 364 and the dotted rule under it at 397. That prompt
+    # is the entry's first field, so the page asked the same question twice:
+    # once as part of the picture and once in the box underneath it.
+    80: (27, 164, 397, 348),
     # The stairway to optimism, which sits beside the heading on each of the
     # four steps rather than above the exercise.
     # Measured to the ink rather than guessed around it. The old box started at

@@ -97,6 +97,7 @@ export default async function EntryPage({ params }: { params: Promise<{ entry: s
         outro={entry.outro}
         link={entry.link}
         awaitingLink={entry.awaitingLink}
+        artwork={entry.repeatVisual ? entry.visual : null}
         initial={(saved ?? {}) as EntryData}
         persist={supabaseConfigured ? 'db' : 'local'}
         custom={customExercise(n)}

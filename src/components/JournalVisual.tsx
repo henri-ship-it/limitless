@@ -1,5 +1,5 @@
 type Visual = { src: string; width: number; height: number; scale: number }
-type Caption = { lines: string[]; author?: string }
+type Caption = { lines: string[]; author?: string; authorCqw?: number }
 
 /*
  * Caption size, as a share of the panel rather than of the artwork.
@@ -45,6 +45,16 @@ export function JournalVisual({
   const size = `${Math.round(visual.scale * 100)}%`
   const hasCaption = Boolean(caption && (caption.lines.length || caption.author))
 
+  /*
+   * An entry whose quotation is drawn into the artwork has no caption here to
+   * match, so the name was left at a size meant to sit under one and came out
+   * half again as tall as the lettering it was standing beneath. Where a size
+   * is given it is used, but only at full size: in the index the artwork is a
+   * thumbnail and the name is a label on it rather than the last line of a
+   * quotation, and the floor below would swallow the difference anyway.
+   */
+  const authorCqw = (!compact && caption?.authorCqw) || AUTHOR_CQW
+
   return (
     /*
      * m-0 without the important flag on purpose. It was !m-0, which beat every
@@ -84,7 +94,7 @@ export function JournalVisual({
               <p
                 className="mt-[1.4em] font-medium uppercase text-ink-40"
                 style={{
-                  fontSize: `clamp(0.625rem, ${AUTHOR_CQW}cqw, 1.667rem)`,
+                  fontSize: `clamp(0.625rem, ${authorCqw}cqw, 1.667rem)`,
                   letterSpacing: '0.04em',
                 }}
               >

@@ -14,13 +14,23 @@ export type EntryOverride = {
   /** The page has no diagram, or the parser found something that is not one. */
   hideVisual?: boolean
   /** Text set as outlines beneath a diagram, which cannot be read out of the PDF. */
-  caption?: { lines: string[]; author?: string }
+  caption?: { lines: string[]; author?: string; authorCqw?: number }
   /** Enlarges a diagram that reads too small at the default half panel. */
   visualScale?: number
   /** The page is a diagram alone, with nothing to fill in. */
   hideExercise?: boolean
   /** Replaces the parsed prompts entirely. */
   exercise?: { intro?: string[]; fields: Field[]; outro?: string[] }
+  /**
+   * Show the diagram again at the top of the exercise.
+   *
+   * For the few entries whose questions are about something drawn: the
+   * artwork sits at the head of the page, and by the time the boxes are on
+   * screen the thing being asked about has scrolled away. Kept out of
+   * `fields` on purpose, because a field here would shift every answer
+   * already saved under the index below it.
+   */
+  repeatVisual?: boolean
   /** Replaces a printed QR code. */
   link?: { label: string; url: string }
 }
@@ -589,7 +599,9 @@ export const entryOverrides: Record<number, EntryOverride> = {
   81: { title: 'Challenge and Ability' },
   83: {
     title: 'Building the New',
-    caption: { lines: [], author: 'Socrates' },
+    // Measured against the quotation drawn into the picture: at the default
+    // the name stood half again as tall as the line above it.
+    caption: { lines: [], author: 'Socrates', authorCqw: 1.55 },
     // A quotation and nothing to fill in. The attribution was the only text the
     // parser could read, so it became the prompt and the page asked the member
     // to write about a name.
@@ -611,6 +623,9 @@ export const entryOverrides: Record<number, EntryOverride> = {
   // and "In flow: out flow:" belong to the drawing, not to the exercise.
   80: {
     title: 'Flow State Autopsy',
+    // Both questions are about the two charts, so they come back into view
+    // above the boxes rather than being left at the top of the page.
+    repeatVisual: true,
     exercise: {
       intro: [
         'Think of an experience where you felt completely in flow, engaged and focused, and one where you felt out of flow, disengaged and distracted. Plot your skill and challenge level on the chart:',

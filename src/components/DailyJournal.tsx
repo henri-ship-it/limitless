@@ -31,6 +31,14 @@ type Props = {
   /** With no Supabase project the entry is kept on the device instead. */
   persist: 'db' | 'local'
   /**
+   * The entry's diagram again, shown at the head of the exercise.
+   *
+   * Null for almost every entry. Set where the questions are about
+   * something drawn, so the member can read it while answering instead of
+   * scrolling back to the top of the page.
+   */
+  artwork?: { src: string; width: number; height: number } | null
+  /**
    * An exercise the book draws rather than writes, such as the values grid.
    *
    * Passed in rather than looked up by entry number, because the number means
@@ -53,6 +61,7 @@ export function DailyJournal({
   awaitingLink,
   initial,
   persist,
+  artwork = null,
   custom = null,
 }: Props) {
   const storageKey = `limitless:entry:${entry}`
@@ -290,6 +299,23 @@ export function DailyJournal({
                 <EntryText text={line} />
               </p>
             ))}
+
+            {/* The same flat ground and multiply blend the artwork is given at
+              * the top of the page, so the second showing is the same picture
+              * rather than a different treatment of it. */}
+            {artwork ? (
+              <div className="bg-[#f1f1f1] px-6 py-8">
+                <img
+                  src={artwork.src}
+                  alt=""
+                  width={artwork.width}
+                  height={artwork.height}
+                  loading="lazy"
+                  decoding="async"
+                  className="mx-auto h-auto w-full max-w-[34rem] object-contain mix-blend-multiply"
+                />
+              </div>
+            ) : null}
 
             {link ? (
               <a

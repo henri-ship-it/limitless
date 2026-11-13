@@ -6,7 +6,6 @@ import { Section } from '@/components/Section'
 import { Quote } from '@/components/Quote'
 import { ChapterVisual } from '@/components/ChapterVisual'
 import { VideoEmbed } from '@/components/VideoEmbed'
-import { DriveEmbed } from '@/components/DriveEmbed'
 import { DigestBody } from '@/components/DigestBody'
 import { StyleRadar } from '@/components/StyleRadar'
 import { WeekEntries } from '@/components/WeekEntries'
@@ -18,7 +17,6 @@ import { getWeek, moduleForWeek, weeks, COHORT } from '@/content/programme'
 import { getDigest } from '@/content/digests'
 import { leadStyle } from '@/content/know-thyself'
 import { entriesForWeek } from '@/content/journal'
-import { workshopRecordings } from '@/content/assets'
 import { getMember, getMyScores, getProgress } from '@/lib/member'
 import {
   clockFor,
@@ -101,7 +99,6 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
    */
   const scores = n === STYLES_WEEK ? await getMyScores() : {}
   const entries = entriesForWeek(n)
-  const recording = workshopRecordings[n]
   const quote = digest?.quote
   const prev = n > 1 ? getWeek(n - 1) : undefined
   const next =
@@ -122,10 +119,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
   const toc: TocItem[] = [
     { id: 'overview', label: 'Overview' },
     ...(week.type === 'deload' && week.recap ? [{ id: 'why', label: 'Why this matters' }] : []),
-    {
-      id: 'masterclass',
-      label: week.type === 'deload' ? 'Workshop keynote' : 'Video masterclass',
-    },
+    ...(week.type === 'deload' ? [] : [{ id: 'masterclass', label: 'Video masterclass' }]),
     { id: 'digest', label: 'Weekly digest' },
     ...(quote ? [{ id: 'journal', label: 'To close' }] : []),
     ...(n === 16 ? [{ id: 'workshop', label: 'Finishing the programme' }] : []),
@@ -183,29 +177,10 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
         </Section>
       ) : null}
 
-      {week.type === 'deload' ? (
-        <Section id="masterclass" label="Workshop keynote">
-          {recording?.url ? (
-            <DriveEmbed
-              url={recording.url}
-              title={`Module ${String(module.number).padStart(2, '0')} workshop`}
-            />
-          ) : (
-            <div className="flex aspect-video w-full items-center justify-center border border-line bg-ink-3">
-              <p className="label">Recording to follow</p>
-            </div>
-          )}
-          <p className="mt-4 !text-ink-56 text-[0.8125rem]">
-            Chris works through the whole of {module.name}, drawing the three chapters together.
-            {/*
-              * Only promise the recording while there is not one. Once it is
-              * playing above, telling a member it lands here afterwards reads
-              * as the thing they are watching being something else.
-              */}
-            {recording?.url ? '' : ' The workshop runs live during this week and the recording lands here afterwards.'}
-          </p>
-        </Section>
-      ) : (
+      {/* A deload week has no video. The module workshop runs live and the
+        * week is for revisiting what is already written, so a keynote here
+        * made the week off look like another thing to watch. */}
+      {week.type === 'deload' ? null : (
         <Section id="masterclass" label="Video masterclass">
           <VideoEmbed youtubeId={week.youtubeId} title={`${week.title} masterclass`} />
           <p className="mt-4 !text-ink-56 text-[0.8125rem]">
