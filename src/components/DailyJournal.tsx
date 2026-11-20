@@ -190,7 +190,7 @@ export function DailyJournal({
       <div className="grid lg:grid-cols-2">
         <div className="border-b border-line lg:border-r">
           {huddle ? (
-            <Panel label="Huddle" meta="The week behind">
+            <Panel label="Huddle" meta="The week behind" tight>
               {HUDDLE_QUESTIONS.map((question, i) => (
                 <FieldGroup
                   key={i}
@@ -388,10 +388,21 @@ export function DailyJournal({
 function Panel({
   label,
   meta,
+  tight,
   children,
 }: {
   label: string
   meta?: string
+  /**
+   * Closer spacing between the blocks.
+   *
+   * The default gap is set for a panel of mixed things: a heading, a row of
+   * lines, a grid. The huddle is three of the same block one after another,
+   * and at that gap the three questions read as three separate exercises
+   * rather than one reflection with three parts. Still wider than the gap
+   * between a question and its own box, so a block still holds together.
+   */
+  tight?: boolean
   children: React.ReactNode
 }) {
   return (
@@ -400,7 +411,7 @@ function Panel({
         <p className="label">{label}</p>
         {meta ? <p className="label">{meta}</p> : null}
       </div>
-      <div className="space-y-9">{children}</div>
+      <div className={tight ? 'space-y-6' : 'space-y-9'}>{children}</div>
     </div>
   )
 }

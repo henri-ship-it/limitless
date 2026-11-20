@@ -607,6 +607,40 @@ export const entryOverrides: Record<number, EntryOverride> = {
     // to write about a name.
     hideExercise: true,
   },
+  // The reflective cycle, one pair of its stages per entry.
+  //
+  // The line introducing the questions was parsed as a prompt and given a box
+  // of its own, so all three pages opened with somewhere to write an answer to
+  // an instruction. It stays the first field as a note rather than moving into
+  // the intro, which reads the same on the page and leaves the two answers
+  // below on the keys they were already saved under.
+  85: {
+    exercise: {
+      fields: [
+        { kind: 'note', text: 'Consider an event or situation and answer the following questions (modified from Gibbs, 1988):' },
+        { kind: 'text', label: 'Description: Describe what happened:' },
+        { kind: 'text', label: 'Feelings: What were you thinking and feeling?' },
+      ],
+    },
+  },
+  87: {
+    exercise: {
+      fields: [
+        { kind: 'note', text: 'Consider an event or situation and answer the following questions (modified from Gibbs, 1988):' },
+        { kind: 'text', label: 'Evaluation: What was good and bad about the experience?' },
+        { kind: 'text', label: 'Analysis: Following further reflection and analysis, what else can you make of the situation?' },
+      ],
+    },
+  },
+  89: {
+    exercise: {
+      fields: [
+        { kind: 'note', text: 'Consider an event or situation and answer the following questions (modified from Gibbs, 1988):' },
+        { kind: 'text', label: 'Conclusion: What else could you have done?' },
+        { kind: 'text', label: 'Action plan: If the same situation occurred again, what would you do?' },
+      ],
+    },
+  },
   86: { title: 'Mind Full or Mindful' },
   88: { title: 'Growth Follows Awareness' },
   90: {

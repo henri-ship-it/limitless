@@ -57,6 +57,14 @@ CLIPS = {
     # points, so anything wider brings half a sentence with it.
     32: (30, 101, 284, 343),
     33: (136, 101, 374, 343),
+    # The reflective cycle with the entry's own two stages picked out.
+    #
+    # Entries 87 and 89 found it on their own; 85 did not. Its box grew to the
+    # full height of the page, which the prompt test then read as the exercise
+    # itself and threw away, so the one entry of the three that introduces the
+    # cycle was the one with no picture of it. Named here with the bounds the
+    # detector found on 87, the three pages being the same layout.
+    85: (84, 105, 330, 290),
     # The two flow charts, and only them. Found automatically, the box ran to
     # 398, which is past the chart's own ink at 343 and takes in both the
     # prompt printed at 364 and the dotted rule under it at 397. That prompt
