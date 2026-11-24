@@ -7,7 +7,8 @@ import { scoreAssessment } from '@/content/assessments'
 import { STYLES, styleFor } from '@/content/know-thyself'
 import { DISCLAIMER, RESULT_INTRO, STEPS, STYLE_COPY } from '@/content/know-thyself-copy'
 import { reportFor } from '@/content/know-thyself-report'
-import { NORMS, NORM_BASE } from '@/content/know-thyself-norms'
+import { NORMS, NORM_BASE, NORM_RANGE } from '@/content/know-thyself-norms'
+import { Radar } from './Radar'
 import { profileFrom } from '@/lib/style-profile'
 
 type Stage = 'intro' | 'questions' | 'details' | 'sending' | 'done'
@@ -258,18 +259,28 @@ export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: strin
             ranked={profile.ranked.map((row) => [row.style.name, row.value] as const)}
             lead={profile.lead.name}
             norms={behavioural ? NORMS : undefined}
+            ranges={behavioural ? NORM_RANGE : undefined}
           />
           {behavioural && (
             <p className="mt-6 flex items-center gap-2 text-[0.8125rem] leading-relaxed text-ink-40">
               <span aria-hidden className="inline-block h-3 w-0.5 shrink-0 bg-ink" />
               <span>
-                Where {NORM_BASE.toLocaleString('en-GB')} people who have taken this scored. The
-                figure in brackets is how far you sit from them.
+                The tick is the middle score of {NORM_BASE.toLocaleString('en-GB')} people who have
+                taken this, and the shaded stretch is where the middle half of them landed. The
+                figure in brackets is how far you sit from the tick.
               </span>
             </p>
           )}
 
           <Deep styleKey={profile.lead.key} name={profile.lead.name} />
+
+          {behavioural && (
+            <Radar
+              scores={scores}
+              lead={profile.lead.name}
+              axes={STYLES.map((style) => style.name)}
+            />
+          )}
 
           <Section title="The four styles" />
 
@@ -478,16 +489,19 @@ function Bars({
   ranked,
   lead,
   norms,
+  ranges,
 }: {
   ranked: readonly (readonly [string, number])[]
   lead?: string
   norms?: Record<string, number>
+  ranges?: Record<string, { p25: number; p75: number }>
 }) {
   return (
     <div className="mt-8 space-y-6">
       {ranked.map(([name, value]) => {
         const leading = name === lead
         const average = norms?.[name]
+        const band = ranges?.[name]
         const gap = average === undefined ? null : Math.round(value - average)
         return (
           <div key={name}>
@@ -508,6 +522,14 @@ function Bars({
             </div>
 
             <div className="relative mt-2 h-1.5 w-full bg-ink-5">
+              {band && (
+                <span
+                  aria-hidden
+                  title={`Middle half of the group, ${band.p25}% to ${band.p75}%`}
+                  className="absolute inset-y-0 bg-ink-8"
+                  style={{ left: `${band.p25}%`, width: `${band.p75 - band.p25}%` }}
+                />
+              )}
               <div
                 className={`h-1.5 transition-[width] duration-700 ${leading ? 'bg-accent' : 'bg-ink-20'}`}
                 style={{ width: `${value}%` }}
@@ -529,10 +551,23 @@ function Bars({
 }
 
 /** The result needs more room than a question does. */
+/**
+ * The result sits on paper.
+ *
+ * A grain tile over the card, at a low opacity, because the printed report is
+ * an analogue object and a flat white panel is the thing that makes a screen
+ * version of it feel like software. It is a background on the card itself, so
+ * nothing in the content has to know about it.
+ */
 function Wide({ children }: { children: React.ReactNode }) {
   return (
-    <main className="flex min-h-screen items-start justify-center bg-bg px-6 py-16">
-      <div className="w-full max-w-xl border border-line bg-surface p-8 sm:p-10">{children}</div>
+    <main className="flex min-h-[100dvh] items-start justify-center bg-bg px-5 py-10 sm:px-6 sm:py-16">
+      <div
+        className="w-full max-w-xl border border-line bg-surface p-6 sm:p-10"
+        style={{ backgroundImage: "url('/know-thyself/paper.png')", backgroundSize: '160px 160px' }}
+      >
+        {children}
+      </div>
     </main>
   )
 }
