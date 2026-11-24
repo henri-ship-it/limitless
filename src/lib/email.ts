@@ -26,14 +26,24 @@ export type Sent =
   | { ok: true }
   | { ok: false; reason: 'not configured' | string }
 
-export const emailConfigured = Boolean(
-  process.env.RESEND_API_KEY && process.env.ASSESSMENT_FROM_EMAIL,
-)
+/**
+ * The sender is already settled, so only the key has to be supplied.
+ *
+ * Resend has sent the sign-in emails since the platform launched, with
+ * lmntaryperformance.com verified and chris@ as the sender. That key lives in
+ * Supabase's SMTP settings rather than in the environment here, because until
+ * now nothing in the app sent mail itself. Giving the same key to the app as
+ * RESEND_API_KEY is all that is outstanding; the domain is already verified
+ * and does not need doing again.
+ */
+const FROM = 'Chris Bodman <chris@lmntaryperformance.com>'
+
+export const emailConfigured = Boolean(process.env.RESEND_API_KEY)
 
 export async function deliver(mail: Mail): Promise<Sent> {
   const key = process.env.RESEND_API_KEY
-  const from = process.env.ASSESSMENT_FROM_EMAIL
-  if (!key || !from) return { ok: false, reason: 'not configured' }
+  const from = process.env.ASSESSMENT_FROM_EMAIL || FROM
+  if (!key) return { ok: false, reason: 'not configured' }
 
   try {
     const response = await fetch('https://api.resend.com/emails', {

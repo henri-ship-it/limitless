@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react'
 
 import type { Assessment as Spec } from '@/content/assessments'
 import { scoreAssessment } from '@/content/assessments'
-import { styleFor } from '@/content/know-thyself'
+import { STYLES, styleFor } from '@/content/know-thyself'
+import { DISCLAIMER, RESULT_INTRO, STEPS, STYLE_COPY } from '@/content/know-thyself-copy'
 import { profileFrom } from '@/lib/style-profile'
 
 type Stage = 'intro' | 'questions' | 'details' | 'done'
@@ -61,21 +62,49 @@ export function Assessment({ spec }: { spec: Spec }) {
     }
   }
 
+  const behavioural = spec.slot === 'scorecard' || spec.slot === 'scorecardShort'
+
   if (stage === 'intro') {
     return (
       <Card>
         <p className="label !tracking-[0.18em] !text-ink">Limitless</p>
-        <h1 className="mt-6 text-[1.625rem] leading-tight font-medium tracking-[-0.022em]">
+        <h1 className="mt-6 font-caption text-[2.25rem] leading-[0.95] font-bold tracking-[-0.01em] uppercase">
           {spec.title}
         </h1>
-        <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-56">
-          {spec.questions.length} statements. Drag each one to where it sits for you, between{' '}
-          {spec.low.toLowerCase()} and {spec.high.toLowerCase()}. There are no right answers, and
-          the quick instinct is usually the honest one.
-        </p>
+        {behavioural && (
+          <p className="mt-2 text-[0.9375rem] text-ink-56">Uncover your behavioural style</p>
+        )}
+
+        {behavioural ? (
+          <ol className="mt-9 space-y-6">
+            {STEPS.map((step, index) => (
+              <li key={step.title} className="flex gap-4">
+                <span className="font-caption mt-[0.1rem] text-[1.25rem] leading-none font-bold text-accent-ink tabular-nums">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <span>
+                  <span className="block text-[0.9375rem] font-medium">{step.title}</span>
+                  <span className="mt-1 block text-[0.9375rem] leading-relaxed text-ink-56">
+                    {step.detail}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-56">
+            {spec.questions.length} statements. Drag each one to where it sits for you, between{' '}
+            {spec.low.toLowerCase()} and {spec.high.toLowerCase()}.
+          </p>
+        )}
+
         <button type="button" onClick={() => setStage('questions')} className={button}>
-          Begin
+          Start here
         </button>
+
+        <p className="mt-7 text-[0.8125rem] leading-relaxed text-ink-40">
+          {spec.questions.length} statements, about five minutes. {behavioural ? DISCLAIMER : ''}
+        </p>
       </Card>
     )
   }
@@ -160,55 +189,79 @@ export function Assessment({ spec }: { spec: Spec }) {
 
   const profile = profileFrom(scores)
   const plain = Object.entries(scores).sort((a, b) => b[1] - a[1])
+  const scoreOf = (name: string) =>
+    profile?.ranked.find((row) => row.style.name === name)?.value ?? 0
 
   return (
     <Wide>
-      <p className="label !tracking-[0.18em] !text-ink">{spec.title}</p>
-
       {profile ? (
         <>
-          <div className="mt-6 flex items-start gap-5">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={profile.lead.icon}
-              alt=""
-              aria-hidden
-              className="mt-1 h-12 w-12 shrink-0"
-            />
-            <div>
-              <h1 className="text-[2rem] leading-[1.1] font-medium tracking-[-0.026em]">
-                You lead with {profile.lead.name}
-              </h1>
-              <p className="mt-2 text-[0.9375rem] text-ink-56">{profile.lead.overview}</p>
+          {/*
+            * The one dark panel on the page. The printed report leans heavily
+            * on black and the accent, and the lead style is the thing somebody
+            * came for, so it gets that treatment and nothing else does.
+            */}
+          <div className="-m-8 mb-0 bg-ink p-8 sm:-m-10 sm:mb-0 sm:p-10">
+            <p className="label !tracking-[0.18em] !text-white/50">
+              Know Thyself · Chapter 01
+            </p>
+            <div className="mt-7 flex items-start gap-5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={profile.lead.icon} alt="" aria-hidden className="mt-1 h-14 w-14 shrink-0 invert" />
+              <div>
+                <p className="text-[0.9375rem] text-white/56">You lead with</p>
+                <h1 className="font-caption text-[2.75rem] leading-[0.9] font-bold tracking-[-0.01em] text-white uppercase">
+                  {profile.lead.name}
+                </h1>
+              </div>
             </div>
+            <p className="mt-6 text-[1.0625rem] leading-relaxed text-white/72">
+              {profile.summary}
+            </p>
           </div>
 
-          <p className="mt-6 border-l-2 border-accent pl-5 text-[1.0625rem] leading-relaxed text-ink-72">
-            {profile.summary}
+          <div className="mt-10 space-y-4">
+            {RESULT_INTRO.map((paragraph) => (
+              <p key={paragraph} className="text-[0.9375rem] leading-relaxed text-ink-72">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+
+          <Section number="01" title="Your profile" />
+          <Bars
+            ranked={profile.ranked.map((row) => [row.style.name, row.value] as const)}
+            lead={profile.lead.name}
+          />
+
+          <Section number="02" title="The four styles" />
+          <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-56">
+            Yours first. The other three are worth reading too, because they are the
+            people you work with, and the perspectives you reach for last.
           </p>
 
-          <Bars ranked={profile.ranked.map((row) => [row.style.name, row.value] as const)} lead={profile.lead.name} />
-
-          <div className="mt-12 grid gap-x-10 gap-y-7 sm:grid-cols-2">
-            <Line term="Reads as" detail={profile.lead.reads} />
-            <Line term="Responds to" detail={profile.lead.respondsTo} />
-            <Line term="Where it wins" detail={profile.lead.differentiator} />
-            <Line term="Blindspot" detail={profile.lead.blindspot} />
-            <Line term="Bottleneck" detail={profile.lead.bottleneck} />
-            <Line
-              term={`Least like you: ${profile.shadow.name}`}
-              detail={`${profile.shadow.overview} It is the one you will reach for last when a situation calls for it.`}
-            />
+          <div className="mt-8 space-y-4">
+            {[profile.lead, ...STYLES.filter((s) => s.key !== profile.lead.key)].map((style) => (
+              <StyleCard
+                key={style.key}
+                name={style.name}
+                icon={style.icon}
+                value={scoreOf(style.name)}
+                copy={STYLE_COPY[style.key]}
+                leading={style.key === profile.lead.key}
+              />
+            ))}
           </div>
 
-          <p className="mt-12 border-t border-line pt-7 text-[0.9375rem] leading-relaxed text-ink-72">
-            None of this is a box. It is a starting point, and the useful part is noticing where{' '}
-            {profile.support.name} shows up instead.
+          <p className="mt-10 border-t border-line pt-7 text-[0.9375rem] leading-relaxed text-ink-72">
+            None of this is a box. It is a starting point, and the useful part is noticing
+            where {profile.support.name} shows up instead.
           </p>
         </>
       ) : (
         <>
-          <h1 className="mt-6 text-[2rem] leading-[1.1] font-medium tracking-[-0.026em]">
+          <p className="label !tracking-[0.18em] !text-ink">{spec.title}</p>
+          <h1 className="mt-6 font-caption text-[2.25rem] leading-[0.95] font-bold uppercase">
             Your result
           </h1>
           <Bars ranked={plain.map(([name, value]) => [name, value] as const)} />
@@ -221,9 +274,88 @@ export function Assessment({ spec }: { spec: Spec }) {
           : `We could not find a member at ${email}, so this result is not saved anywhere. Run it again with the address you joined with if you meant to.`}
         {emailed ? ' A copy is on its way to your inbox.' : ''}
       </p>
+
+      {profile && (
+        <p className="mt-4 text-[0.8125rem] leading-relaxed text-ink-40">{DISCLAIMER}</p>
+      )}
     </Wide>
   )
 }
+
+/** An editorial section rule, numbered the way the printed report numbers them. */
+function Section({ number, title }: { number: string; title: string }) {
+  return (
+    <div className="mt-14 flex items-baseline gap-3 border-t border-line pt-7">
+      <span className="font-caption text-[1.25rem] leading-none font-bold text-accent-ink tabular-nums">
+        {number}
+      </span>
+      <h2 className="font-caption text-[1.25rem] leading-none font-bold uppercase">{title}</h2>
+    </div>
+  )
+}
+
+/**
+ * One style, with the writing that was published alongside it.
+ *
+ * Everyone sees all four. The lead one is picked out rather than being the
+ * only one written up, because the styles somebody scores low on are the ones
+ * they most need to recognise in other people.
+ */
+function StyleCard({
+  name,
+  icon,
+  value,
+  copy,
+  leading,
+}: {
+  name: string
+  icon: string
+  value: number
+  copy: StyleCopyShape | undefined
+  leading: boolean
+}) {
+  if (!copy) return null
+  return (
+    <section
+      className={`border p-6 ${leading ? 'border-accent bg-accent-soft/40' : 'border-line bg-bg'}`}
+    >
+      <div className="flex items-center gap-3">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={icon} alt="" aria-hidden className="h-7 w-7 shrink-0" />
+        <h3 className="font-caption text-[1.125rem] leading-none font-bold uppercase">{name}</h3>
+        {leading && <span className="label !text-accent-ink !tracking-[0.18em]">Yours</span>}
+        <span className="ml-auto font-mono text-[0.8125rem] text-ink-56 tabular-nums">
+          {value}%
+        </span>
+      </div>
+
+      <p className="mt-4 text-[0.9375rem] leading-relaxed text-ink-72">{copy.definition}</p>
+
+      <ul className="mt-4 space-y-2">
+        {copy.marks.map((mark) => (
+          <li key={mark} className="flex gap-3 text-[0.9375rem] leading-relaxed">
+            <span aria-hidden className="mt-[0.55rem] h-px w-3 shrink-0 bg-ink-20" />
+            <span>{mark}</span>
+          </li>
+        ))}
+      </ul>
+
+      <p className="label mt-6 !tracking-[0.18em] !text-ink-40">Be careful</p>
+      <p className="mt-1 text-[0.9375rem] leading-relaxed text-ink-72">{copy.careful}</p>
+
+      <p className="label mt-6 !tracking-[0.18em] !text-ink-40">Counter weights</p>
+      <ul className="mt-2 space-y-1.5">
+        {copy.counterWeights.map((question) => (
+          <li key={question} className="text-[0.9375rem] leading-relaxed text-ink-72">
+            {question}
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+type StyleCopyShape = (typeof STYLE_COPY)[string]
 
 /** The ranked category bars, with the leading one picked out. */
 function Bars({
@@ -275,14 +407,6 @@ function Card({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Line({ term, detail }: { term: string; detail: string }) {
-  return (
-    <div>
-      <dt className="label !tracking-[0.18em] !text-ink-40">{term}</dt>
-      <dd className="mt-1 text-[0.9375rem] leading-relaxed text-ink-72">{detail}</dd>
-    </div>
-  )
-}
 
 const button =
   'mt-8 w-full bg-ink px-4 py-3 text-[0.9375rem] text-white transition-opacity hover:opacity-90 disabled:opacity-40'
