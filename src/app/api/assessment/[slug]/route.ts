@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server'
 
 import { assessmentFor, scoreAssessment } from '@/content/assessments'
+import { resultEmail } from '@/lib/assessment-email'
+import { deliver } from '@/lib/email'
 import { fileAssessment } from '@/lib/scorecard'
+import { profileFrom } from '@/lib/style-profile'
 
 /**
  * Receives a sitting of an assessment taken on the platform.
@@ -69,12 +72,40 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   }
 
   /*
+   * The result email, which ScoreApp used to send and nothing else does now.
+   *
+   * It goes to anyone who finished, member or not, because the address was
+   * given for exactly this. It is awaited so a failure is visible in the
+   * response rather than disappearing into a dropped promise, but it can never
+   * fail the request: the result is already stored and already on its way to
+   * the screen, so a mail problem should cost an email and nothing more.
+   */
+  const profile = profileFrom(scores)
+  let emailed: string = 'not sent'
+  if (profile) {
+    const site = process.env.NEXT_PUBLIC_SITE_URL
+    const sent = await deliver(
+      resultEmail({
+        to: email.trim().toLowerCase(),
+        firstName: outcome.ok ? outcome.firstName : null,
+        profile,
+        resultUrl: site ? `${site.replace(/\/$/, '')}/assessment/${assessment.slug}` : null,
+      }),
+    )
+    emailed = sent.ok ? 'sent' : sent.reason
+    if (!sent.ok && sent.reason !== 'not configured') {
+      console.error('assessment result email failed', { slug: assessment.slug, reason: sent.reason })
+    }
+  }
+
+  /*
    * Someone who is not a member still sees their result. The scores are
    * computed either way; all that differs is whether there was a profile to
    * write them to, which is the sender's problem rather than the reader's.
    */
   return NextResponse.json({
     status: outcome.ok ? 'stored' : outcome.reason,
+    emailed,
     scores,
     answered: Object.keys(clean).length,
     of: assessment.questions.length,

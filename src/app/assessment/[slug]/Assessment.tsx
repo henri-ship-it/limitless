@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react'
 
 import type { Assessment as Spec } from '@/content/assessments'
 import { scoreAssessment } from '@/content/assessments'
-import { leadStyle, styleFor } from '@/content/know-thyself'
+import { styleFor } from '@/content/know-thyself'
+import { profileFrom } from '@/lib/style-profile'
 
 type Stage = 'intro' | 'questions' | 'details' | 'done'
 
@@ -19,6 +20,7 @@ export function Assessment({ spec }: { spec: Spec }) {
   const [sending, setSending] = useState(false)
   const [problem, setProblem] = useState<string | null>(null)
   const [stored, setStored] = useState(false)
+  const [emailed, setEmailed] = useState(false)
 
   const question = spec.questions[at]
   const answer = answers[at] ?? MIDDLE
@@ -50,6 +52,7 @@ export function Assessment({ spec }: { spec: Spec }) {
       // A result is scored either way, but it is only filed when the address
       // belongs to a member. Saying otherwise would be a lie on the page.
       setStored(payload?.status === 'stored')
+      setEmailed(payload?.emailed === 'sent')
       setStage('done')
     } catch (error) {
       setProblem(error instanceof Error ? error.message : 'That did not send')
@@ -155,52 +158,112 @@ export function Assessment({ spec }: { spec: Spec }) {
     )
   }
 
-  const lead = spec.slot === 'scorecard' ? leadStyle(scores) : undefined
-  const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1])
+  const profile = profileFrom(scores)
+  const plain = Object.entries(scores).sort((a, b) => b[1] - a[1])
 
   return (
-    <Card>
+    <Wide>
       <p className="label !tracking-[0.18em] !text-ink">{spec.title}</p>
-      {lead ? (
-        <>
-          <h1 className="mt-6 text-[1.625rem] leading-tight font-medium tracking-[-0.022em]">
-            You lead with {lead.name}
-          </h1>
-          <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-72">{lead.overview}</p>
-          <dl className="mt-8 space-y-5">
-            <Line term="Reads as" detail={lead.reads} />
-            <Line term="Responds to" detail={lead.respondsTo} />
-            <Line term="Where it wins" detail={lead.differentiator} />
-            <Line term="Blindspot" detail={lead.blindspot} />
-            <Line term="Bottleneck" detail={lead.bottleneck} />
-          </dl>
-        </>
-      ) : (
-        <h1 className="mt-6 text-[1.625rem] leading-tight font-medium tracking-[-0.022em]">
-          Your result
-        </h1>
-      )}
 
-      <div className="mt-10 space-y-4">
-        {ranked.map(([category, value]) => (
-          <div key={category}>
-            <div className="flex items-baseline justify-between">
-              <p className="text-[0.9375rem]">{styleFor(category)?.name ?? category}</p>
-              <p className="font-mono text-[0.8125rem] text-ink-56">{value}%</p>
-            </div>
-            <div className="mt-2 h-1.5 w-full bg-ink-5">
-              <div className="h-1.5 bg-accent" style={{ width: `${value}%` }} />
+      {profile ? (
+        <>
+          <div className="mt-6 flex items-start gap-5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={profile.lead.icon}
+              alt=""
+              aria-hidden
+              className="mt-1 h-12 w-12 shrink-0"
+            />
+            <div>
+              <h1 className="text-[2rem] leading-[1.1] font-medium tracking-[-0.026em]">
+                You lead with {profile.lead.name}
+              </h1>
+              <p className="mt-2 text-[0.9375rem] text-ink-56">{profile.lead.overview}</p>
             </div>
           </div>
-        ))}
-      </div>
 
-      <p className="mt-10 text-[0.875rem] leading-relaxed text-ink-40">
+          <p className="mt-6 border-l-2 border-accent pl-5 text-[1.0625rem] leading-relaxed text-ink-72">
+            {profile.summary}
+          </p>
+
+          <Bars ranked={profile.ranked.map((row) => [row.style.name, row.value] as const)} lead={profile.lead.name} />
+
+          <div className="mt-12 grid gap-x-10 gap-y-7 sm:grid-cols-2">
+            <Line term="Reads as" detail={profile.lead.reads} />
+            <Line term="Responds to" detail={profile.lead.respondsTo} />
+            <Line term="Where it wins" detail={profile.lead.differentiator} />
+            <Line term="Blindspot" detail={profile.lead.blindspot} />
+            <Line term="Bottleneck" detail={profile.lead.bottleneck} />
+            <Line
+              term={`Least like you: ${profile.shadow.name}`}
+              detail={`${profile.shadow.overview} It is the one you will reach for last when a situation calls for it.`}
+            />
+          </div>
+
+          <p className="mt-12 border-t border-line pt-7 text-[0.9375rem] leading-relaxed text-ink-72">
+            None of this is a box. It is a starting point, and the useful part is noticing where{' '}
+            {profile.support.name} shows up instead.
+          </p>
+        </>
+      ) : (
+        <>
+          <h1 className="mt-6 text-[2rem] leading-[1.1] font-medium tracking-[-0.026em]">
+            Your result
+          </h1>
+          <Bars ranked={plain.map(([name, value]) => [name, value] as const)} />
+        </>
+      )}
+
+      <p className="mt-7 text-[0.875rem] leading-relaxed text-ink-40">
         {stored
           ? `Saved against ${email}. It will be on your profile next time you sign in.`
-          : `We could not find a member at ${email}, so this result is not saved anywhere. Take a screenshot, or run it again with the address you joined with.`}
+          : `We could not find a member at ${email}, so this result is not saved anywhere. Run it again with the address you joined with if you meant to.`}
+        {emailed ? ' A copy is on its way to your inbox.' : ''}
       </p>
-    </Card>
+    </Wide>
+  )
+}
+
+/** The ranked category bars, with the leading one picked out. */
+function Bars({
+  ranked,
+  lead,
+}: {
+  ranked: readonly (readonly [string, number])[]
+  lead?: string
+}) {
+  return (
+    <div className="mt-10 space-y-5">
+      {ranked.map(([name, value]) => {
+        const leading = name === lead
+        return (
+          <div key={name}>
+            <div className="flex items-baseline justify-between">
+              <p className={leading ? 'text-[0.9375rem] font-medium' : 'text-[0.9375rem] text-ink-56'}>
+                {styleFor(name)?.name ?? name}
+              </p>
+              <p className="font-mono text-[0.8125rem] text-ink-56 tabular-nums">{value}%</p>
+            </div>
+            <div className="mt-2 h-1.5 w-full bg-ink-5">
+              <div
+                className={`h-1.5 transition-[width] duration-700 ${leading ? 'bg-accent' : 'bg-ink-20'}`}
+                style={{ width: `${value}%` }}
+              />
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+/** The result needs more room than a question does. */
+function Wide({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="flex min-h-screen items-start justify-center bg-bg px-6 py-16">
+      <div className="w-full max-w-xl border border-line bg-surface p-8 sm:p-10">{children}</div>
+    </main>
   )
 }
 

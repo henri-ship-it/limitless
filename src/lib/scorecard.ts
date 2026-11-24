@@ -253,7 +253,13 @@ export async function fileAssessment(
   slot: string,
   filed: Filed,
 ): Promise<
-  | { ok: true; scores: Record<string, number>; notes: Record<string, string> }
+  | {
+      ok: true
+      scores: Record<string, number>
+      notes: Record<string, string>
+      /** For anything written back to the member, such as a result email. */
+      firstName: string | null
+    }
   | { ok: false; reason: string; status: number }
 > {
   const supabase = createClient(
@@ -269,14 +275,14 @@ export async function fileAssessment(
    */
   let { data: profile } = await supabase
     .from('profiles')
-    .select('id, assessment')
+    .select('id, assessment, first_name')
     .eq('email', email)
     .maybeSingle()
 
   if (!profile) {
     const { data: byAlt } = await supabase
       .from('profiles')
-      .select('id, assessment')
+      .select('id, assessment, first_name')
       .ilike('alt_email', email)
       .maybeSingle()
     profile = byAlt
@@ -303,5 +309,10 @@ export async function fileAssessment(
   const { error } = await supabase.from('profiles').update({ assessment }).eq('id', profile.id)
   if (error) return { ok: false, reason: error.message, status: 500 }
 
-  return { ok: true, scores, notes }
+  return {
+    ok: true,
+    scores,
+    notes,
+    firstName: (profile as { first_name?: string | null }).first_name ?? null,
+  }
 }
