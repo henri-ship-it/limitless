@@ -5,40 +5,45 @@ import { STYLE_COPY } from '@/content/know-thyself-copy'
 /**
  * The result email somebody gets after taking Know Thyself.
  *
- * ScoreApp sent one of these and taking the assessment in house took it away,
- * so this puts it back. It is written to Chris's rules rather than as a
- * personal note from him: it is plainly an automated result, and pretending
- * otherwise would be worse than not sending one.
+ * Styled from the actual newsletter template, `lmntary-editorial.html` in the
+ * newsletter folder, rather than from the brand tokens or the Kit web archive,
+ * both of which say something different. Its values, verbatim:
  *
- * Styled to match the Kit newsletter rather than the platform: Urbanist,
- * generous spacing, the accent used sparingly. No banner, because the result
- * is the point and a header image only pushes it below the fold.
+ *   shell      554px, white, centred
+ *   body       Georgia, 16.5px / 29px, #111111, paragraphs 22px apart
+ *   headings   system sans, 700. h1 29/36 #000000, h2 22/30, h3 18/26
+ *   eyebrow    the h6 rule: sans, 11/18, 400, .08em, uppercase, #8a8a8a
+ *   links      #111111 with a 2px #04dfbf bottom border, never underlined
+ *   button     #04dfbf on #06201d text, 13px 22px, 4px radius, sans 700 15px
+ *   rule       1px #e4e4e4, 34px clear
+ *   panel      #f1f1f1, 8px radius, 26px 24px
+ *   footer     sans 12/18, #656565
  *
- * Images are hosted PNGs rather than inline SVG, which Gmail strips. They are
- * the behavioural style marks printed in the journal, so a style reads the
- * same in an inbox as it does on the page. Every one has alt text, because a
- * good number of people will never load them.
+ * No banner. The template carries one and this does not, because the result is
+ * the point and a header image pushes it under the fold.
  *
- * Note for anyone editing the copy: no em dashes or en dashes, anywhere, and
- * British spelling throughout. That rule is the whole house style and it is
- * easy to break without noticing.
+ * Images are hosted PNGs rather than inline SVG, which Gmail strips. The four
+ * behavioural marks are the ones printed in the journal, so a style reads the
+ * same in an inbox as on the page. All of them carry alt text.
+ *
+ * No em dashes or en dashes anywhere, and British spelling. That rule is the
+ * whole house style and it is easy to break without noticing.
  */
 
-/*
- * The Kit newsletter template, read off its own configuration rather than
- * guessed at. Anton for headings, Inter for body, and note the accent is
- * #00dfbf, which is not the #04dfbf the platform uses.
- */
-const INK = '#1c1c1c'
-const HEADING = '#3c3c3c'
-const MUTED = '#1c1c1c8f'
-const FAINT = '#1c1c1c66'
-const LINE = '#e4e8ec'
-const ACCENT = '#00dfbf'
-const PAPER = '#f3f6f9'
+const INK = '#111111'
+const BLACK = '#000000'
+const MUTED = '#656565'
+const FAINT = '#8a8a8a'
+const RULE = '#e4e4e4'
+const PANEL = '#f1f1f1'
+const ACCENT = '#04dfbf'
+const ACCENT_INK = '#06201d'
 
-const BODY_FONT = "'Inter', Helvetica, Arial, sans-serif"
-const HEADING_FONT = "'Anton', 'Inter', Helvetica, Arial, sans-serif"
+const SERIF = "Georgia,'Times New Roman',serif"
+const SANS = "-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif"
+
+const BODY = `font-family:${SERIF};font-size:16.5px;line-height:29px;color:${INK};`
+const EYEBROW = `font-family:${SANS};font-size:11px;line-height:18px;font-weight:400;letter-spacing:.08em;text-transform:uppercase;color:${FAINT};`
 
 function escape(value: string): string {
   return value
@@ -82,25 +87,25 @@ export function resultEmail(options: {
       const leading = style.key === lead.key
       return `
         <tr>
-          <td style="padding:0 0 18px;">
+          <td style="padding:0 0 17px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
-                <td width="28" style="vertical-align:middle;padding-right:12px;">
-                  ${mark(style.key, 24, style.name)}
+                <td width="26" style="vertical-align:middle;padding-right:11px;">
+                  ${mark(style.key, 22, style.name)}
                 </td>
-                <td style="font:${leading ? 600 : 400} 16px/1.4 ${BODY_FONT};color:${leading ? INK : MUTED};">
+                <td style="font-family:${SANS};font-size:15px;line-height:20px;font-weight:${leading ? 700 : 400};color:${leading ? INK : MUTED};">
                   ${escape(style.name)}
                 </td>
-                <td align="right" style="font:600 15px/1.4 ${BODY_FONT};color:${leading ? INK : MUTED};">
+                <td align="right" style="font-family:${SANS};font-size:15px;line-height:20px;font-weight:700;color:${leading ? INK : MUTED};">
                   ${value}%
                 </td>
               </tr>
             </table>
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:7px;">
               <tr>
-                <td style="background:#0000000d;height:6px;line-height:6px;font-size:0;">
+                <td style="background:${PANEL};height:6px;line-height:6px;font-size:0;">
                   <table role="presentation" width="${value}%" cellpadding="0" cellspacing="0" border="0">
-                    <tr><td style="background:${leading ? ACCENT : '#26262633'};height:6px;line-height:6px;font-size:0;">&nbsp;</td></tr>
+                    <tr><td style="background:${leading ? ACCENT : '#c9c9c9'};height:6px;line-height:6px;font-size:0;">&nbsp;</td></tr>
                   </table>
                 </td>
               </tr>
@@ -114,23 +119,19 @@ export function resultEmail(options: {
     const src = img(icon)
     return `
     <tr>
-      <td style="padding:0 0 24px;">
+      <td style="padding:0 0 26px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr>
-            <td width="32" style="vertical-align:top;padding-right:14px;padding-top:2px;">
+            <td width="30" style="vertical-align:top;padding-right:13px;padding-top:3px;">
               ${
                 src
-                  ? `<img src="${escape(src)}" width="20" height="20" alt="" style="display:block;border:0;width:20px;height:20px;" />`
+                  ? `<img src="${escape(src)}" width="18" height="18" alt="" style="display:block;border:0;width:18px;height:18px;" />`
                   : ''
               }
             </td>
             <td>
-              <p style="margin:0 0 5px;font:600 12px/1.4 ${BODY_FONT};letter-spacing:0.14em;text-transform:uppercase;color:${FAINT};">
-                ${escape(term)}
-              </p>
-              <p style="margin:0;font:400 18px/1.7 ${BODY_FONT};color:${INK};">
-                ${escape(detail)}
-              </p>
+              <p style="margin:0 0 6px;${EYEBROW}">${escape(term)}</p>
+              <p style="margin:0;${BODY}">${escape(detail)}</p>
             </td>
           </tr>
         </table>
@@ -139,14 +140,7 @@ export function resultEmail(options: {
   }
 
   const button = resultUrl
-    ? `
-    <tr>
-      <td style="padding:10px 0 0;">
-        <a href="${escape(resultUrl)}" style="display:inline-block;background:${ACCENT};color:#000000;text-decoration:none;font:400 16px/1 ${HEADING_FONT};text-transform:uppercase;letter-spacing:0.04em;padding:17px 28px;">
-          See your full result
-        </a>
-      </td>
-    </tr>`
+    ? `<a href="${escape(resultUrl)}" style="display:inline-block;border:none;background-color:${ACCENT};color:${ACCENT_INK};padding:13px 22px;border-radius:4px;font-family:${SANS};font-size:15px;line-height:20px;font-weight:700;text-decoration:none;">See your full result</a>`
     : ''
 
   const html = `<!doctype html>
@@ -155,51 +149,52 @@ export function resultEmail(options: {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="color-scheme" content="light" />
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <title>Know Thyself</title>
+  <style>
+    @media only screen and (max-width:600px) {
+      .message-content { padding-left:22px !important; padding-right:22px !important; }
+      .lead-name { font-size:27px !important; line-height:34px !important; }
+    }
+  </style>
 </head>
-<body style="margin:0;padding:0;background:${PAPER};">
+<body style="margin:0;padding:0;background:#ffffff;">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;height:0;width:0;">
     ${escape(preview)}
   </div>
 
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${PAPER};padding:48px 16px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:#ffffff;border:1px solid ${LINE};">
+        <table role="presentation" width="554" cellpadding="0" cellspacing="0" border="0" style="max-width:554px;background:#ffffff;">
           <tr>
-            <td style="padding:44px 40px;">
-              <p style="margin:0;font:400 18px/1.7 ${BODY_FONT};color:${INK};">
-                ${escape(greeting)},
-              </p>
+            <td class="message-content" style="padding:38px 22px 8px 22px;">
 
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 0;">
+              <p style="margin:0 0 22px;${BODY}">${escape(greeting)},</p>
+
+              <p style="margin:0 0 14px;${EYEBROW}">Know Thyself &nbsp;·&nbsp; Chapter 01</p>
+
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
                 <tr>
-                  <td width="60" style="vertical-align:middle;padding-right:18px;">
-                    ${mark(lead.key, 52, lead.name)}
+                  <td width="58" style="vertical-align:middle;padding-right:16px;">
+                    ${mark(lead.key, 46, lead.name)}
                   </td>
                   <td style="vertical-align:middle;">
-                    <p style="margin:0;font:400 15px/1.3 ${BODY_FONT};color:${MUTED};">You lead with</p>
-                    <p style="margin:3px 0 0;font:400 36px/1.05 ${HEADING_FONT};text-transform:uppercase;letter-spacing:0.01em;color:${HEADING};">
-                      ${escape(lead.name)}
-                    </p>
+                    <h1 class="lead-name" style="margin:0;font-family:${SANS};font-weight:700;font-size:29px;line-height:36px;color:${BLACK};">
+                      You lead with ${escape(lead.name)}
+                    </h1>
                   </td>
                 </tr>
               </table>
 
-              <p style="margin:24px 0 0;font:400 18px/1.7 ${BODY_FONT};color:${INK};">
-                ${escape(summary)}
-              </p>
+              <p style="margin:0 0 22px;${BODY}">${escape(summary)}</p>
 
-              <p style="margin:14px 0 0;font:400 18px/1.7 ${BODY_FONT};color:${MUTED};">
-                ${escape(copy?.definition ?? lead.overview)}
-              </p>
+              <p style="margin:0 0 30px;${BODY}">${escape(copy?.definition ?? lead.overview)}</p>
 
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:34px 0 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 ${bars}
               </table>
 
-              <div style="height:1px;background:${LINE};margin:14px 0 30px;"></div>
+              <div style="border-top:1px solid ${RULE};margin:34px 0;"></div>
 
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 ${row('flash', 'Where it wins', lead.differentiator)}
@@ -208,22 +203,28 @@ export function resultEmail(options: {
                 ${row('chart', `Least like you: ${shadow.name}`, `${shadow.overview} It is the one you reach for last when a situation calls for it.`)}
               </table>
 
-              <p style="margin:6px 0 28px;font:400 18px/1.7 ${BODY_FONT};color:${MUTED};">
-                These are tendencies, not fixed positions. Where you sit moves with the room, the
-                pressure and the day, and ${escape(support.name)} will show up as readily as
-                ${escape(lead.name)} in the right conditions.
-              </p>
-
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-                ${button}
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:32px 0;">
+                <tr>
+                  <td style="background:${PANEL};border-radius:8px;padding:26px 24px;">
+                    <p style="margin:0;${BODY}">
+                      These are tendencies, not fixed positions. Where you sit moves with the room,
+                      the pressure and the day, and ${escape(support.name)} will show up as readily
+                      as ${escape(lead.name)} in the right conditions.
+                    </p>
+                  </td>
+                </tr>
               </table>
+
+              ${button ? `<p style="margin:0 0 30px;">${button}</p>` : ''}
+
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:10px 22px 32px 22px;text-align:center;font-family:${SANS};font-size:12px;line-height:18px;color:${MUTED};">
+              Sent because you took the Know Thyself assessment.<br />LMNTARY Performance
             </td>
           </tr>
         </table>
-
-        <p style="margin:22px 0 0;font:400 13px/1.6 ${BODY_FONT};color:${FAINT};max-width:560px;">
-          Sent because you took the Know Thyself assessment. LMNTARY Performance.
-        </p>
       </td>
     </tr>
   </table>
@@ -252,7 +253,7 @@ export function resultEmail(options: {
     `These are tendencies, not fixed positions. Where you sit moves with the room, the pressure and the day, and ${support.name} will show up as readily as ${lead.name} in the right conditions.`,
     ...(resultUrl ? ['', `See your full result: ${resultUrl}`] : []),
     '',
-    'Sent because you took the Know Thyself assessment. LMNTARY Performance.',
+    'Sent because you took the Know Thyself assessment. LMNTARY Performance',
   ].join('\n')
 
   return {
