@@ -31,8 +31,8 @@ const ACCENT = '#04dfbf'
 const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif"
 const MONO = "ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace"
 
-const BODY = `font-family:${SANS};font-size:15px;line-height:26px;color:${INK};`
-const EYEBROW = `font-family:${MONO};font-size:11px;line-height:17px;letter-spacing:.06em;text-transform:uppercase;color:${FAINT};`
+const BODY = `font-family:${SANS};font-size:17px;line-height:28px;color:${INK};`
+const EYEBROW = `font-family:${MONO};font-size:12px;line-height:18px;letter-spacing:.06em;text-transform:uppercase;color:${FAINT};`
 
 function escape(value: string): string {
   return value
@@ -76,25 +76,25 @@ export function resultEmail(options: {
       const leading = style.key === lead.key
       return `
         <tr>
-          <td style="padding:0 0 17px;">
+          <td style="padding:0 0 22px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
-                <td width="26" style="vertical-align:middle;padding-right:11px;">
-                  ${mark(style.key, 22, style.name)}
+                <td width="30" style="vertical-align:middle;padding-right:12px;">
+                  ${mark(style.key, 24, "")}
                 </td>
-                <td style="font-family:${SANS};font-size:15px;line-height:20px;font-weight:${leading ? 500 : 400};color:${leading ? INK : MUTED};">
+                <td style="font-family:${SANS};font-size:16px;line-height:22px;font-weight:${leading ? 600 : 400};color:${leading ? INK : MUTED};">
                   ${escape(style.name)}
                 </td>
-                <td align="right" style="font-family:${MONO};font-size:13px;line-height:20px;color:${leading ? INK : MUTED};">
+                <td align="right" style="font-family:${MONO};font-size:14px;line-height:22px;color:${leading ? INK : MUTED};">
                   ${value}%
                 </td>
               </tr>
             </table>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:7px;">
               <tr>
-                <td style="background:#0000000d;height:6px;line-height:6px;font-size:0;">
+                <td style="background:#0000000d;height:8px;line-height:8px;font-size:0;">
                   <table role="presentation" width="${value}%" cellpadding="0" cellspacing="0" border="0">
-                    <tr><td style="background:${leading ? ACCENT : '#26262633'};height:6px;line-height:6px;font-size:0;">&nbsp;</td></tr>
+                    <tr><td style="background:${leading ? ACCENT : '#26262633'};height:8px;line-height:8px;font-size:0;">&nbsp;</td></tr>
                   </table>
                 </td>
               </tr>
@@ -104,23 +104,32 @@ export function resultEmail(options: {
     })
     .join('')
 
+  /** Three questions read as three questions, not as one run-on line. */
+  const lines = (items: string[]) =>
+    items
+      .map(
+        (item) =>
+          `<p style="margin:0 0 7px;${BODY}">${escape(item)}</p>`,
+      )
+      .join('')
+
   const row = (icon: string, term: string, detail: string) => {
     const src = img(icon)
     return `
     <tr>
-      <td style="padding:0 0 26px;">
+      <td style="padding:0 0 30px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr>
-            <td width="30" style="vertical-align:top;padding-right:13px;padding-top:3px;">
+            <td width="32" style="vertical-align:top;padding-right:14px;padding-top:4px;">
               ${
                 src
-                  ? `<img src="${escape(src)}" width="18" height="18" alt="" style="display:block;border:0;width:18px;height:18px;" />`
+                  ? `<img src="${escape(src)}" width="20" height="20" alt="" style="display:block;border:0;width:20px;height:20px;" />`
                   : ''
               }
             </td>
             <td>
               <p style="margin:0 0 6px;${EYEBROW}">${escape(term)}</p>
-              <p style="margin:0;${BODY}">${escape(detail)}</p>
+              ${detail.startsWith('<p') ? detail : `<p style="margin:0;${BODY}">${escape(detail)}</p>`}
             </td>
           </tr>
         </table>
@@ -129,7 +138,7 @@ export function resultEmail(options: {
   }
 
   const button = resultUrl
-    ? `<a href="${escape(resultUrl)}" style="display:inline-block;background:${INK};color:#ffffff;padding:14px 22px;font-family:${SANS};font-size:15px;line-height:20px;font-weight:500;text-decoration:none;">See your full result</a>`
+    ? `<a href="${escape(resultUrl)}" style="display:inline-block;background:${INK};color:#ffffff;padding:17px 28px;font-family:${SANS};font-size:16px;line-height:20px;font-weight:500;text-decoration:none;">See your full result</a>`
     : ''
 
   const html = `<!doctype html>
@@ -140,9 +149,10 @@ export function resultEmail(options: {
   <meta name="color-scheme" content="light" />
   <title>Know Thyself</title>
   <style>
-    @media only screen and (max-width:600px) {
-      .message-content { padding-left:22px !important; padding-right:22px !important; }
-      .lead-name { font-size:27px !important; line-height:34px !important; }
+    @media only screen and (max-width:620px) {
+      .message-content { padding:30px 20px 10px 20px !important; }
+      .foot { padding:12px 20px 28px 20px !important; }
+      .lead-name { font-size:27px !important; line-height:33px !important; }
     }
   </style>
 </head>
@@ -151,12 +161,12 @@ export function resultEmail(options: {
     ${escape(preview)}
   </div>
 
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${PAPER};padding:40px 16px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${PAPER};padding:32px 12px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="554" cellpadding="0" cellspacing="0" border="0" style="max-width:554px;background:#ffffff;border:1px solid ${RULE};">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#ffffff;border:1px solid ${RULE};">
           <tr>
-            <td class="message-content" style="padding:38px 22px 8px 22px;">
+            <td class="message-content" style="padding:40px 36px 12px 36px;">
 
               <p style="margin:0 0 22px;${BODY}">${escape(greeting)},</p>
 
@@ -164,11 +174,11 @@ export function resultEmail(options: {
 
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
                 <tr>
-                  <td width="58" style="vertical-align:middle;padding-right:16px;">
-                    ${mark(lead.key, 46, lead.name)}
+                  <td width="70" style="vertical-align:middle;padding-right:18px;">
+                    ${mark(lead.key, 54, "")}
                   </td>
                   <td style="vertical-align:middle;">
-                    <h1 class="lead-name" style="margin:0;font-family:${SANS};font-weight:500;font-size:28px;line-height:34px;letter-spacing:-0.02em;color:${INK};">
+                    <h1 class="lead-name" style="margin:0;font-family:${SANS};font-weight:500;font-size:32px;line-height:38px;letter-spacing:-0.022em;color:${INK};">
                       You lead with ${escape(lead.name)}
                     </h1>
                   </td>
@@ -188,7 +198,7 @@ export function resultEmail(options: {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 ${row('flash', 'Where it wins', lead.differentiator)}
                 ${row('alert', 'Be careful', copy?.careful ?? lead.blindspot)}
-                ${row('compass', 'Ask yourself', (copy?.counterWeights ?? []).join('  ·  ') || lead.respondsTo)}
+                ${row('compass', 'Ask yourself', copy ? lines([...copy.counterWeights]) : lead.respondsTo)}
                 ${row('chart', `Least like you: ${shadow.name}`, `${shadow.overview} It is the one you reach for last when a situation calls for it.`)}
               </table>
 
@@ -209,7 +219,7 @@ export function resultEmail(options: {
             </td>
           </tr>
           <tr>
-            <td style="padding:10px 22px 32px 22px;text-align:center;font-family:${SANS};font-size:13px;line-height:20px;color:${FAINT};">
+            <td class="foot" style="padding:14px 36px 36px 36px;text-align:center;font-family:${SANS};font-size:13px;line-height:20px;color:${FAINT};">
               Sent because you took the Know Thyself assessment.<br />LMNTARY Performance
             </td>
           </tr>
