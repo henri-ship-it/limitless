@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 
 import { Assessment } from './Assessment'
-import { ASSESSMENTS, assessmentFor } from '@/content/assessments'
+import { assessmentFor, assessmentPaths } from '@/content/assessments'
 
 /**
  * The assessments the printed journals point at.
@@ -12,7 +12,7 @@ import { ASSESSMENTS, assessmentFor } from '@/content/assessments'
  * this page.
  */
 export function generateStaticParams() {
-  return ASSESSMENTS.map((assessment) => ({ slug: assessment.slug }))
+  return assessmentPaths().map((slug) => ({ slug }))
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {

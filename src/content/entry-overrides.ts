@@ -44,7 +44,7 @@ const scoreGauge: Field = {
 /** The assessment behind the motivation check-in, used in weeks 6 and 8. */
 const motivationLink = {
   label: 'Take the Light the Fire assessment',
-  url: 'https://unlock.lmntaryperformance.com/light-the-fire',
+  url: '/assessment/light-the-fire',
 }
 
 const motivationFields: Field[] = [

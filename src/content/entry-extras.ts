@@ -11,7 +11,7 @@
 export const entryLinks: Record<number, { label: string; url: string } | null> = {
   1: {
     label: 'Take the Know Thyself assessment',
-    url: 'https://unlock.lmntaryperformance.com/know-thyself',
+    url: '/assessment/know-thyself',
   },
   // Motivation check-in, weeks 6 and 8. Same assessment both times.
   36: null,
