@@ -48,12 +48,18 @@ export function profileFrom(scores: Record<string, number>): Profile | null {
 
   const shape: Shape = gap >= PRONOUNCED ? 'pronounced' : gap < BLENDED ? 'blended' : 'leaning'
 
+  /*
+   * Everybody has all four. These sentences describe where somebody sits on a
+   * continuum today, under the conditions they answered in, and never which
+   * of the four they are. A result that tells a reader what they are is wrong
+   * about the instrument as well as unkind.
+   */
   const summary =
     shape === 'pronounced'
-      ? `${lead.name} runs well ahead of everything else, so most rooms will read you that way before you have said much.`
+      ? `You lean towards ${lead.name} more strongly than the rest, so it is probably the one that shows first.`
       : shape === 'blended'
-        ? `${lead.name} and ${support.name} sit almost level, so you are not one thing. Which one shows up tends to depend on the room.`
-        : `${lead.name} leads, with ${support.name} close enough behind to show under pressure.`
+        ? `${lead.name} and ${support.name} sit almost level today, and which one you reach for tends to depend on the room.`
+        : `${lead.name} leads at the moment, with ${support.name} close enough behind to show under pressure.`
 
   return { ranked, lead, support, shadow, gap, shape, summary }
 }

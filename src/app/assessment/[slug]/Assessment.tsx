@@ -8,16 +8,16 @@ import { STYLES, styleFor } from '@/content/know-thyself'
 import { DISCLAIMER, RESULT_INTRO, STEPS, STYLE_COPY } from '@/content/know-thyself-copy'
 import { profileFrom } from '@/lib/style-profile'
 
-type Stage = 'intro' | 'questions' | 'details' | 'done'
+type Stage = 'intro' | 'questions' | 'details' | 'sending' | 'done'
 
 /** The scale starts in the middle, so nobody is nudged by where the handle sits. */
 const MIDDLE = 50
 
-export function Assessment({ spec }: { spec: Spec }) {
+export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: string | null }) {
   const [stage, setStage] = useState<Stage>('intro')
   const [at, setAt] = useState(0)
   const [answers, setAnswers] = useState<Record<number, number>>({})
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(signedInAs ?? '')
   const [sending, setSending] = useState(false)
   const [problem, setProblem] = useState<string | null>(null)
   const [stored, setStored] = useState(false)
@@ -35,18 +35,28 @@ export function Assessment({ spec }: { spec: Spec }) {
     // The handle sits in the middle until it is moved, and a middling answer is
     // a real answer, so an untouched scale is recorded rather than skipped.
     setAnswers((held) => ({ ...held, [at]: held[at] ?? MIDDLE }))
-    if (at + 1 < spec.questions.length) setAt(at + 1)
+    if (at + 1 < spec.questions.length) {
+      setAt(at + 1)
+      return
+    }
+    /*
+     * Somebody signed in has already told us their address, and asking again
+     * is how the wrong one gets typed. Their result files against the account
+     * they are sitting in.
+     */
+    if (signedInAs) void send(signedInAs)
     else setStage('details')
   }
 
-  async function send() {
+  async function send(address: string) {
     setSending(true)
+    setStage('sending')
     setProblem(null)
     try {
       const response = await fetch(`/api/assessment/${spec.slug}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, answers }),
+        body: JSON.stringify({ email: address, answers }),
       })
       const payload = await response.json()
       if (!response.ok) throw new Error(payload?.error ?? 'That did not send')
@@ -57,6 +67,7 @@ export function Assessment({ spec }: { spec: Spec }) {
       setStage('done')
     } catch (error) {
       setProblem(error instanceof Error ? error.message : 'That did not send')
+      setStage('details')
     } finally {
       setSending(false)
     }
@@ -67,30 +78,19 @@ export function Assessment({ spec }: { spec: Spec }) {
   if (stage === 'intro') {
     return (
       <Card>
-        <p className="label !tracking-[0.18em] !text-ink">Limitless</p>
-        <h1 className="mt-6 font-caption text-[2.25rem] leading-[0.95] font-bold tracking-[-0.01em] uppercase">
+        <h1 className="font-caption text-[2.25rem] leading-[0.95] font-bold tracking-[-0.01em] uppercase">
           {spec.title}
         </h1>
-        {behavioural && (
-          <p className="mt-2 text-[0.9375rem] text-ink-56">Uncover your behavioural style</p>
-        )}
 
         {behavioural ? (
-          <ol className="mt-9 space-y-6">
-            {STEPS.map((step, index) => (
-              <li key={step.title} className="flex gap-4">
-                <span className="font-caption mt-[0.1rem] text-[1.25rem] leading-none font-bold text-accent-ink tabular-nums">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <span>
-                  <span className="block text-[0.9375rem] font-medium">{step.title}</span>
-                  <span className="mt-1 block text-[0.9375rem] leading-relaxed text-ink-56">
-                    {step.detail}
-                  </span>
-                </span>
+          <ul className="mt-8 space-y-5">
+            {STEPS.map((step) => (
+              <li key={step.title}>
+                <p className="text-[0.9375rem] font-medium">{step.title}</p>
+                <p className="mt-1 text-[0.9375rem] leading-relaxed text-ink-56">{step.detail}</p>
               </li>
             ))}
-          </ol>
+          </ul>
         ) : (
           <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-56">
             {spec.questions.length} statements. Drag each one to where it sits for you, between{' '}
@@ -135,7 +135,10 @@ export function Assessment({ spec }: { spec: Spec }) {
           value={answer}
           onChange={(event) => record(Number(event.target.value))}
           aria-label={question.text}
-          className="mt-8 w-full accent-[#04dfbf]"
+          className="scale mt-8"
+          style={{
+            background: `linear-gradient(90deg, var(--color-accent-soft) 0%, var(--color-accent) 100%) 0 0 / ${answer}% 100% no-repeat, var(--color-ink-8)`,
+          }}
         />
         <div className="mt-2 flex justify-between font-mono text-[0.75rem] text-ink-40">
           <span>{spec.low}</span>
@@ -160,11 +163,18 @@ export function Assessment({ spec }: { spec: Spec }) {
     )
   }
 
+  if (stage === 'sending') {
+    return (
+      <Card>
+        <p className="text-[0.9375rem] text-ink-56">Working out your result.</p>
+      </Card>
+    )
+  }
+
   if (stage === 'details') {
     return (
       <Card>
-        <p className="label !tracking-[0.18em] !text-ink">Almost there</p>
-        <h1 className="mt-6 text-[1.625rem] leading-tight font-medium tracking-[-0.022em]">
+        <h1 className="text-[1.625rem] leading-tight font-medium tracking-[-0.022em]">
           Where should this go?
         </h1>
         <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-56">
@@ -180,7 +190,7 @@ export function Assessment({ spec }: { spec: Spec }) {
           className="mt-6 w-full border border-line bg-bg px-4 py-3 text-[0.9375rem] outline-none focus:border-line-strong"
         />
         {problem && <p className="mt-3 text-[0.875rem] text-flame">{problem}</p>}
-        <button type="button" onClick={send} disabled={sending || !email} className={button}>
+        <button type="button" onClick={() => send(email)} disabled={sending || !email} className={button}>
           {sending ? 'Sending' : 'See my result'}
         </button>
       </Card>
@@ -202,10 +212,7 @@ export function Assessment({ spec }: { spec: Spec }) {
             * came for, so it gets that treatment and nothing else does.
             */}
           <div className="-m-8 mb-0 bg-ink p-8 sm:-m-10 sm:mb-0 sm:p-10">
-            <p className="label !tracking-[0.18em] !text-white/50">
-              Know Thyself · Chapter 01
-            </p>
-            <div className="mt-7 flex items-start gap-5">
+            <div className="flex items-start gap-5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={profile.lead.icon} alt="" aria-hidden className="mt-1 h-14 w-14 shrink-0 invert" />
               <div>
@@ -228,17 +235,13 @@ export function Assessment({ spec }: { spec: Spec }) {
             ))}
           </div>
 
-          <Section number="01" title="Your profile" />
+          <Section title="Your profile" />
           <Bars
             ranked={profile.ranked.map((row) => [row.style.name, row.value] as const)}
             lead={profile.lead.name}
           />
 
-          <Section number="02" title="The four styles" />
-          <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-56">
-            Yours first. The other three are worth reading too, because they are the
-            people you work with, and the perspectives you reach for last.
-          </p>
+          <Section title="The four styles" />
 
           <div className="mt-8 space-y-4">
             {[profile.lead, ...STYLES.filter((s) => s.key !== profile.lead.key)].map((style) => (
@@ -254,14 +257,14 @@ export function Assessment({ spec }: { spec: Spec }) {
           </div>
 
           <p className="mt-10 border-t border-line pt-7 text-[0.9375rem] leading-relaxed text-ink-72">
-            None of this is a box. It is a starting point, and the useful part is noticing
-            where {profile.support.name} shows up instead.
+            These are tendencies, not fixed positions. Where you sit moves with the room,
+            the pressure and the day, and {profile.support.name} will show up as readily
+            as {profile.lead.name} in the right conditions.
           </p>
         </>
       ) : (
         <>
-          <p className="label !tracking-[0.18em] !text-ink">{spec.title}</p>
-          <h1 className="mt-6 font-caption text-[2.25rem] leading-[0.95] font-bold uppercase">
+          <h1 className="font-caption text-[2.25rem] leading-[0.95] font-bold uppercase">
             Your result
           </h1>
           <Bars ranked={plain.map(([name, value]) => [name, value] as const)} />
@@ -282,15 +285,12 @@ export function Assessment({ spec }: { spec: Spec }) {
   )
 }
 
-/** An editorial section rule, numbered the way the printed report numbers them. */
-function Section({ number, title }: { number: string; title: string }) {
+/** A plain section heading. */
+function Section({ title }: { title: string }) {
   return (
-    <div className="mt-14 flex items-baseline gap-3 border-t border-line pt-7">
-      <span className="font-caption text-[1.25rem] leading-none font-bold text-accent-ink tabular-nums">
-        {number}
-      </span>
-      <h2 className="font-caption text-[1.25rem] leading-none font-bold uppercase">{title}</h2>
-    </div>
+    <h2 className="font-caption mt-14 border-t border-line pt-7 text-[1.25rem] leading-none font-bold uppercase">
+      {title}
+    </h2>
   )
 }
 
@@ -323,7 +323,7 @@ function StyleCard({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={icon} alt="" aria-hidden className="h-7 w-7 shrink-0" />
         <h3 className="font-caption text-[1.125rem] leading-none font-bold uppercase">{name}</h3>
-        {leading && <span className="label !text-accent-ink !tracking-[0.18em]">Yours</span>}
+        {leading && <span className="label !tracking-[0.18em]">Yours</span>}
         <span className="ml-auto font-mono text-[0.8125rem] text-ink-56 tabular-nums">
           {value}%
         </span>

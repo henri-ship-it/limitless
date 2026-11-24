@@ -132,8 +132,9 @@ export function resultEmail(options: {
               </table>
 
               <p style="margin:6px 0 24px;font:400 15px/1.6 -apple-system,system-ui,sans-serif;color:${INK};">
-                None of this is a box. It is a starting point, and the useful part is noticing
-                where ${escape(support.name)} shows up instead.
+                These are tendencies, not fixed positions. Where you sit moves with the room,
+                the pressure and the day, and ${escape(support.name)} will show up as readily as
+                ${escape(lead.name)} in the right conditions.
               </p>
 
               <table role="presentation" cellpadding="0" cellspacing="0" border="0">
@@ -169,7 +170,7 @@ export function resultEmail(options: {
     '',
     `Least like you: ${shadow.name}. ${shadow.overview} Worth knowing, because it is the one you will reach for last when a situation calls for it.`,
     '',
-    `None of this is a box. It is a starting point, and the useful part is noticing where ${support.name} shows up instead.`,
+    `These are tendencies, not fixed positions. Where you sit moves with the room, the pressure and the day, and ${support.name} will show up as readily as ${lead.name} in the right conditions.`,
     ...(resultUrl ? ['', `Take it again: ${resultUrl}`] : []),
     '',
     'Sent because you took the Know Thyself assessment. LMNTARY Performance.',
