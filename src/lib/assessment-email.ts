@@ -5,22 +5,12 @@ import { STYLE_COPY } from '@/content/know-thyself-copy'
 /**
  * The result email somebody gets after taking Know Thyself.
  *
- * Styled from the actual newsletter template, `lmntary-editorial.html` in the
- * newsletter folder, rather than from the brand tokens or the Kit web archive,
- * both of which say something different. Its values, verbatim:
- *
- *   shell      554px, white, centred
- *   body       Georgia, 16.5px / 29px, #111111, paragraphs 22px apart
- *   headings   system sans, 700. h1 29/36 #000000, h2 22/30, h3 18/26
- *   eyebrow    the h6 rule: sans, 11/18, 400, .08em, uppercase, #8a8a8a
- *   links      #111111 with a 2px #04dfbf bottom border, never underlined
- *   button     #04dfbf on #06201d text, 13px 22px, 4px radius, sans 700 15px
- *   rule       1px #e4e4e4, 34px clear
- *   panel      #f1f1f1, 8px radius, 26px 24px
- *   footer     sans 12/18, #656565
- *
- * No banner. The template carries one and this does not, because the result is
- * the point and a header image pushes it under the fold.
+ * Styled as the platform, not as the newsletter. Same tokens as globals.css:
+ * #f9f9f9 behind a white card with a hairline border, #262626 ink, the mono
+ * label for eyebrows, #04dfbf used once on the leading bar, and the dark
+ * button the rest of the platform uses. Geist cannot be relied on in an inbox,
+ * so the stacks fall back to the system faces, which is what the platform
+ * falls back to anyway.
  *
  * Images are hosted PNGs rather than inline SVG, which Gmail strips. The four
  * behavioural marks are the ones printed in the journal, so a style reads the
@@ -30,20 +20,19 @@ import { STYLE_COPY } from '@/content/know-thyself-copy'
  * whole house style and it is easy to break without noticing.
  */
 
-const INK = '#111111'
-const BLACK = '#000000'
-const MUTED = '#656565'
-const FAINT = '#8a8a8a'
-const RULE = '#e4e4e4'
-const PANEL = '#f1f1f1'
+const INK = '#262626'
+const MUTED = '#2626268f'
+const FAINT = '#26262666'
+const RULE = '#ededed'
+const PANEL = '#0000000a'
+const PAPER = '#f9f9f9'
 const ACCENT = '#04dfbf'
-const ACCENT_INK = '#06201d'
 
-const SERIF = "Georgia,'Times New Roman',serif"
-const SANS = "-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif"
+const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif"
+const MONO = "ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace"
 
-const BODY = `font-family:${SERIF};font-size:16.5px;line-height:29px;color:${INK};`
-const EYEBROW = `font-family:${SANS};font-size:11px;line-height:18px;font-weight:400;letter-spacing:.08em;text-transform:uppercase;color:${FAINT};`
+const BODY = `font-family:${SANS};font-size:15px;line-height:26px;color:${INK};`
+const EYEBROW = `font-family:${MONO};font-size:11px;line-height:17px;letter-spacing:.06em;text-transform:uppercase;color:${FAINT};`
 
 function escape(value: string): string {
   return value
@@ -93,19 +82,19 @@ export function resultEmail(options: {
                 <td width="26" style="vertical-align:middle;padding-right:11px;">
                   ${mark(style.key, 22, style.name)}
                 </td>
-                <td style="font-family:${SANS};font-size:15px;line-height:20px;font-weight:${leading ? 700 : 400};color:${leading ? INK : MUTED};">
+                <td style="font-family:${SANS};font-size:15px;line-height:20px;font-weight:${leading ? 500 : 400};color:${leading ? INK : MUTED};">
                   ${escape(style.name)}
                 </td>
-                <td align="right" style="font-family:${SANS};font-size:15px;line-height:20px;font-weight:700;color:${leading ? INK : MUTED};">
+                <td align="right" style="font-family:${MONO};font-size:13px;line-height:20px;color:${leading ? INK : MUTED};">
                   ${value}%
                 </td>
               </tr>
             </table>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:7px;">
               <tr>
-                <td style="background:${PANEL};height:6px;line-height:6px;font-size:0;">
+                <td style="background:#0000000d;height:6px;line-height:6px;font-size:0;">
                   <table role="presentation" width="${value}%" cellpadding="0" cellspacing="0" border="0">
-                    <tr><td style="background:${leading ? ACCENT : '#c9c9c9'};height:6px;line-height:6px;font-size:0;">&nbsp;</td></tr>
+                    <tr><td style="background:${leading ? ACCENT : '#26262633'};height:6px;line-height:6px;font-size:0;">&nbsp;</td></tr>
                   </table>
                 </td>
               </tr>
@@ -140,7 +129,7 @@ export function resultEmail(options: {
   }
 
   const button = resultUrl
-    ? `<a href="${escape(resultUrl)}" style="display:inline-block;border:none;background-color:${ACCENT};color:${ACCENT_INK};padding:13px 22px;border-radius:4px;font-family:${SANS};font-size:15px;line-height:20px;font-weight:700;text-decoration:none;">See your full result</a>`
+    ? `<a href="${escape(resultUrl)}" style="display:inline-block;background:${INK};color:#ffffff;padding:14px 22px;font-family:${SANS};font-size:15px;line-height:20px;font-weight:500;text-decoration:none;">See your full result</a>`
     : ''
 
   const html = `<!doctype html>
@@ -157,15 +146,15 @@ export function resultEmail(options: {
     }
   </style>
 </head>
-<body style="margin:0;padding:0;background:#ffffff;">
+<body style="margin:0;padding:0;background:${PAPER};">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;height:0;width:0;">
     ${escape(preview)}
   </div>
 
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${PAPER};padding:40px 16px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="554" cellpadding="0" cellspacing="0" border="0" style="max-width:554px;background:#ffffff;">
+        <table role="presentation" width="554" cellpadding="0" cellspacing="0" border="0" style="max-width:554px;background:#ffffff;border:1px solid ${RULE};">
           <tr>
             <td class="message-content" style="padding:38px 22px 8px 22px;">
 
@@ -179,7 +168,7 @@ export function resultEmail(options: {
                     ${mark(lead.key, 46, lead.name)}
                   </td>
                   <td style="vertical-align:middle;">
-                    <h1 class="lead-name" style="margin:0;font-family:${SANS};font-weight:700;font-size:29px;line-height:36px;color:${BLACK};">
+                    <h1 class="lead-name" style="margin:0;font-family:${SANS};font-weight:500;font-size:28px;line-height:34px;letter-spacing:-0.02em;color:${INK};">
                       You lead with ${escape(lead.name)}
                     </h1>
                   </td>
@@ -205,7 +194,7 @@ export function resultEmail(options: {
 
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:32px 0;">
                 <tr>
-                  <td style="background:${PANEL};border-radius:8px;padding:26px 24px;">
+                  <td style="background:${PANEL};padding:22px 22px;">
                     <p style="margin:0;${BODY}">
                       These are tendencies, not fixed positions. Where you sit moves with the room,
                       the pressure and the day, and ${escape(support.name)} will show up as readily
@@ -220,7 +209,7 @@ export function resultEmail(options: {
             </td>
           </tr>
           <tr>
-            <td style="padding:10px 22px 32px 22px;text-align:center;font-family:${SANS};font-size:12px;line-height:18px;color:${MUTED};">
+            <td style="padding:10px 22px 32px 22px;text-align:center;font-family:${SANS};font-size:13px;line-height:20px;color:${FAINT};">
               Sent because you took the Know Thyself assessment.<br />LMNTARY Performance
             </td>
           </tr>

@@ -7,6 +7,7 @@ import { scoreAssessment } from '@/content/assessments'
 import { STYLES, styleFor } from '@/content/know-thyself'
 import { DISCLAIMER, RESULT_INTRO, STEPS, STYLE_COPY } from '@/content/know-thyself-copy'
 import { reportFor } from '@/content/know-thyself-report'
+import { NORMS, NORM_BASE } from '@/content/know-thyself-norms'
 import { profileFrom } from '@/lib/style-profile'
 
 type Stage = 'intro' | 'questions' | 'details' | 'sending' | 'done'
@@ -208,24 +209,26 @@ export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: strin
       {profile ? (
         <>
           {/*
-            * The one dark panel on the page. The printed report leans heavily
-            * on black and the accent, and the lead style is the thing somebody
-            * came for, so it gets that treatment and nothing else does.
+            * The plate. The printed report opens on an engraving over an old
+            * map with the style written across it, and that is the whole
+            * character of the thing, so the result opens on the same image
+            * rather than on a flat panel. It bleeds to the edges of the card.
             */}
-          <div className="-m-8 mb-0 bg-ink p-8 sm:-m-10 sm:mb-0 sm:p-10">
-            <div className="flex items-start gap-5">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={profile.lead.icon} alt="" aria-hidden className="mt-1 h-14 w-14 shrink-0 invert" />
-              <div>
-                <p className="text-[0.9375rem] text-white/56">You lead with</p>
-                <h1 className="font-caption text-[2.75rem] leading-[0.9] font-bold tracking-[-0.01em] text-white uppercase">
-                  {profile.lead.name}
-                </h1>
-              </div>
-            </div>
-            <p className="mt-6 text-[1.0625rem] leading-relaxed text-white/72">
-              {profile.summary}
-            </p>
+          <figure className="-m-8 mb-0 sm:-m-10 sm:mb-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/know-thyself/styles/${profile.lead.key}.jpg`}
+              alt={`${profile.lead.name}, drawn as a plate from the Know Thyself report`}
+              className="block w-full"
+            />
+          </figure>
+
+          <div className="mt-9">
+            <p className="text-[0.9375rem] text-ink-56">You lead with</p>
+            <h1 className="font-caption text-[2.75rem] leading-[0.9] font-bold tracking-[-0.01em] uppercase">
+              {profile.lead.name}
+            </h1>
+            <p className="mt-5 text-[1.0625rem] leading-relaxed text-ink-72">{profile.summary}</p>
           </div>
 
           <div className="mt-10 space-y-4">
@@ -240,7 +243,17 @@ export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: strin
           <Bars
             ranked={profile.ranked.map((row) => [row.style.name, row.value] as const)}
             lead={profile.lead.name}
+            norms={behavioural ? NORMS : undefined}
           />
+          {behavioural && (
+            <p className="mt-6 flex items-center gap-2 text-[0.8125rem] leading-relaxed text-ink-40">
+              <span aria-hidden className="inline-block h-3 w-0.5 shrink-0 bg-ink" />
+              <span>
+                Where {NORM_BASE.toLocaleString('en-GB')} people who have taken this scored. The
+                figure in brackets is how far you sit from them.
+              </span>
+            </p>
+          )}
 
           <Deep styleKey={profile.lead.key} name={profile.lead.name} />
 
@@ -432,31 +445,67 @@ function StyleCard({
 
 type StyleCopyShape = (typeof STYLE_COPY)[string]
 
-/** The ranked category bars, with the leading one picked out. */
+/**
+ * The ranked styles, as a meter list.
+ *
+ * Aligned bars on one baseline rather than a radar, because the reader's job
+ * here is to compare four values exactly and rank them, and a radar makes that
+ * harder: area grows as the square of the value, and the shape changes with
+ * the order the axes happen to sit in.
+ *
+ * The leading style carries the accent and the rest are grey. One thing is the
+ * point and the others are context, so they are drawn that way.
+ *
+ * Where a norm exists, a tick marks what everybody else scored, because a
+ * number on its own says very little. 63 reads differently once you know the
+ * room averages 51.
+ */
 function Bars({
   ranked,
   lead,
+  norms,
 }: {
   ranked: readonly (readonly [string, number])[]
   lead?: string
+  norms?: Record<string, number>
 }) {
   return (
-    <div className="mt-10 space-y-5">
+    <div className="mt-8 space-y-6">
       {ranked.map(([name, value]) => {
         const leading = name === lead
+        const average = norms?.[name]
+        const gap = average === undefined ? null : Math.round(value - average)
         return (
           <div key={name}>
-            <div className="flex items-baseline justify-between">
+            <div className="flex items-baseline justify-between gap-3">
               <p className={leading ? 'text-[0.9375rem] font-medium' : 'text-[0.9375rem] text-ink-56'}>
                 {styleFor(name)?.name ?? name}
               </p>
-              <p className="font-mono text-[0.8125rem] text-ink-56 tabular-nums">{value}%</p>
+              <p className="font-mono text-[0.8125rem] tabular-nums text-ink-56">
+                {value}%
+                {gap !== null && (
+                  <span className={gap === 0 ? 'text-ink-40' : ''}>
+                    {' '}
+                    ({gap > 0 ? '+' : ''}
+                    {gap})
+                  </span>
+                )}
+              </p>
             </div>
-            <div className="mt-2 h-1.5 w-full bg-ink-5">
+
+            <div className="relative mt-2 h-1.5 w-full bg-ink-5">
               <div
                 className={`h-1.5 transition-[width] duration-700 ${leading ? 'bg-accent' : 'bg-ink-20'}`}
                 style={{ width: `${value}%` }}
               />
+              {average !== undefined && (
+                <span
+                  aria-hidden
+                  title={`Average ${Math.round(average)}%`}
+                  className="absolute top-[-3px] h-3 w-0.5 bg-ink ring-2 ring-surface"
+                  style={{ left: `calc(${average}% - 1px)` }}
+                />
+              )}
             </div>
           </div>
         )
