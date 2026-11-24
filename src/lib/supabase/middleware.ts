@@ -24,6 +24,14 @@ const PUBLIC_PATHS = [
   '/api/cron/',
   // Webhooks carry a shared secret rather than a member session.
   '/api/webhooks',
+  /*
+   * The assessments are scanned off a printed page, often by somebody who has
+   * never signed in and sometimes by somebody who is not a member at all. A
+   * sign-in wall here would break every QR code in every journal already in
+   * circulation, which is the one thing this rebuild exists to avoid.
+   */
+  '/assessment',
+  '/api/assessment',
 ]
 
 export async function updateSession(request: NextRequest) {
