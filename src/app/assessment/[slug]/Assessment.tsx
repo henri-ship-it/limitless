@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import type { Assessment as Spec } from '@/content/assessments'
 import { scoreAssessment } from '@/content/assessments'
@@ -24,6 +24,20 @@ export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: strin
   const [problem, setProblem] = useState<string | null>(null)
   const [stored, setStored] = useState(false)
   const [emailed, setEmailed] = useState(false)
+
+  /*
+   * While a question is up, the page does not scroll on a phone.
+   *
+   * The card already fits the screen, so any scrolling is the page moving
+   * under a thumb that was trying to drag the scale, which loses the answer
+   * and the place at once. Locked only under the mobile breakpoint, in CSS,
+   * so a laptop behaves normally.
+   */
+  useEffect(() => {
+    if (stage !== 'questions') return
+    document.body.classList.add('answering')
+    return () => document.body.classList.remove('answering')
+  }, [stage])
 
   const question = spec.questions[at]
   const answer = answers[at] ?? MIDDLE
@@ -114,7 +128,7 @@ export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: strin
   if (stage === 'questions') {
     const through = Math.round((at / spec.questions.length) * 100)
     return (
-      <Card>
+      <Card fill>
         <div className="flex items-baseline justify-between">
           <p className="label !tracking-[0.18em] !text-ink-40">
             {at + 1} of {spec.questions.length}
@@ -523,10 +537,14 @@ function Wide({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Card({ children }: { children: React.ReactNode }) {
+function Card({ children, fill }: { children: React.ReactNode; fill?: boolean }) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-bg px-6 py-16">
-      <div className="w-full max-w-md border border-line bg-surface p-8">{children}</div>
+    <main
+      className={`flex items-center justify-center bg-bg px-5 sm:px-6 ${
+        fill ? 'min-h-[100dvh] py-5 sm:py-16' : 'min-h-[100dvh] py-10 sm:py-16'
+      }`}
+    >
+      <div className="w-full max-w-md border border-line bg-surface p-6 sm:p-8">{children}</div>
     </main>
   )
 }

@@ -384,3 +384,18 @@ summary {
 .scale:focus-visible {
   box-shadow: 0 0 0 3px var(--color-accent-soft);
 }
+
+/*
+ * The page holds still while a question is on screen.
+ *
+ * The assessment card already fits a phone, so any scroll during a question is
+ * the page sliding under a thumb that meant to drag the scale: the answer is
+ * lost and so is the place. Only under the mobile breakpoint, because a mouse
+ * has no such problem and a short laptop window may still need to scroll.
+ */
+@media (max-width: 767px) {
+  body.answering {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+}
