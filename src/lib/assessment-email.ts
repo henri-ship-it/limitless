@@ -1,5 +1,6 @@
 import type { Mail } from './email'
 import type { Profile } from './style-profile'
+import { STYLE_COPY } from '@/content/know-thyself-copy'
 
 /**
  * The result email somebody gets after taking Know Thyself.
@@ -9,6 +10,15 @@ import type { Profile } from './style-profile'
  * personal note from him: it is plainly an automated result, and pretending
  * otherwise would be worse than not sending one.
  *
+ * Styled to match the Kit newsletter rather than the platform: Urbanist,
+ * generous spacing, the accent used sparingly. No banner, because the result
+ * is the point and a header image only pushes it below the fold.
+ *
+ * Images are hosted PNGs rather than inline SVG, which Gmail strips. They are
+ * the behavioural style marks printed in the journal, so a style reads the
+ * same in an inbox as it does on the page. Every one has alt text, because a
+ * good number of people will never load them.
+ *
  * Note for anyone editing the copy: no em dashes or en dashes, anywhere, and
  * British spelling throughout. That rule is the whole house style and it is
  * easy to break without noticing.
@@ -16,8 +26,13 @@ import type { Profile } from './style-profile'
 
 const INK = '#262626'
 const MUTED = '#2626268f'
+const FAINT = '#26262666'
 const LINE = '#ededed'
 const ACCENT = '#04dfbf'
+const PAPER = '#f9f9f9'
+
+const BODY_FONT =
+  "'Urbanist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
 
 function escape(value: string): string {
   return value
@@ -32,29 +47,50 @@ export function resultEmail(options: {
   firstName: string | null
   profile: Profile
   resultUrl: string | null
+  /** Where the images live. Without it the email goes out as text and rules. */
+  site: string | null
 }): Mail {
-  const { to, firstName, profile, resultUrl } = options
+  const { to, firstName, profile, resultUrl, site } = options
   const { lead, support, shadow, ranked, summary } = profile
+  const copy = STYLE_COPY[lead.key]
 
   const greeting = firstName ? `Hi ${firstName}` : 'Hi'
+  const img = (name: string) => (site ? `${site.replace(/\/$/, '')}/email/${name}.png` : null)
+
+  /*
+   * The preview text, which decides whether any of the rest gets read. It
+   * names the style, because that is the one thing somebody is waiting to
+   * know, and then points at the part they are not expecting.
+   */
+  const preview = `${lead.name} leads. The part worth reading is the one you reach for last.`
+
+  const mark = (styleKey: string, size: number, alt: string) => {
+    const src = img(styleKey)
+    return src
+      ? `<img src="${escape(src)}" width="${size}" height="${size}" alt="${escape(alt)}" style="display:block;border:0;width:${size}px;height:${size}px;" />`
+      : ''
+  }
 
   const bars = ranked
     .map(({ style, value }) => {
       const leading = style.key === lead.key
       return `
         <tr>
-          <td style="padding:0 0 14px;">
+          <td style="padding:0 0 18px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
-                <td style="font:500 15px/1.4 -apple-system,system-ui,sans-serif;color:${leading ? INK : MUTED};">
+                <td width="28" style="vertical-align:middle;padding-right:12px;">
+                  ${mark(style.key, 24, style.name)}
+                </td>
+                <td style="font:${leading ? 600 : 400} 16px/1.4 ${BODY_FONT};color:${leading ? INK : MUTED};">
                   ${escape(style.name)}
                 </td>
-                <td align="right" style="font:400 13px/1.4 ui-monospace,Menlo,monospace;color:${MUTED};">
+                <td align="right" style="font:600 15px/1.4 ${BODY_FONT};color:${leading ? INK : MUTED};">
                   ${value}%
                 </td>
               </tr>
             </table>
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:7px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px;">
               <tr>
                 <td style="background:#0000000d;height:6px;line-height:6px;font-size:0;">
                   <table role="presentation" width="${value}%" cellpadding="0" cellspacing="0" border="0">
@@ -68,24 +104,40 @@ export function resultEmail(options: {
     })
     .join('')
 
-  const row = (term: string, detail: string) => `
+  const row = (icon: string, term: string, detail: string) => {
+    const src = img(icon)
+    return `
     <tr>
-      <td style="padding:0 0 18px;">
-        <p style="margin:0 0 4px;font:500 11px/1.4 -apple-system,system-ui,sans-serif;letter-spacing:0.18em;text-transform:uppercase;color:${MUTED};">
-          ${escape(term)}
-        </p>
-        <p style="margin:0;font:400 15px/1.6 -apple-system,system-ui,sans-serif;color:${INK};">
-          ${escape(detail)}
-        </p>
+      <td style="padding:0 0 24px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td width="32" style="vertical-align:top;padding-right:14px;padding-top:2px;">
+              ${
+                src
+                  ? `<img src="${escape(src)}" width="20" height="20" alt="" style="display:block;border:0;width:20px;height:20px;" />`
+                  : ''
+              }
+            </td>
+            <td>
+              <p style="margin:0 0 5px;font:600 12px/1.4 ${BODY_FONT};letter-spacing:0.14em;text-transform:uppercase;color:${FAINT};">
+                ${escape(term)}
+              </p>
+              <p style="margin:0;font:400 16px/1.65 ${BODY_FONT};color:${INK};">
+                ${escape(detail)}
+              </p>
+            </td>
+          </tr>
+        </table>
       </td>
     </tr>`
+  }
 
   const button = resultUrl
     ? `
     <tr>
-      <td style="padding:8px 0 0;">
-        <a href="${escape(resultUrl)}" style="display:inline-block;background:${INK};color:#ffffff;text-decoration:none;font:500 15px/1 -apple-system,system-ui,sans-serif;padding:14px 22px;">
-          Take it again
+      <td style="padding:10px 0 0;">
+        <a href="${escape(resultUrl)}" style="display:inline-block;background:${INK};color:#ffffff;text-decoration:none;font:600 16px/1 ${BODY_FONT};padding:16px 26px;">
+          See your full result
         </a>
       </td>
     </tr>`
@@ -93,47 +145,66 @@ export function resultEmail(options: {
 
   const html = `<!doctype html>
 <html lang="en">
-<body style="margin:0;padding:0;background:#f9f9f9;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9f9f9;padding:40px 16px;">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;800&display=swap" rel="stylesheet" />
+  <title>Know Thyself</title>
+</head>
+<body style="margin:0;padding:0;background:${PAPER};">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;height:0;width:0;">
+    ${escape(preview)}
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${PAPER};padding:48px 16px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;background:#ffffff;border:1px solid ${LINE};">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:#ffffff;border:1px solid ${LINE};">
           <tr>
-            <td style="padding:36px 32px;">
-              <p style="margin:0;font:500 11px/1.4 -apple-system,system-ui,sans-serif;letter-spacing:0.18em;text-transform:uppercase;color:${INK};">
-                Know Thyself
-              </p>
-
-              <p style="margin:26px 0 0;font:400 16px/1.6 -apple-system,system-ui,sans-serif;color:${INK};">
+            <td style="padding:44px 40px;">
+              <p style="margin:0;font:400 17px/1.65 ${BODY_FONT};color:${INK};">
                 ${escape(greeting)},
               </p>
 
-              <h1 style="margin:18px 0 0;font:500 26px/1.25 -apple-system,system-ui,sans-serif;letter-spacing:-0.02em;color:${INK};">
-                You lead with ${escape(lead.name)}
-              </h1>
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 0;">
+                <tr>
+                  <td width="60" style="vertical-align:middle;padding-right:18px;">
+                    ${mark(lead.key, 52, lead.name)}
+                  </td>
+                  <td style="vertical-align:middle;">
+                    <p style="margin:0;font:400 15px/1.3 ${BODY_FONT};color:${MUTED};">You lead with</p>
+                    <p style="margin:2px 0 0;font:800 34px/1.05 ${BODY_FONT};letter-spacing:-0.01em;color:${INK};">
+                      ${escape(lead.name)}
+                    </p>
+                  </td>
+                </tr>
+              </table>
 
-              <p style="margin:12px 0 0;font:400 15px/1.6 -apple-system,system-ui,sans-serif;color:${INK};">
-                ${escape(lead.overview)} ${escape(summary)}
+              <p style="margin:24px 0 0;font:400 17px/1.65 ${BODY_FONT};color:${INK};">
+                ${escape(summary)}
               </p>
 
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:30px 0 0;">
+              <p style="margin:14px 0 0;font:400 16px/1.65 ${BODY_FONT};color:${MUTED};">
+                ${escape(copy?.definition ?? lead.overview)}
+              </p>
+
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:34px 0 0;">
                 ${bars}
               </table>
 
-              <hr style="border:0;border-top:1px solid ${LINE};margin:26px 0;">
+              <div style="height:1px;background:${LINE};margin:14px 0 30px;"></div>
 
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                ${row('Reads as', lead.reads)}
-                ${row('Responds to', lead.respondsTo)}
-                ${row('Where it wins', lead.differentiator)}
-                ${row('Blindspot', lead.blindspot)}
-                ${row('Bottleneck', lead.bottleneck)}
-                ${row(`Least like you: ${shadow.name}`, `${shadow.overview} Worth knowing, because it is the one you will reach for last when a situation calls for it.`)}
+                ${row('flash', 'Where it wins', lead.differentiator)}
+                ${row('alert', 'Be careful', copy?.careful ?? lead.blindspot)}
+                ${row('compass', 'Ask yourself', (copy?.counterWeights ?? []).join('  ·  ') || lead.respondsTo)}
+                ${row('chart', `Least like you: ${shadow.name}`, `${shadow.overview} It is the one you reach for last when a situation calls for it.`)}
               </table>
 
-              <p style="margin:6px 0 24px;font:400 15px/1.6 -apple-system,system-ui,sans-serif;color:${INK};">
-                These are tendencies, not fixed positions. Where you sit moves with the room,
-                the pressure and the day, and ${escape(support.name)} will show up as readily as
+              <p style="margin:6px 0 28px;font:400 16px/1.65 ${BODY_FONT};color:${MUTED};">
+                These are tendencies, not fixed positions. Where you sit moves with the room, the
+                pressure and the day, and ${escape(support.name)} will show up as readily as
                 ${escape(lead.name)} in the right conditions.
               </p>
 
@@ -144,7 +215,7 @@ export function resultEmail(options: {
           </tr>
         </table>
 
-        <p style="margin:20px 0 0;font:400 12px/1.6 -apple-system,system-ui,sans-serif;color:${MUTED};max-width:520px;">
+        <p style="margin:22px 0 0;font:400 13px/1.6 ${BODY_FONT};color:${FAINT};max-width:560px;">
           Sent because you took the Know Thyself assessment. LMNTARY Performance.
         </p>
       </td>
@@ -154,31 +225,33 @@ export function resultEmail(options: {
 </html>`
 
   const text = [
+    preview,
+    '',
     `${greeting},`,
     '',
     `You lead with ${lead.name}.`,
     '',
-    `${lead.overview} ${summary}`,
+    summary,
+    '',
+    copy?.definition ?? lead.overview,
     '',
     ...ranked.map(({ style, value }) => `${style.name}: ${value}%`),
     '',
-    `Reads as: ${lead.reads}`,
-    `Responds to: ${lead.respondsTo}`,
     `Where it wins: ${lead.differentiator}`,
-    `Blindspot: ${lead.blindspot}`,
-    `Bottleneck: ${lead.bottleneck}`,
+    `Be careful: ${copy?.careful ?? lead.blindspot}`,
+    ...(copy ? ['', 'Ask yourself:', ...copy.counterWeights.map((q) => `  ${q}`)] : []),
     '',
-    `Least like you: ${shadow.name}. ${shadow.overview} Worth knowing, because it is the one you will reach for last when a situation calls for it.`,
+    `Least like you: ${shadow.name}. ${shadow.overview} It is the one you reach for last when a situation calls for it.`,
     '',
     `These are tendencies, not fixed positions. Where you sit moves with the room, the pressure and the day, and ${support.name} will show up as readily as ${lead.name} in the right conditions.`,
-    ...(resultUrl ? ['', `Take it again: ${resultUrl}`] : []),
+    ...(resultUrl ? ['', `See your full result: ${resultUrl}`] : []),
     '',
     'Sent because you took the Know Thyself assessment. LMNTARY Performance.',
   ].join('\n')
 
   return {
     to,
-    subject: `Your Know Thyself result: ${lead.name}`,
+    subject: `You lead with ${lead.name}`,
     html,
     text,
   }

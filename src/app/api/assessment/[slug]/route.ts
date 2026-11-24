@@ -90,6 +90,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
         firstName: outcome.ok ? outcome.firstName : null,
         profile,
         resultUrl: site ? `${site.replace(/\/$/, '')}/assessment/${assessment.slug}` : null,
+        site: site ?? null,
       }),
     )
     emailed = sent.ok ? 'sent' : sent.reason
