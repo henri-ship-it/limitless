@@ -6,6 +6,7 @@ import type { Assessment as Spec } from '@/content/assessments'
 import { scoreAssessment } from '@/content/assessments'
 import { STYLES, styleFor } from '@/content/know-thyself'
 import { DISCLAIMER, RESULT_INTRO, STEPS, STYLE_COPY } from '@/content/know-thyself-copy'
+import { reportFor } from '@/content/know-thyself-report'
 import { profileFrom } from '@/lib/style-profile'
 
 type Stage = 'intro' | 'questions' | 'details' | 'sending' | 'done'
@@ -241,6 +242,8 @@ export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: strin
             lead={profile.lead.name}
           />
 
+          <Deep styleKey={profile.lead.key} name={profile.lead.name} />
+
           <Section title="The four styles" />
 
           <div className="mt-8 space-y-4">
@@ -282,6 +285,78 @@ export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: strin
         <p className="mt-4 text-[0.8125rem] leading-relaxed text-ink-40">{DISCLAIMER}</p>
       )}
     </Wide>
+  )
+}
+
+
+/**
+ * The longer writing, for the style somebody actually leads with.
+ *
+ * Only theirs. The other three stay on the short copy below, because four of
+ * these on one screen is a wall rather than a read.
+ */
+function Deep({ styleKey, name }: { styleKey: string; name: string }) {
+  const report = reportFor(styleKey)
+  if (!report) return null
+  return (
+    <>
+      <Section title={`More on ${name}`} />
+      <p className="mt-6 font-caption text-[1.375rem] leading-tight font-bold uppercase">
+        {report.strapline}
+      </p>
+      {report.opening.map((paragraph) => (
+        <p key={paragraph} className="mt-4 text-[0.9375rem] leading-relaxed text-ink-72">
+          {paragraph}
+        </p>
+      ))}
+
+      <h3 className="label mt-10 !tracking-[0.18em] !text-ink-40">How you show up</h3>
+      <dl className="mt-4 space-y-4">
+        {report.showUp.map((trait) => (
+          <div key={trait.name}>
+            <dt className="text-[0.9375rem] font-medium">{trait.name}</dt>
+            <dd className="mt-1 text-[0.9375rem] leading-relaxed text-ink-72">{trait.detail}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <h3 className="label mt-10 !tracking-[0.18em] !text-ink-40">When it works</h3>
+      <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink-72">{report.whenItWorks}</p>
+
+      <h3 className="label mt-10 !tracking-[0.18em] !text-ink-40">When overplayed</h3>
+      <dl className="mt-4 space-y-4">
+        {report.overplayed.map((trait) => (
+          <div key={trait.name}>
+            <dt className="text-[0.9375rem] font-medium">{trait.name}</dt>
+            <dd className="mt-1 text-[0.9375rem] leading-relaxed text-ink-72">{trait.detail}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <h3 className="label mt-10 !tracking-[0.18em] !text-ink-40">Perspective checks</h3>
+      <dl className="mt-4 space-y-4">
+        {report.checks.map((check) => (
+          <div key={check.question}>
+            <dt className="text-[0.9375rem] font-medium">{check.question}</dt>
+            <dd className="mt-1 text-[0.9375rem] leading-relaxed text-ink-56">{check.detail}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <h3 className="label mt-10 !tracking-[0.18em] !text-ink-40">Growth moves</h3>
+      <dl className="mt-4 space-y-4">
+        {report.growth.map((move) => (
+          <div key={move.name}>
+            <dt className="text-[0.9375rem] font-medium">{move.name}</dt>
+            <dd className="mt-1 text-[0.9375rem] leading-relaxed text-ink-72">{move.detail}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <p className="mt-10 bg-ink-3 p-6 text-[1.0625rem] leading-relaxed text-ink-72">
+        {report.reminder}
+      </p>
+    </>
   )
 }
 
