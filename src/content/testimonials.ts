@@ -31,11 +31,16 @@
  * Where a message was written, which decides how it is drawn.
  *
  * Only the ones that genuinely came from the cohort WhatsApp group are shown
- * in a WhatsApp frame. Dressing an Instagram comment or an email up as a group
- * message would be inventing a thing that did not happen, which is a line
- * worth not crossing even when nobody would notice.
+ * in a WhatsApp frame. Dressing an email up as a group message would be
+ * inventing a thing that did not happen, which is a line worth not crossing
+ * even when nobody would notice.
+ *
+ * Nothing from Instagram is here at all. Those messages are about Chris, or
+ * about the journal, rather than about the Limitless programme, so they
+ * belong on the public site and not in front of somebody who has just joined
+ * it.
  */
-export type Channel = 'whatsapp' | 'instagram' | 'review'
+export type Channel = 'whatsapp' | 'review'
 
 export type Testimonial = {
   channel: Channel
@@ -83,14 +88,14 @@ export const TESTIMONIALS: Testimonial[] = [
     channel: 'review',
     pain: 'overthinking',
     who: 'Duncan',
-    where: 'Elevate, month one',
+    where: 'writing back after a month',
     quote: 'I am catching harmful behaviours sooner, sometimes before they have happened.',
   },
   {
     channel: 'review',
     pain: 'overthinking',
     who: 'Natalie',
-    where: 'Elevate, month one',
+    where: 'writing back after a month',
     quote:
       'Not overthinking my natural style in the moment, but backing myself more to follow my gut instinct.',
   },
@@ -128,26 +133,10 @@ export const TESTIMONIALS: Testimonial[] = [
   {
     channel: 'review',
     pain: 'systems',
-    who: 'An Instagram comment',
-    where: 'on the journal',
-    quote:
-      'The journal has been a god send. I used to buy a new journal at least once a month and never got round to doing it. I have stuck to this one daily all year.',
-  },
-  {
-    channel: 'review',
-    pain: 'systems',
     who: 'Tom S',
-    where: 'Elevate, month one',
+    where: 'writing back after a month',
     quote:
       'The discipline of journalling. When I did not do it, it tended to lead to worse outcomes.',
-  },
-  {
-    channel: 'instagram',
-    pain: 'focus',
-    who: 'Chris B',
-    where: 'Instagram, a day after one talk',
-    quote:
-      'The action I have taken in the last 24 hours to improve my focus and recovery has given me a complete mindset shift towards how I structure my week and my day to day.',
   },
   {
     channel: 'whatsapp',
@@ -161,7 +150,7 @@ export const TESTIMONIALS: Testimonial[] = [
     channel: 'review',
     pain: 'focus',
     who: 'Natalie',
-    where: 'Elevate, month one',
+    where: 'writing back after a month',
     quote:
       'A new rhythm to my work days. Stacking regular meetings in the morning and using afternoons for focused work and reflection, with fewer meetings.',
   },
@@ -193,7 +182,7 @@ export const TESTIMONIALS: Testimonial[] = [
     channel: 'review',
     pain: 'pressure',
     who: 'Nathan',
-    where: 'Elite, month one review',
+    where: 'writing back after a month',
     quote:
       'As the pressure built, I became more fixed in one mode at the very moment I needed the others. I did not lose capability, I lost flexibility.',
     caution:
