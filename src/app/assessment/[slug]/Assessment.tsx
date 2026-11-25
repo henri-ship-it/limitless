@@ -17,6 +17,7 @@ import {
   componentFor,
   lowestOf,
 } from '@/content/light-the-fire-copy'
+import { Points } from './Points'
 import { Radar } from './Radar'
 import {
   AlertIcon,
@@ -170,23 +171,35 @@ export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: strin
           {question.text}
         </p>
 
-        <input
-          type="range"
-          min={0}
-          max={100}
-          step={1}
-          value={answer}
-          onChange={(event) => record(Number(event.target.value))}
-          aria-label={question.text}
-          className="scale mt-8"
-          style={{
-            background: `linear-gradient(90deg, var(--color-accent-soft) 0%, var(--color-accent) 100%) 0 0 / ${answer}% 100% no-repeat, var(--color-ink-8)`,
-          }}
-        />
-        <div className="mt-2 flex justify-between font-mono text-[0.75rem] text-ink-40">
-          <span>{spec.low}</span>
-          <span>{spec.high}</span>
-        </div>
+        {motivation ? (
+          <Points
+            value={answer}
+            onChange={record}
+            low={spec.low}
+            high={spec.high}
+            label={question.text}
+          />
+        ) : (
+          <>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={1}
+              value={answer}
+              onChange={(event) => record(Number(event.target.value))}
+              aria-label={question.text}
+              className="scale mt-8"
+              style={{
+                background: `linear-gradient(90deg, var(--color-accent-soft) 0%, var(--color-accent) 100%) 0 0 / ${answer}% 100% no-repeat, var(--color-ink-8)`,
+              }}
+            />
+            <div className="mt-2 flex justify-between font-mono text-[0.75rem] text-ink-40">
+              <span>{spec.low}</span>
+              <span>{spec.high}</span>
+            </div>
+          </>
+        )}
 
         <div className="mt-8 flex items-center gap-3">
           {at > 0 && (
