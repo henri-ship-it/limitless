@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { supabaseConfigured } from './env'
 
 /**
- * Whether this member has already dealt with a week's check-in.
+ * Whether this member has already dealt with a check-in.
  *
  * Scoring it or closing it both count. The check is server side rather than a
  * flag in the browser, so somebody who clears their storage or opens the week
@@ -11,7 +11,7 @@ import { supabaseConfigured } from './env'
  * Fails open to "already answered" on any error, because showing a check-in
  * twice is worse than missing one.
  */
-export async function pulseAnswered(memberId: string, week: number): Promise<boolean> {
+export async function pulseAnswered(memberId: string, key: string): Promise<boolean> {
   if (!supabaseConfigured) return true
   try {
     const supabase = await createClient()
@@ -23,7 +23,7 @@ export async function pulseAnswered(memberId: string, week: number): Promise<boo
     const pulses = (data?.assessment as Record<string, unknown> | null)?.pulse as
       | Record<string, unknown>
       | undefined
-    return Boolean(pulses?.[String(week)])
+    return Boolean(pulses?.[key])
   } catch {
     return true
   }

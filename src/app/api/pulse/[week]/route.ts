@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { PULSE_WEEKS } from '@/content/pulse'
+import { PULSE_KEYS } from '@/content/pulse'
 import { createClient } from '@/lib/supabase/server'
 import { supabaseConfigured } from '@/lib/env'
 
@@ -18,10 +18,9 @@ import { supabaseConfigured } from '@/lib/env'
  * member already has the column.
  */
 export async function POST(request: Request, { params }: { params: Promise<{ week: string }> }) {
-  const { week: raw } = await params
-  const week = Number(raw)
-  if (!PULSE_WEEKS.includes(week)) {
-    return NextResponse.json({ error: 'Not a check-in week' }, { status: 404 })
+  const { week: key } = await params
+  if (!PULSE_KEYS.includes(key)) {
+    return NextResponse.json({ error: 'Not a check-in' }, { status: 404 })
   }
   if (!supabaseConfigured) return NextResponse.json({ error: 'Not configured' }, { status: 503 })
 
@@ -49,7 +48,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ wee
 
   const held = (profile?.assessment ?? {}) as Record<string, unknown>
   const pulses = (held.pulse ?? {}) as Record<string, Record<string, unknown>>
-  const already = pulses[String(week)] ?? {}
+  const already = pulses[key] ?? {}
 
   const merged: Record<string, unknown> = { ...already }
   if (Number.isInteger(score) && score >= 1 && score <= 5) merged.score = score
@@ -60,7 +59,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ wee
 
   const { error } = await supabase
     .from('profiles')
-    .update({ assessment: { ...held, pulse: { ...pulses, [String(week)]: merged } } })
+    .update({ assessment: { ...held, pulse: { ...pulses, [key]: merged } } })
     .eq('id', user.id)
 
   if (error) return NextResponse.json({ error: 'That did not save' }, { status: 500 })

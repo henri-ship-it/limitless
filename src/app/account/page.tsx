@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation'
 import { Shell } from '@/components/Shell'
 import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
+import { ConsentChoice } from '@/components/ConsentChoice'
+import { getConsent } from '@/lib/consent'
+import { CONSENT_FOOTNOTE } from '@/content/consent'
 import { NudgeToggle } from '@/components/NudgeToggle'
 import { WipeEntries } from '@/components/WipeEntries'
 import { CopyEmail } from '@/components/CopyEmail'
@@ -44,6 +47,7 @@ function tocFor(tier: string) {
   return [
     { id: 'membership', label: 'Membership' },
     ...(tier === 'pro' ? [{ id: 'blueprint', label: 'Blueprint' }] : []),
+    { id: 'quoting', label: 'Quoting you' },
     { id: 'messages', label: 'Messages' },
     { id: 'entries', label: 'Your entries' },
     { id: 'support', label: 'Support' },
@@ -63,6 +67,8 @@ export default async function AccountPage() {
       .eq('member_id', member.id)
     entryCount = count ?? 0
   }
+
+  const { consent } = await getConsent(member.id)
 
   return (
     <Shell toc={tocFor(member.tier)}>
@@ -103,6 +109,19 @@ export default async function AccountPage() {
           </p>
         </Section>
       ) : null}
+
+      <Section id="quoting" label="Quoting you">
+        <p>
+          Some of what members write turns out to be the clearest description anyone has given of
+          what this programme does. This is whether we may use yours, and how.
+        </p>
+        <ConsentChoice chosen={consent?.choice ?? null} />
+        <p className="mt-4 !text-ink-56 text-[0.8125rem]">
+          {CONSENT_FOOTNOTE} Nothing that would identify you is ever covered by this: if we want to
+          use something with your surname, your employer or your photograph, we come and ask you
+          about that one thing.
+        </p>
+      </Section>
 
       <Section id="messages" label="Messages">
         <p>

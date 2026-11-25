@@ -7,6 +7,7 @@ import { getMember } from '@/lib/member'
 import { closingEntry, isWritten, weekTick } from '@/lib/week-close'
 import { journalEntries } from '@/content/journal'
 import type { EntryData } from '@/content/journal-fields'
+import { CONSENT_SLOT, CONSENT_VERSION, type ConsentChoice } from '@/content/consent'
 
 async function requireMember() {
   if (!supabaseConfigured) return null
@@ -215,3 +216,51 @@ export async function setAltEmail(memberId: string, email: string) {
  * around once they have looked. Admin only, checked here rather than trusted
  * from the button, since a cookie anybody can set is not a permission.
  */
+
+/**
+ * Records whether somebody is happy to be quoted, and how.
+ *
+ * Stored with the version of the wording they agreed to, not just the answer.
+ * Consent is to a particular set of words, so if those words change in
+ * substance the old answer no longer means what the new question is asking
+ * and everybody is asked again. See content/consent.ts.
+ *
+ * Written into `profiles.assessment` beside the baseline and the check-ins,
+ * so there is no migration and an admin reading a member already has it.
+ */
+export async function setConsent(choice: ConsentChoice) {
+  const session = await requireMember()
+  if (!session) return { error: 'Sign in first' }
+
+  if (choice !== 'named' && choice !== 'anonymous' && choice !== 'no') {
+    return { error: 'Unknown answer' }
+  }
+
+  const { data } = await session.supabase
+    .from('profiles')
+    .select('assessment')
+    .eq('id', session.userId)
+    .maybeSingle()
+
+  const held = (data?.assessment ?? {}) as Record<string, unknown>
+
+  const { error } = await session.supabase
+    .from('profiles')
+    .update({
+      assessment: {
+        ...held,
+        [CONSENT_SLOT]: {
+          choice,
+          version: CONSENT_VERSION,
+          at: new Date().toISOString(),
+        },
+      },
+    })
+    .eq('id', session.userId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/')
+  revalidatePath('/account')
+  return { error: null }
+}

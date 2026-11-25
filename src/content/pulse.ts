@@ -1,4 +1,5 @@
 import { getModule, getWeek, weeks, type Tier } from './programme'
+import { ELITE, eliteChapter } from './elite'
 
 /**
  * The module check-in.
@@ -25,20 +26,47 @@ import { getModule, getWeek, weeks, type Tier } from './programme'
  * four months. Asking both the same bland question gets neither.
  */
 
-/** The last chapter week of each module. */
+/** The last chapter week of each module, on the sixteen week journal. */
 export const PULSE_WEEKS = [3, 7, 11, 15]
 
+/**
+ * The chapters the year long journal asks on: 1, 4, 8 and 12.
+ *
+ * Henri asked for months 1, 4, 8 and 14. The first three are chapters 1, 4
+ * and 8, because an Elite chapter is twenty eight days and runs a month. The
+ * fourth is not: the programme is twelve chapters over forty eight weeks,
+ * which is about eleven months, so there is no month fourteen to ask in. The
+ * last chapter is the nearest thing to what he meant, and it is also the one
+ * worth having, since it is the only check-in that can ask about the year as
+ * a whole.
+ *
+ * Unlike the sixteen week version these are not module ends. The spacing is
+ * deliberately uneven and front-loaded: the first month is where somebody
+ * decides whether they have bought the right thing, and a year is long enough
+ * that four evenly spaced asks would all land after that decision was made.
+ */
+export const PULSE_CHAPTERS = [1, 4, 8, ELITE.chapters]
+
 export function isPulseWeek(week: number, tier: Tier): boolean {
-  /*
-   * The sixteen week journal only. Elite and Elevate run a year of four
-   * books on their own cadence and have their own check-ins with Chris, so
-   * dropping this on them would be asking twice.
-   */
   if (tier !== 'core' && tier !== 'pro') return false
   return PULSE_WEEKS.includes(week)
 }
 
+export function isPulseChapter(chapter: number, tier: Tier): boolean {
+  if (tier !== 'elite' && tier !== 'elevate' && tier !== 'threesixtyfive') return false
+  return PULSE_CHAPTERS.includes(chapter)
+}
+
 export type Pulse = {
+  /**
+   * How this one is stored, and the path it posts to.
+   *
+   * Prefixed because the two journals number differently and both land in the
+   * same object: `w3` is the sixteen week journal's third week, `c4` is the
+   * year's fourth chapter. Without the prefix a member who moved from Pro to
+   * Elite would have chapter 3 overwrite week 3.
+   */
+  key: string
   week: number
   /** Which of the four this is, for the counter. */
   nth: number
@@ -46,6 +74,26 @@ export type Pulse = {
   moduleTitle: string
   /** The three chapters being asked about, in order. */
   chapters: { number: number; title: string }[]
+}
+
+/**
+ * The year long journal's check-in.
+ *
+ * Asked about the chapter just finished rather than about three of them,
+ * because an Elite chapter is a month of work on its own and there is nothing
+ * to group it with.
+ */
+export function elitePulseFor(chapter: number): Pulse | undefined {
+  if (!PULSE_CHAPTERS.includes(chapter)) return undefined
+  const held = eliteChapter(chapter)
+  return {
+    key: `c${chapter}`,
+    week: chapter,
+    nth: PULSE_CHAPTERS.indexOf(chapter) + 1,
+    module: held?.module ?? 0,
+    moduleTitle: held ? held.title : `chapter ${chapter}`,
+    chapters: [],
+  }
 }
 
 export function pulseFor(week: number): Pulse | undefined {
@@ -56,6 +104,7 @@ export function pulseFor(week: number): Pulse | undefined {
     .filter((w) => w.module === module.number && w.type === 'chapter')
     .map((w) => ({ number: w.number, title: w.title }))
   return {
+    key: `w${week}`,
     week,
     nth: PULSE_WEEKS.indexOf(week) + 1,
     module: module.number,
@@ -82,6 +131,20 @@ export const POINTS = [
 /** The line that opens it, which names the work rather than asking for a favour. */
 export function opener(pulse: Pulse): string {
   return `You have finished ${pulse.moduleTitle}.`
+}
+
+/** Every key that may be posted, so the route can refuse anything else. */
+export const PULSE_KEYS = [
+  ...PULSE_WEEKS.map((week) => `w${week}`),
+  ...PULSE_CHAPTERS.map((chapter) => `c${chapter}`),
+]
+
+/** Which question the check-in asks, which is not the same at both lengths. */
+export function question(pulse: Pulse): string {
+  if (pulse.chapters.length) return 'Did the last three chapters change anything?'
+  return pulse.nth === PULSE_CHAPTERS.length
+    ? 'Taking the whole year, did it change anything?'
+    : 'Did it change anything?'
 }
 
 /** Four or more means the follow-up goes looking for what worked. */

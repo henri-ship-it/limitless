@@ -122,7 +122,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
    * cache does not bring it back.
    */
   const pulse =
-    member && isPulseWeek(n, tier) && !(await pulseAnswered(member.id, n)) ? pulseFor(n) : undefined
+    member && isPulseWeek(n, tier) && !(await pulseAnswered(member.id, `w${n}`)) ? pulseFor(n) : undefined
 
   const close = member ? await getWeekClose(member.id, n) : null
   const lastClose = member && prev ? await getWeekClose(member.id, prev.number) : null

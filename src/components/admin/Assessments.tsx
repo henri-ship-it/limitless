@@ -2,6 +2,7 @@
 
 import { STYLES, leadStyle, styleFor } from '@/content/know-thyself'
 import { since } from '@/lib/format'
+import { BASELINE, questionsOf } from '@/content/journey'
 
 export type Filled = {
   scores?: Record<string, number>
@@ -12,6 +13,7 @@ export type Filled = {
 export type AssessmentData = {
   scorecard?: Filled
   preAssessment?: Filled
+  baseline?: { scores?: Record<string, number>; answers?: Record<string, unknown>; takenAt?: string }
 }
 
 /**
@@ -267,5 +269,60 @@ function Received({ filled }: { filled: Filled }) {
     <p className="mt-5 !mb-0 !text-ink-40 text-[0.8125rem]">
       Received {since(filled.receivedAt)}.
     </p>
+  )
+}
+
+/**
+ * The baseline, which is where a pre-programme answer lands now.
+ *
+ * Shaped differently from the ScoreApp pre-assessment it replaces: keyed by
+ * question id rather than carrying the question text with every answer, so the
+ * wording is looked up here. Both panels are shown, because members who joined
+ * before November 2026 have the old one and nothing else.
+ */
+export function Baseline({
+  filled,
+}: {
+  filled?: { scores?: Record<string, number>; answers?: Record<string, unknown>; takenAt?: string }
+}) {
+  if (!filled?.answers || !Object.keys(filled.answers).length) {
+    return (
+      <p className="!mb-0 text-[0.9375rem] !text-ink-56">
+        No baseline yet. It lands here as soon as they set one.
+      </p>
+    )
+  }
+
+  const asked = new Map(questionsOf(BASELINE).map((q) => [q.id, q.text]))
+  const scores = Object.entries(filled.scores ?? {}).sort((a, b) => a[1] - b[1])
+
+  const rows = Object.entries(filled.answers)
+    .map(([id, value]) => [asked.get(id), value] as const)
+    .filter((row): row is readonly [string, unknown] => Boolean(row[0]))
+    .filter(([, value]) => typeof value === 'string' || Array.isArray(value))
+
+  return (
+    <div>
+      {filled.takenAt && (
+        <p className="label !mb-4">Set {since(filled.takenAt)}</p>
+      )}
+
+      {scores.length > 0 && (
+        <p className="!mb-5 text-[0.9375rem] leading-relaxed">
+          Lowest first: {scores.map(([domain, value]) => `${domain} ${value}`).join(', ')}.
+        </p>
+      )}
+
+      <dl className="!mb-0 space-y-4">
+        {rows.map(([question, value]) => (
+          <div key={question}>
+            <dt className="!mb-1 text-[0.8125rem] font-semibold text-ink">{question}</dt>
+            <dd className="!mb-0 text-[0.9375rem] leading-relaxed text-ink-72">
+              {Array.isArray(value) ? value.join(', ') : String(value)}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   )
 }

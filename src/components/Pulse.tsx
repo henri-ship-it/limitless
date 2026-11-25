@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-import { POINTS, WENT_WELL, opener, type Pulse as Spec } from '@/content/pulse'
+import { POINTS, WENT_WELL, opener, question, type Pulse as Spec } from '@/content/pulse'
 
 /**
  * The module check-in, as a sheet that comes up from the bottom of the week.
@@ -39,7 +39,7 @@ export function Pulse({ spec, firstName }: { spec: Spec; firstName: string | nul
   async function save(patch: Record<string, unknown>, done: boolean) {
     setSaving(true)
     try {
-      await fetch(`/api/pulse/${spec.week}`, {
+      await fetch(`/api/pulse/${spec.key}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...patch, dismissed: done }),
@@ -99,7 +99,7 @@ export function Pulse({ spec, firstName }: { spec: Spec; firstName: string | nul
         {stage === 'score' && (
           <>
             <p className="mt-3 text-[1.0625rem] leading-snug font-medium">
-              {opener(spec)} Did the last three chapters change anything?
+              {opener(spec)} {question(spec)}
             </p>
             <div className="mt-5 flex gap-1.5" role="radiogroup" aria-label="How much changed">
               {POINTS.map((point) => (
@@ -133,6 +133,8 @@ export function Pulse({ spec, firstName }: { spec: Spec; firstName: string | nul
             </p>
 
             <div className="mt-4 flex flex-wrap gap-1.5">
+              {/* Nothing to pick on the year long journal: a chapter there is
+                  a month of its own, so the check-in is already about one. */}
               {spec.chapters.map((item) => (
                 <button
                   key={item.number}

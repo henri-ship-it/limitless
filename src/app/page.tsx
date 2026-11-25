@@ -12,6 +12,8 @@ import { checklistFor } from '@/content/checklist'
 import { COHORT, modeFor, modules, weeks } from '@/content/programme'
 import { SUPPORT_EMAIL } from '@/content/assets'
 import { getMember, getProgress, getStreak } from '@/lib/member'
+import { Consent } from '@/components/Consent'
+import { getConsent } from '@/lib/consent'
 import { clockFor, currentWeek, entryForToday, unlockedThrough, type Clock } from '@/lib/cohort'
 import { resolveEntry } from '@/lib/entry'
 
@@ -40,6 +42,15 @@ export default async function StartGuide() {
   const streak = member ? await getStreak() : 0
 
   /*
+   * Asked once, before anything else, and never again.
+   *
+   * This is the one gate on the platform. Both front doors carry it because
+   * the home page sends the year long journal straight to its own, so a
+   * member on Elite would never see a question that only lived here.
+   */
+  const { asks } = member ? await getConsent(member.id) : { asks: false }
+
+  /*
    * Setting up matters for a day and never again. The list stays while there
    * is something left in it, and once it is done the week in hand takes its
    * place - on this render for anyone coming back, and with a dissolve for
@@ -49,6 +60,7 @@ export default async function StartGuide() {
 
   return (
     <Shell toc={tocFor(settingUp)}>
+      {asks && <Consent firstName={member?.firstName ?? null} />}
       <PageHeader
         eyebrow={`Cohort ${member?.cohort ?? COHORT.label}`}
         title={member?.firstName ? `Welcome, ${member.firstName}` : 'Start Guide'}

@@ -5,6 +5,9 @@ import { PageHeader } from '@/components/PageHeader'
 import { Section } from '@/components/Section'
 import { MarkWeekDone } from '@/components/MarkWeekDone'
 import { getMember, getProgress } from '@/lib/member'
+import { Pulse } from '@/components/Pulse'
+import { elitePulseFor, isPulseChapter } from '@/content/pulse'
+import { pulseAnswered } from '@/lib/pulse'
 import { modeFor, modules, weeks as programmeWeeks } from '@/content/programme'
 import {
   ELITE,
@@ -52,6 +55,16 @@ export default async function EliteChapterPage({
   const module = modules.find((m) => m.number === chapter.module)!
   const prev = eliteChapters.find((c) => c.n === n - 1)
   const next = eliteChapters.find((c) => c.n === n + 1)
+
+  /*
+   * The chapter check-in, on chapters 1, 4, 8 and 12. Shown once: answering
+   * it or closing it both count, and both are recorded against the member
+   * rather than against the browser.
+   */
+  const pulse =
+    isPulseChapter(n, member.tier) && !(await pulseAnswered(member.id, `c${n}`))
+      ? elitePulseFor(n)
+      : undefined
 
   const digest = eliteDigest(n)
   // The masterclass Chris recorded for this chapter, which the weekly
@@ -168,6 +181,8 @@ export default async function EliteChapterPage({
           ) : null}
         </div>
       </div>
+
+      {pulse && <Pulse spec={pulse} firstName={member.firstName} />}
     </Shell>
   )
 }

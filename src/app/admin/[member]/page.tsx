@@ -11,6 +11,7 @@ import { SITE } from '@/content/site'
 import type { EntryData } from '@/content/journal-fields'
 import {
   BehaviouralStyle,
+  Baseline,
   PreAssessment,
   type AssessmentData,
 } from '@/components/admin/Assessments'
@@ -108,6 +109,7 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
               label: 'What they told us',
               panel: (
                 <>
+                  <Baseline filled={assessment.baseline} />
                   <PreAssessment filled={assessment.preAssessment} />
                   <TheirBlueprint
                     filled={(profile.assessment as Record<string, unknown>)?.[BLUEPRINT_SLOT]}
