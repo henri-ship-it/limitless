@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 
 import { Assessment } from './Assessment'
 import { assessmentFor, assessmentPaths } from '@/content/assessments'
+import { previewFor, previewsFor } from '@/content/assessment-previews'
 import { supabaseConfigured } from '@/lib/env'
 import { createClient } from '@/lib/supabase/server'
 
@@ -47,10 +48,33 @@ async function signedInEmail(): Promise<string | null> {
   }
 }
 
-export default async function AssessmentPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function AssessmentPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   const { slug } = await params
   const assessment = assessmentFor(slug)
   if (!assessment) notFound()
 
-  return <Assessment spec={assessment} signedInAs={await signedInEmail()} />
+  /*
+   * `?preview=dynamo` opens straight on an example result, built from the
+   * made-up scores in assessment-previews.ts. It is for looking at the page
+   * without sitting the assessment: nothing is scored, stored or emailed, and
+   * the page says so. An unknown value falls back to the first example.
+   */
+  const asked = (await searchParams).preview
+  const key = Array.isArray(asked) ? asked[0] : asked
+  const preview = key === undefined ? null : previewFor(slug, key || null)
+
+  return (
+    <Assessment
+      spec={assessment}
+      signedInAs={await signedInEmail()}
+      preview={preview}
+      previews={preview ? previewsFor(slug) : []}
+    />
+  )
 }

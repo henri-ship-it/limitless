@@ -27,14 +27,27 @@ import {
   RouteIcon,
 } from './icons'
 import { profileFrom } from '@/lib/style-profile'
+import type { Preview } from '@/content/assessment-previews'
 
 type Stage = 'intro' | 'questions' | 'details' | 'sending' | 'done'
 
 /** The scale starts in the middle, so nobody is nudged by where the handle sits. */
 const MIDDLE = 50
 
-export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: string | null }) {
-  const [stage, setStage] = useState<Stage>('intro')
+export function Assessment({
+  spec,
+  signedInAs,
+  preview = null,
+  previews = [],
+}: {
+  spec: Spec
+  signedInAs: string | null
+  /** An example result to open on, instead of the intro. Nothing is filed. */
+  preview?: Preview | null
+  /** The other examples, so one can be swapped for another in place. */
+  previews?: Preview[]
+}) {
+  const [stage, setStage] = useState<Stage>(preview ? 'done' : 'intro')
   const [at, setAt] = useState(0)
   const [answers, setAnswers] = useState<Record<number, number>>({})
   const [email, setEmail] = useState(signedInAs ?? '')
@@ -59,7 +72,10 @@ export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: strin
 
   const question = spec.questions[at]
   const answer = answers[at] ?? MIDDLE
-  const scores = useMemo(() => scoreAssessment(spec, answers), [spec, answers])
+  const scored = useMemo(() => scoreAssessment(spec, answers), [spec, answers])
+  // An example result reads its numbers straight from the preview rather than
+  // from forty untouched scales, which would otherwise all score fifty.
+  const scores = preview ? preview.scores : scored
 
   function record(value: number) {
     setAnswers((held) => ({ ...held, [at]: value }))
@@ -259,7 +275,40 @@ export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: strin
     profile?.ranked.find((row) => row.style.name === name)?.value ?? 0
 
   return (
-    <Wide>
+    <Wide
+      above={
+        preview && previews.length > 1 ? (
+          <nav
+            aria-label="Example results"
+            className="mb-5 w-full max-w-xl border border-line bg-surface px-4 py-3"
+          >
+            <p className="font-mono text-[0.6875rem] tracking-[0.06em] uppercase text-ink-40">
+              Example result
+            </p>
+            <ul className="mt-2.5 flex flex-wrap gap-2">
+              {previews.map((option) => {
+                const showing = option.key === preview.key
+                return (
+                  <li key={option.key}>
+                    <a
+                      href={`?preview=${option.key}`}
+                      aria-current={showing ? 'page' : undefined}
+                      className={
+                        showing
+                          ? 'inline-block border border-ink bg-ink px-3 py-1.5 text-[0.8125rem] font-medium text-surface'
+                          : 'inline-block border border-line px-3 py-1.5 text-[0.8125rem] text-ink-56 hover:border-line-strong hover:text-ink'
+                      }
+                    >
+                      {option.label}
+                    </a>
+                  </li>
+                )
+              })}
+            </ul>
+          </nav>
+        ) : null
+      }
+    >
       {profile ? (
         <>
           {/*
@@ -353,12 +402,20 @@ export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: strin
         </>
       )}
 
-      <p className="mt-7 text-[0.875rem] leading-relaxed text-ink-40">
-        {stored
-          ? `Saved against ${email}. It will be on your profile next time you sign in.`
-          : `We could not find a member at ${email}, so this result is not saved anywhere. Run it again with the address you joined with if you meant to.`}
-        {emailed ? ' A copy is on its way to your inbox.' : ''}
-      </p>
+      {preview ? (
+        <p className="mt-7 text-[0.875rem] leading-relaxed text-ink-40">
+          Example scores, so the page can be read without sitting the assessment. Nothing here
+          belongs to anybody and nothing was saved. A real sitting files against the member's
+          profile and sends them a copy.
+        </p>
+      ) : (
+        <p className="mt-7 text-[0.875rem] leading-relaxed text-ink-40">
+          {stored
+            ? `Saved against ${email}. It will be on your profile next time you sign in.`
+            : `We could not find a member at ${email}, so this result is not saved anywhere. Run it again with the address you joined with if you meant to.`}
+          {emailed ? ' A copy is on its way to your inbox.' : ''}
+        </p>
+      )}
 
       {profile && (
         <p className="mt-4 text-[0.8125rem] leading-relaxed text-ink-40">{DISCLAIMER}</p>
@@ -792,9 +849,10 @@ function Bars({
  * version of it feel like software. It is a background on the card itself, so
  * nothing in the content has to know about it.
  */
-function Wide({ children }: { children: React.ReactNode }) {
+function Wide({ children, above }: { children: React.ReactNode; above?: React.ReactNode }) {
   return (
-    <main className="flex min-h-[100dvh] items-start justify-center bg-bg px-5 py-10 sm:px-6 sm:py-16">
+    <main className="flex min-h-[100dvh] flex-col items-center bg-bg px-5 py-10 sm:px-6 sm:py-16">
+      {above}
       <div
         className="w-full max-w-xl border border-line bg-surface p-6 sm:p-10"
         style={{ backgroundImage: "url('/know-thyself/paper.png')", backgroundSize: '256px 256px' }}
