@@ -27,7 +27,63 @@ const PRINTED = ['know-thyself', 'know-thyself-chapter-01', 'light-the-fire']
  */
 const UNLOCK = 'unlock.lmntaryperformance.com'
 
+/**
+ * Where the public site answers, for the one path that is not ours to serve.
+ */
+const SITE = 'https://lmntaryperformance.com'
+
+/**
+ * The two questionnaire paths that were ScoreApp pages and are now journeys.
+ *
+ * Neither is printed, so neither is in PRINTED, but both are in enrolment and
+ * end of programme emails already sent to every cohort. Those emails cannot be
+ * recalled: cohort 4.0 has a week sixteen link sitting in an inbox, and the
+ * cohorts before it have their pre-assessment ones. Without these the link
+ * signs the member in and then 404s, which is worse than a dead link because
+ * it looks like the platform is broken rather than the address being old.
+ *
+ * Redirects rather than rewrites: unlike the printed slugs there is no book to
+ * respect, so the member may as well end up on the real address and see where
+ * they are. Both land behind the sign-in wall, which is correct, because a
+ * journey files against an account. The config's redirects run before the
+ * middleware, so the sign-in page still gets its `next` and sends them on.
+ */
+const RETIRED: Record<string, string> = {
+  '/pre-assessment': '/journey/baseline',
+  '/post-assessment': '/journey/reflection',
+}
+
 const config: NextConfig = {
+  async redirects() {
+    return [
+      ...Object.entries(RETIRED).map(([source, destination]) => ({
+        source,
+        destination,
+        permanent: true,
+      })),
+      /*
+       * The bare short domain.
+       *
+       * It used to serve the Performance Playbook scorecard, because ScoreApp
+       * served its domain default at the root. Now that the domain is ours the
+       * root falls through to the platform, so anybody typing the address, or
+       * scanning a code that did not read cleanly, gets a sign-in box with no
+       * explanation of what they are signing in to. The public site is the
+       * honest answer to somebody who arrived here without a path.
+       *
+       * Temporary on purpose. The Playbook is being replaced by the capability
+       * assessment, and when that is live this root should point at it rather
+       * than at the home page. A permanent redirect would sit in browser
+       * caches and make that change look as though it had not worked.
+       */
+      {
+        source: '/',
+        has: [{ type: 'host' as const, value: UNLOCK }],
+        destination: SITE,
+        permanent: false,
+      },
+    ]
+  },
   async rewrites() {
     return {
       beforeFiles: [
