@@ -8,6 +8,15 @@ import { STYLES, styleFor } from '@/content/know-thyself'
 import { DISCLAIMER, RESULT_INTRO, STEPS, STYLE_COPY } from '@/content/know-thyself-copy'
 import { reportFor } from '@/content/know-thyself-report'
 import { NORMS, NORM_BASE, NORM_RANGE } from '@/content/know-thyself-norms'
+import {
+  COMPONENTS,
+  FIRE_BASE,
+  FIRE_INTRO,
+  FIRE_NORMS,
+  FIRE_RANGE,
+  componentFor,
+  lowestOf,
+} from '@/content/light-the-fire-copy'
 import { Radar } from './Radar'
 import { profileFrom } from '@/lib/style-profile'
 
@@ -91,6 +100,7 @@ export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: strin
   }
 
   const behavioural = spec.slot === 'scorecard' || spec.slot === 'scorecardShort'
+  const motivation = spec.slot === 'lightTheFire'
 
   if (stage === 'intro') {
     return (
@@ -303,6 +313,8 @@ export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: strin
             as {profile.lead.name} in the right conditions.
           </p>
         </>
+      ) : motivation ? (
+        <Motivation scores={scores} ranked={plain} />
       ) : (
         <>
           <h1 className="font-caption text-[2.25rem] leading-[0.95] font-bold uppercase">
@@ -394,6 +406,97 @@ function Deep({ styleKey, name }: { styleKey: string; name: string }) {
       <p className="mt-10 bg-ink-3 p-6 text-[1.0625rem] leading-relaxed text-ink-72">
         {report.reminder}
       </p>
+    </>
+  )
+}
+
+
+/**
+ * Light The Fire, which reads the other way up.
+ *
+ * Know Thyself names what somebody leads with. This names what they are
+ * shortest of, because these three are needs rather than traits: the one you
+ * have least of is the one worth doing something about, and the assessment has
+ * always been written that way. Keeping it round the right way matters more
+ * than the symmetry with the other result.
+ */
+function Motivation({
+  scores,
+  ranked,
+}: {
+  scores: Record<string, number>
+  ranked: [string, number][]
+}) {
+  const lowest = lowestOf(scores)
+  const ordered = [...ranked].sort((a, b) => a[1] - b[1])
+
+  return (
+    <>
+      <h1 className="font-caption text-[2.25rem] leading-[0.95] font-bold uppercase">
+        Light the fire
+      </h1>
+
+      <div className="mt-6 space-y-4">
+        {FIRE_INTRO.map((paragraph) => (
+          <p key={paragraph} className="text-[0.9375rem] leading-relaxed text-ink-72">
+            {paragraph}
+          </p>
+        ))}
+      </div>
+
+      {lowest && (
+        <p className="mt-7 text-[1.0625rem] leading-relaxed">
+          You scored lowest on your need for <strong className="font-medium">{lowest.name}</strong>,
+          which makes it the one with the most to give you right now.
+        </p>
+      )}
+
+      <Section title="Your three" />
+      <Bars
+        ranked={ordered.map(([name, value]) => [name, value] as const)}
+        lead={lowest?.name}
+        norms={FIRE_NORMS}
+        ranges={FIRE_RANGE}
+      />
+      <p className="mt-6 flex items-center gap-2 text-[0.8125rem] leading-relaxed text-ink-40">
+        <span aria-hidden className="inline-block h-3 w-0.5 shrink-0 bg-ink" />
+        <span>
+          The tick is the middle score of {FIRE_BASE} people who have taken this, and the shaded
+          stretch is where the middle half of them landed. They score motivation high across all
+          three, so most people sit above sixty.
+        </span>
+      </p>
+
+      <div className="mt-12 space-y-4">
+        {ordered.map(([name]) => {
+          const component = componentFor(name) ?? COMPONENTS.find((c) => c.name === name)
+          if (!component) return null
+          const shortest = component.key === lowest?.key
+          return (
+            <section
+              key={component.key}
+              className={`border p-6 ${shortest ? 'border-accent bg-accent-soft/40' : 'border-line bg-bg'}`}
+            >
+              <div className="flex items-baseline gap-3">
+                <h3 className="font-caption text-[1.125rem] leading-none font-bold uppercase">
+                  {component.name}
+                </h3>
+                {shortest && <span className="label !tracking-[0.18em]">Shortest</span>}
+                <span className="ml-auto font-mono text-[0.8125rem] tabular-nums text-ink-56">
+                  {scores[name] ?? 0}%
+                </span>
+              </div>
+              <p className="mt-3 text-[0.9375rem] text-ink-56">{component.reads}</p>
+              <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-72">
+                {component.detail}
+              </p>
+              <p className="mt-5 text-[0.9375rem] leading-relaxed font-medium">
+                {component.prompt}
+              </p>
+            </section>
+          )
+        })}
+      </div>
     </>
   )
 }
