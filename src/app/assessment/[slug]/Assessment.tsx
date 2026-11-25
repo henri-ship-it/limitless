@@ -18,6 +18,13 @@ import {
   lowestOf,
 } from '@/content/light-the-fire-copy'
 import { Radar } from './Radar'
+import {
+  AlertIcon,
+  CheckmarkIcon,
+  CompassIcon,
+  MirrorIcon,
+  RouteIcon,
+} from './icons'
 import { profileFrom } from '@/lib/style-profile'
 
 type Stage = 'intro' | 'questions' | 'details' | 'sending' | 'done'
@@ -360,7 +367,7 @@ function Deep({ styleKey, name }: { styleKey: string; name: string }) {
   return (
     <>
       <Section title={`More on ${name}`} />
-      <p className="mt-6 font-caption text-[1.375rem] leading-tight font-bold uppercase">
+      <p className="font-caption mt-5 text-[1.75rem] leading-[1.08] font-bold tracking-[-0.012em] uppercase">
         {report.strapline}
       </p>
       {report.opening.map((paragraph) => (
@@ -369,7 +376,7 @@ function Deep({ styleKey, name }: { styleKey: string; name: string }) {
         </p>
       ))}
 
-      <h3 className="label mt-10 !tracking-[0.18em] !text-ink-40">How you show up</h3>
+      <Heading icon={<MirrorIcon className="h-[1.1rem] w-[1.1rem]" />}>How you show up</Heading>
       <dl className="mt-4 space-y-4">
         {report.showUp.map((trait) => (
           <div key={trait.name}>
@@ -379,10 +386,10 @@ function Deep({ styleKey, name }: { styleKey: string; name: string }) {
         ))}
       </dl>
 
-      <h3 className="label mt-10 !tracking-[0.18em] !text-ink-40">When it works</h3>
+      <Heading icon={<CheckmarkIcon className="h-[1.1rem] w-[1.1rem]" />}>When it works</Heading>
       <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink-72">{report.whenItWorks}</p>
 
-      <h3 className="label mt-10 !tracking-[0.18em] !text-ink-40">When overplayed</h3>
+      <Heading icon={<AlertIcon className="h-[1.1rem] w-[1.1rem]" />}>When overplayed</Heading>
       <dl className="mt-4 space-y-4">
         {report.overplayed.map((trait) => (
           <div key={trait.name}>
@@ -392,7 +399,7 @@ function Deep({ styleKey, name }: { styleKey: string; name: string }) {
         ))}
       </dl>
 
-      <h3 className="label mt-10 !tracking-[0.18em] !text-ink-40">Perspective checks</h3>
+      <Heading icon={<CompassIcon className="h-[1.1rem] w-[1.1rem]" />}>Perspective checks</Heading>
       <dl className="mt-4 space-y-4">
         {report.checks.map((check) => (
           <div key={check.question}>
@@ -402,7 +409,7 @@ function Deep({ styleKey, name }: { styleKey: string; name: string }) {
         ))}
       </dl>
 
-      <h3 className="label mt-10 !tracking-[0.18em] !text-ink-40">Growth moves</h3>
+      <Heading icon={<RouteIcon className="h-[1.1rem] w-[1.1rem]" />}>Growth moves</Heading>
       <dl className="mt-4 space-y-4">
         {report.growth.map((move) => (
           <div key={move.name}>
@@ -586,10 +593,35 @@ function Working({ count }: { count: number }) {
   )
 }
 
-/** A plain section heading. */
+
+/**
+ * A heading inside a section, with its mark.
+ *
+ * Sentence case and the body face. The display face is spent on the two places
+ * that should be loud, the style name and its strapline, and spending it again
+ * here is what flattened everything into one shout.
+ */
+function Heading({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <h3 className="mt-10 flex items-center gap-2.5 text-[1rem] leading-none font-medium text-ink">
+      <span className="text-ink-40">{icon}</span>
+      {children}
+    </h3>
+  )
+}
+
+/**
+ * A section rule.
+ *
+ * Deliberately quiet. It used to be set in the display face, bold and
+ * uppercase, directly above a strapline that was also display, bold and
+ * uppercase: two things shouting, separated only by size, which is no
+ * hierarchy at all. This is a label on a rule, and the line under it is the
+ * one that carries weight.
+ */
 function Section({ title }: { title: string }) {
   return (
-    <h2 className="font-caption mt-14 border-t border-line pt-7 text-[1.25rem] leading-none font-bold uppercase">
+    <h2 className="mt-14 border-t border-line pt-6 text-[0.75rem] leading-none font-medium tracking-[0.16em] text-ink-40 uppercase">
       {title}
     </h2>
   )
