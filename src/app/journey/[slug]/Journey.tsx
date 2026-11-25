@@ -163,8 +163,7 @@ export function Journey({
   if (stage.at === 'intro') {
     return (
       <Card>
-        <Eyebrow>{spec.slug === 'baseline' ? 'Before you begin' : 'Week sixteen'}</Eyebrow>
-        <h1 className="mt-4 font-caption text-[2.5rem] leading-[0.95] font-bold tracking-[-0.01em] uppercase">
+        <h1 className="font-caption text-[2.5rem] leading-[0.95] font-bold tracking-[-0.01em] uppercase">
           {spec.title}
         </h1>
         <p className="mt-5 text-[1.0625rem] leading-relaxed text-ink-72">{spec.lead}</p>
@@ -441,7 +440,7 @@ function Option({
       onClick={onClick}
       className={`flex w-full items-center gap-3.5 border px-4 py-3.5 text-left text-[0.9375rem] leading-snug transition-colors ${
         picked
-          ? 'border-accent-ink bg-accent-soft text-ink'
+          ? 'border-accent bg-accent-soft text-ink'
           : disabled
             ? 'border-line text-ink-20'
             : 'border-line text-ink-72 hover:border-line-strong hover:text-ink'
@@ -450,7 +449,7 @@ function Option({
       <span
         aria-hidden
         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border font-mono text-[0.6875rem] ${
-          picked ? 'border-accent-ink bg-accent-ink text-surface' : 'border-line-strong'
+          picked ? 'border-accent bg-accent text-surface' : 'border-line-strong'
         }`}
       >
         {picked ? (rank ?? '✓') : ''}
@@ -474,7 +473,7 @@ function Between({
   if (piece.kind === 'stat') {
     return (
       <div>
-        <p className="font-caption text-[4rem] leading-[0.85] font-bold text-accent-ink">
+        <p className="font-caption text-[4rem] leading-[0.85] font-bold text-ink">
           {piece.figure}
         </p>
         <p className="mt-4 text-[1.0625rem] leading-relaxed text-ink">{piece.of}</p>
@@ -494,10 +493,10 @@ function Between({
         <div className="mt-6 space-y-8">
           {quotes.map((quote) => (
             <figure key={quote.quote}>
-              <blockquote className="border-l-2 border-accent-ink pl-5 text-[1.0625rem] leading-relaxed text-ink-72">
+              <blockquote className="bg-ink-3 p-5 text-[1.0625rem] leading-relaxed text-ink-72">
                 {quote.quote}
               </blockquote>
-              <figcaption className="mt-3 pl-5 text-[0.8125rem] text-ink-40">
+              <figcaption className="mt-3 text-[0.8125rem] text-ink-40">
                 {quote.who}, {quote.where}
               </figcaption>
             </figure>
@@ -544,7 +543,7 @@ function Between({
   return (
     <div>
       <Eyebrow>{piece.frame}</Eyebrow>
-      <blockquote className="mt-6 border-l-2 border-accent-ink pl-5 text-[1.25rem] leading-relaxed text-ink">
+      <blockquote className="mt-6 bg-ink-3 p-6 text-[1.25rem] leading-relaxed text-ink">
         {said.trim()}
       </blockquote>
     </div>
@@ -576,19 +575,18 @@ function Result({
 
   return (
     <Wide>
-      <Eyebrow>{baseline ? 'Your baseline' : 'Sixteen weeks on'}</Eyebrow>
-      <h1 className="mt-4 font-caption text-[2.75rem] leading-[0.9] font-bold tracking-[-0.01em] uppercase">
-        {baseline ? 'This is the line' : 'This is the distance'}
+      <h1 className="font-caption text-[2.75rem] leading-[0.9] font-bold tracking-[-0.01em] uppercase">
+        {baseline ? 'Where you are starting from' : moves.length ? 'What moved' : 'Where you are now'}
       </h1>
       <p className="mt-5 text-[1.0625rem] leading-relaxed text-ink-72">
         {baseline
-          ? 'Everything from here gets measured against what you have just said. You will answer these same six statements in week sixteen.'
+          ? 'You answer these same six questions again in week sixteen. The difference between the two is the thing worth looking at.'
           : moves.length
-            ? 'The same six statements you answered in week one, against the ones you have just answered.'
-            : 'Where you are now, in your own words and your own numbers.'}
+            ? 'Your week one answers, against the ones you have just given.'
+            : 'There is no week one on file to compare these against, so these are just where you are.'}
       </p>
 
-      <Section title={baseline ? 'The six' : 'Then and now'} />
+      <Section title={baseline ? 'Where you are' : 'Week one to now'} />
       {moves.length ? <Moved moves={moves} /> : <Levels scores={scores} />}
 
       {baseline && priorities.length > 0 && (
@@ -597,7 +595,7 @@ function Result({
           <ol className="mt-6 space-y-3.5">
             {priorities.map((priority, index) => (
               <li key={priority} className="flex gap-4">
-                <span className="font-caption text-[1.5rem] leading-none font-bold text-accent-ink">
+                <span className="font-caption text-[1.5rem] leading-none font-bold text-ink">
                   {index + 1}
                 </span>
                 <span className="text-[1.0625rem] leading-snug text-ink-72">{priority}</span>
@@ -631,25 +629,18 @@ function Result({
       {baseline && typeof answers.worth === 'string' && answers.worth.trim() && (
         <>
           <Section title="In your words" />
-          <blockquote className="mt-6 border-l-2 border-accent-ink pl-5 text-[1.25rem] leading-relaxed text-ink">
+          <blockquote className="mt-6 bg-ink-3 p-6 text-[1.25rem] leading-relaxed text-ink">
             {answers.worth.trim()}
           </blockquote>
-          <p className="mt-4 text-[0.875rem] text-ink-40">
-            This is read back to you in week sixteen.
-          </p>
         </>
       )}
 
       {!baseline && typeof answers.advice === 'string' && answers.advice.trim() && (
         <>
           <Section title="What you would tell them" />
-          <blockquote className="mt-6 border-l-2 border-accent-ink pl-5 text-[1.25rem] leading-relaxed text-ink">
+          <blockquote className="mt-6 bg-ink-3 p-6 text-[1.25rem] leading-relaxed text-ink">
             {answers.advice.trim()}
           </blockquote>
-          <p className="mt-4 text-[0.875rem] leading-relaxed text-ink-40">
-            Nothing you have written here goes anywhere outside the programme unless you tell us it
-            can. Chris will ask you directly.
-          </p>
         </>
       )}
 
@@ -659,10 +650,10 @@ function Result({
           <div className="mt-6 space-y-8">
             {quotes.map((quote) => (
               <figure key={quote.quote}>
-                <blockquote className="border-l-2 border-line-strong pl-5 text-[1.0625rem] leading-relaxed text-ink-72">
+                <blockquote className="bg-ink-3 p-5 text-[1.0625rem] leading-relaxed text-ink-72">
                   {quote.quote}
                 </blockquote>
-                <figcaption className="mt-3 pl-5 text-[0.8125rem] text-ink-40">
+                <figcaption className="mt-3 text-[0.8125rem] text-ink-40">
                   {quote.who}, {quote.where}
                 </figcaption>
               </figure>
@@ -672,9 +663,8 @@ function Result({
       )}
 
       {baseline && welcomeCall && (
-        <div className="mt-12 border border-accent-ink bg-accent-soft p-6 sm:p-8">
-          <Eyebrow>Your next step</Eyebrow>
-          <h2 className="mt-3 font-caption text-[1.75rem] leading-[1] font-bold uppercase">
+        <div className="mt-12 border border-accent bg-accent-soft p-6 sm:p-8">
+          <h2 className="font-caption text-[1.75rem] leading-[1] font-bold uppercase">
             Book your welcome call
           </h2>
           <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-72">
@@ -689,8 +679,7 @@ function Result({
 
       {baseline && !welcomeCall && (
         <div className="mt-12 border border-line p-6 sm:p-8">
-          <Eyebrow>Your next step</Eyebrow>
-          <h2 className="mt-3 font-caption text-[1.75rem] leading-[1] font-bold uppercase">
+          <h2 className="font-caption text-[1.75rem] leading-[1] font-bold uppercase">
             Start chapter one
           </h2>
           <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-72">
@@ -725,7 +714,7 @@ function Moved({ moves }: { moves: Movement[] }) {
               <span className="font-mono text-[0.875rem] text-ink-56">
                 {move.before} <span className="text-ink-20">to</span>{' '}
                 <span className="text-ink">{move.after}</span>
-                <span className={up ? 'ml-2 text-accent-ink' : 'ml-2 text-ink-40'}>
+                <span className={up ? 'ml-2 text-ink' : 'ml-2 text-ink-40'}>
                   {up ? '+' : ''}
                   {move.change}
                 </span>

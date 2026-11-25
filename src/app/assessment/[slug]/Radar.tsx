@@ -31,8 +31,14 @@ const HEIGHT = 372
 const CX = WIDTH / 2
 const CY = 198
 const RADIUS = 132
-/** As a fraction of the full radius. */
-const RINGS = [0.5, 1]
+/**
+ * The grid, as fractions of the full radius.
+ *
+ * Ten of them, which is the density the printed figure uses. They are
+ * hairlines at the lightest ink in the set, so they give the eye something to
+ * measure against without competing with the two shapes drawn on top.
+ */
+const RINGS = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
 
 type Point = { x: number; y: number }
 
@@ -75,7 +81,7 @@ export function Radar({
 
   return (
     <figure className="mt-8">
-      <div className="border border-line bg-bg p-3 sm:p-4">
+      <div>
         <svg
           viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
           className="mx-auto block h-auto w-full max-w-[440px]"
@@ -93,7 +99,7 @@ export function Radar({
               r={RADIUS * ring}
               fill="none"
               stroke="currentColor"
-              className={ring === 1 ? 'text-ink-20' : 'text-ink-12'}
+              className={ring === 1 ? 'text-ink-20' : ring === 0.5 ? 'text-ink-12' : 'text-ink-5'}
               strokeWidth="1"
             />
           ))}
@@ -130,7 +136,7 @@ export function Radar({
             points={polygon(mine)}
             fill="var(--color-accent)"
             fillOpacity="0.14"
-            stroke="var(--color-accent-ink)"
+            stroke="var(--color-accent)"
             strokeWidth="2"
             strokeLinejoin="round"
           />
@@ -144,7 +150,7 @@ export function Radar({
                 cx={x}
                 cy={y}
                 r="4"
-                fill="var(--color-accent-ink)"
+                fill="var(--color-accent)"
                 stroke="var(--color-surface)"
                 strokeWidth="2"
               />
@@ -160,43 +166,54 @@ export function Radar({
             const at = pointAt(index, axes.length, 100)
             const right = at.x > CX
             const below = at.y > CY
-            // Pushed out along the diagonal, clear of the outer ring.
             const x = at.x + (right ? 24 : -24)
-            const y = at.y + (below ? 44 : -30)
+            const y = at.y + (below ? 46 : -28)
             const leading = name === lead
             return (
-              <g key={name} transform={`translate(${x.toFixed(1)}, ${y.toFixed(1)})`}>
+              <g
+                key={name}
+                className="group"
+                transform={`translate(${x.toFixed(1)}, ${y.toFixed(1)})`}
+              >
+                <title>{`${name}, ${scores[name] ?? 0} out of 100`}</title>
                 {style && (
                   <image
                     href={style.icon}
-                    /* Sat above the name with real clearance: at 22px the
-                       mark was landing on the last letter. */
-                    x={right ? 0 : -24}
-                    y={-48}
-                    width="24"
-                    height="24"
-                    opacity={leading ? 1 : 0.45}
+                    /* Clear of the name by a full line. The mark used to sit on
+                       the last letter of the longer names. */
+                    x={right ? 0 : -26}
+                    y={-54}
+                    width="26"
+                    height="26"
+                    opacity={leading ? 1 : 0.4}
                   />
                 )}
                 <text
                   x={0}
-                  y={-14}
+                  y={-12}
                   textAnchor={right ? 'start' : 'end'}
-                  className={leading ? 'fill-ink' : 'fill-ink-56'}
+                  className={`font-caption ${leading ? 'fill-ink' : 'fill-ink-40'}`}
                   style={{
-                    fontSize: 12,
-                    fontWeight: leading ? 700 : 500,
-                    letterSpacing: '0.06em',
+                    fontSize: 15,
+                    fontWeight: 700,
+                    letterSpacing: '0.04em',
                   }}
                 >
                   {name.toUpperCase()}
                 </text>
+                {/*
+                  * The number is on the bars already, and printing it here too
+                  * is the same quantity said twice. It comes back on hover, and
+                  * on a touch screen the figure is a tap away in the list
+                  * underneath.
+                  */}
                 <text
                   x={0}
-                  y={6}
+                  y={10}
                   textAnchor={right ? 'start' : 'end'}
-                  className={leading ? 'fill-ink' : 'fill-ink-40'}
-                  style={{ fontSize: 15, fontWeight: leading ? 700 : 400 }}
+                  className="fill-ink-40 font-caption opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+                  style={{ fontSize: 15, fontWeight: 700 }}
+                  aria-hidden
                 >
                   {scores[name] ?? 0}
                 </text>
@@ -208,7 +225,7 @@ export function Radar({
 
       <figcaption className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-[0.8125rem] text-ink-40">
         <span className="flex items-center gap-2">
-          <span aria-hidden className="inline-block h-0.5 w-5 bg-accent-ink" />
+          <span aria-hidden className="inline-block h-0.5 w-5 bg-accent" />
           You
         </span>
         <span className="flex items-center gap-2">

@@ -7,7 +7,7 @@ import { STYLE_COPY } from '@/content/know-thyself-copy'
  *
  * Styled as the platform, not as the newsletter. Same tokens as globals.css:
  * #f9f9f9 behind a white card with a hairline border, #262626 ink, the mono
- * label for eyebrows, #04dfbf used once on the leading bar, and the dark
+ * label for eyebrows, #00dfbf used once on the leading bar, and the dark
  * button the rest of the platform uses. Geist cannot be relied on in an inbox,
  * so the stacks fall back to the system faces, which is what the platform
  * falls back to anyway.
@@ -26,7 +26,7 @@ const FAINT = '#26262666'
 const RULE = '#ededed'
 const PANEL = '#0000000a'
 const PAPER = '#f9f9f9'
-const ACCENT = '#04dfbf'
+const ACCENT = '#00dfbf'
 
 const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif"
 const MONO = "ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace"
@@ -109,7 +109,7 @@ export function resultEmail(options: {
     items
       .map(
         (item) =>
-          `<p style="margin:0 0 7px;${BODY}">${escape(item)}</p>`,
+          `<p class="t" style="margin:0 0 7px;${BODY}">${escape(item)}</p>`,
       )
       .join('')
 
@@ -128,8 +128,8 @@ export function resultEmail(options: {
               }
             </td>
             <td>
-              <p style="margin:0 0 6px;${EYEBROW}">${escape(term)}</p>
-              ${detail.startsWith('<p') ? detail : `<p style="margin:0;${BODY}">${escape(detail)}</p>`}
+              <p class="label" style="margin:0 0 6px;${EYEBROW}">${escape(term)}</p>
+              ${detail.startsWith('<p') ? detail : `<p class="t" style="margin:0;${BODY}">${escape(detail)}</p>`}
             </td>
           </tr>
         </table>
@@ -147,12 +147,30 @@ export function resultEmail(options: {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="color-scheme" content="light" />
+  <!--
+    iOS Mail reformats a message it decides is too wide, which shrinks every
+    point size on the page at once. That is what "the text is tiny on my
+    phone" almost always is, and no amount of raising the font size fixes it,
+    because the whole thing is being scaled down after the fact. This turns
+    the reformatting off; the two text-size-adjust rules below stop the same
+    behaviour in Gmail and Outlook.
+  -->
+  <meta name="x-apple-disable-message-reformatting" />
+  <meta name="format-detection" content="telephone=no" />
   <title>Know Thyself</title>
   <style>
+    html, body { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+    table { mso-table-lspace:0pt; mso-table-rspace:0pt; }
+    img { -ms-interpolation-mode:bicubic; }
     @media only screen and (max-width:620px) {
-      .message-content { padding:30px 20px 10px 20px !important; }
-      .foot { padding:12px 20px 28px 20px !important; }
-      .lead-name { font-size:27px !important; line-height:33px !important; }
+      .shell { padding:16px 0 !important; }
+      .message-content { padding:28px 18px 10px 18px !important; }
+      .foot { padding:12px 18px 26px 18px !important; }
+      .lead-name { font-size:28px !important; line-height:34px !important; }
+      /* Restated at full size, so a client that has already scaled the
+         message down is overridden rather than argued with. */
+      .t { font-size:17px !important; line-height:27px !important; }
+      .label { font-size:12px !important; line-height:18px !important; }
     }
   </style>
 </head>
@@ -161,16 +179,16 @@ export function resultEmail(options: {
     ${escape(preview)}
   </div>
 
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${PAPER};padding:32px 12px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="shell" style="background:${PAPER};padding:32px 12px;">
     <tr>
       <td align="center">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#ffffff;border:1px solid ${RULE};">
           <tr>
             <td class="message-content" style="padding:40px 36px 12px 36px;">
 
-              <p style="margin:0 0 22px;${BODY}">${escape(greeting)},</p>
+              <p class="t" style="margin:0 0 22px;${BODY}">${escape(greeting)},</p>
 
-              <p style="margin:0 0 14px;${EYEBROW}">Know Thyself &nbsp;·&nbsp; Chapter 01</p>
+              <p class="label" style="margin:0 0 14px;${EYEBROW}">Know Thyself &nbsp;·&nbsp; Chapter 01</p>
 
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
                 <tr>
@@ -185,9 +203,9 @@ export function resultEmail(options: {
                 </tr>
               </table>
 
-              <p style="margin:0 0 22px;${BODY}">${escape(summary)}</p>
+              <p class="t" style="margin:0 0 22px;${BODY}">${escape(summary)}</p>
 
-              <p style="margin:0 0 30px;${BODY}">${escape(copy?.definition ?? lead.overview)}</p>
+              <p class="t" style="margin:0 0 30px;${BODY}">${escape(copy?.definition ?? lead.overview)}</p>
 
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 ${bars}
@@ -205,7 +223,7 @@ export function resultEmail(options: {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:32px 0;">
                 <tr>
                   <td style="background:${PANEL};padding:22px 22px;">
-                    <p style="margin:0;${BODY}">
+                    <p class="t" style="margin:0;${BODY}">
                       These are tendencies, not fixed positions. Where you sit moves with the room,
                       the pressure and the day, and ${escape(support.name)} will show up as readily
                       as ${escape(lead.name)} in the right conditions.

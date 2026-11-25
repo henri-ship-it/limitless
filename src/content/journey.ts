@@ -303,7 +303,7 @@ export const BASELINE: Journey = {
       interstitial: {
         kind: 'readback',
         from: 'sharpest',
-        frame: 'So the work that decides your week belongs here:',
+        frame: 'Your sharpest hours',
       },
     },
     {
@@ -405,7 +405,7 @@ export const REFLECTION: Journey = {
       interstitial: {
         kind: 'readback',
         from: '__delta__',
-        frame: 'Against where you started:',
+        frame: 'Against where you started',
       },
     },
     {
@@ -450,7 +450,7 @@ export const REFLECTION: Journey = {
       interstitial: {
         kind: 'readback',
         from: 'win',
-        frame: 'Worth seeing written down:',
+        frame: 'You did this',
       },
     },
     {

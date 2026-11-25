@@ -428,6 +428,33 @@ export function Assessment({
       {profile && (
         <p className="mt-4 text-[0.8125rem] leading-relaxed text-ink-40">{DISCLAIMER}</p>
       )}
+
+      {/*
+        * The way out.
+        *
+        * This page is reached by scanning a printed journal, so it has no
+        * platform chrome round it and somebody who finishes it was stranded.
+        * A member goes back to their week; anybody else is offered the door
+        * rather than shown a dead end.
+        */}
+      <div className="mt-12 border-t border-line pt-6">
+        {signedInAs ? (
+          <a
+            href="/"
+            className="text-[0.9375rem] font-medium underline underline-offset-4 hover:text-ink-56"
+          >
+            Back to Limitless
+          </a>
+        ) : (
+          <p className="text-[0.9375rem] leading-relaxed text-ink-56">
+            Already on the programme?{' '}
+            <a href="/sign-in" className="font-medium text-ink underline underline-offset-4">
+              Sign in
+            </a>{' '}
+            and this result goes on your profile.
+          </p>
+        )}
+      </div>
     </Wide>
   )
 }
@@ -684,13 +711,14 @@ function Working() {
  *
  * Five of these run down the page one after another. At text weight they read
  * as one continuous list, because nothing separates a heading from the
- * sentences under it, so each one is set as a filled pill: inverted, the
- * display face, letterspaced. The eye finds the next block without reading.
+ * sentences under it, so each is set as a pill: a light grey a shade darker
+ * than the card, fully rounded, the display face. Inverted was too heavy for
+ * five in a row, which made the page read as five black bars.
  */
 function Heading({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <h3 className="mt-11 mb-4 flex">
-      <span className="inline-flex items-center gap-2.5 bg-ink px-3.5 py-2.5 font-caption text-[0.8125rem] leading-none font-bold tracking-[0.08em] text-surface uppercase">
+    <h3 className="mt-11 mb-5 flex">
+      <span className="inline-flex items-center gap-3 rounded-full bg-ink-8 py-2.5 pr-6 pl-5 font-caption text-[0.9375rem] leading-none font-bold tracking-[0.04em] text-ink uppercase">
         <span className="text-accent">{icon}</span>
         {children}
       </span>
@@ -847,11 +875,13 @@ function Bars({
               </p>
               <p className="font-mono text-[0.8125rem] tabular-nums text-ink-56">
                 {value}%
-                {gap !== null && (
-                  <span className={gap === 0 ? 'text-ink-40' : ''}>
+                {/* The distance from the middle, without brackets round it.
+                    A signed number already reads as a difference. */}
+                {gap !== null && gap !== 0 && (
+                  <span className="text-ink-40">
                     {' '}
-                    ({gap > 0 ? '+' : ''}
-                    {gap})
+                    {gap > 0 ? '+' : ''}
+                    {gap}
                   </span>
                 )}
               </p>

@@ -152,10 +152,10 @@ export function Unlocking({ label = 'Unlocking' }: { label?: string }) {
            * lap spent with the brightest thing on screen being the faintest.
            */}
           <linearGradient id="loop-flow" gradientUnits="userSpaceOnUse" x1="12" y1="56" x2="108" y2="8">
-            <stop offset="0%" stopColor="#049e87" />
-            <stop offset="40%" stopColor="#04dfbf" />
+            <stop offset="0%" stopColor="#00a086" />
+            <stop offset="40%" stopColor="#00dfbf" />
             <stop offset="74%" stopColor="#3de7d1" />
-            <stop offset="100%" stopColor="#04c6a9" />
+            <stop offset="100%" stopColor="#00c6a9" />
           </linearGradient>
 
           <filter id="loop-bloom" x="-30%" y="-55%" width="160%" height="210%">

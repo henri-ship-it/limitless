@@ -305,7 +305,7 @@ function Arrow({ className = '' }: { className?: string }) {
       strokeWidth={1.7}
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={{ color: 'var(--color-accent-ink)' }}
+      style={{ color: 'var(--color-ink)' }}
       aria-hidden
     >
       <path d="M3.5 8.5 8.5 3.5M4.5 3.5h4v4" />

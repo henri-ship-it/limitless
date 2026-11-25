@@ -270,7 +270,7 @@ export function StyleRadar({
                       * a sixty-seven came out no longer than a fifty.
                       */}
                     <span className="w-14 shrink-0 text-right">
-                      {yours ? <span className="pill !text-accent-ink">Yours</span> : null}
+                      {yours ? <span className="pill">Yours</span> : null}
                     </span>
                   </button>
                 </li>

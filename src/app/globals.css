@@ -37,15 +37,17 @@
    * Used at full strength wherever it has something to sit on: a pale pill, a
    * filled control, a line or a shape.
    */
-  --color-accent: #04dfbf;
-  --color-accent-soft: #04dfbf1f;
   /*
-   * The same green, darkened for the one case it cannot handle: small text
-   * directly on white, where the brand alone comes in under three to one and
-   * stops being readable. Anywhere a pale pill can be put behind it instead,
-   * that is the better answer and the brand goes back to full strength.
+   * The brand green, exactly. #00dfbf, not the #04dfbf this used to carry and
+   * not the darkened #04a68e that used to sit beside it.
+   *
+   * There is one green now. The darkened version existed because the brand
+   * cannot carry small text on white, coming in under two to one, but a second
+   * green that nobody chose is a worse answer than not setting text in green.
+   * So the accent is a fill, a mark or a stroke, and text beside it is ink.
    */
-  --color-accent-ink: #04a68e;
+  --color-accent: #00dfbf;
+  --color-accent-soft: #00dfbf1f;
 
   /* The streak, and nothing else. */
   --color-flame: #ff0000;
@@ -124,7 +126,7 @@ summary {
 .tier-tag[data-tier='pro'] {
   background: var(--color-accent-soft);
   border-color: var(--color-accent);
-  color: var(--color-accent-ink);
+  color: var(--color-ink);
 }
 
 .tier-tag[data-tier='core'] {

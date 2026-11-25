@@ -50,16 +50,21 @@ export function profileFrom(scores: Record<string, number>): Profile | null {
 
   /*
    * Everybody has all four. These sentences describe where somebody sits on a
-   * continuum today, under the conditions they answered in, and never which
-   * of the four they are. A result that tells a reader what they are is wrong
-   * about the instrument as well as unkind.
+   * continuum, under the conditions they answered in, and never which of the
+   * four they are. A result that tells a reader what they are is wrong about
+   * the instrument as well as unkind.
+   *
+   * They also say it straight. An earlier version hedged every sentence with
+   * "today" and "at the moment", which reads as the result not trusting
+   * itself. The caveat belongs in the line at the bottom of the page that
+   * says these are tendencies, once, not in every sentence.
    */
   const summary =
     shape === 'pronounced'
-      ? `You lean towards ${lead.name} more strongly than the rest, so it is probably the one that shows first.`
+      ? `You lean towards ${lead.name} much more than the rest. It is the one that shows first.`
       : shape === 'blended'
-        ? `${lead.name} and ${support.name} sit almost level today, and which one you reach for tends to depend on the room.`
-        : `${lead.name} leads at the moment, with ${support.name} close enough behind to show under pressure.`
+        ? `${lead.name} and ${support.name} sit level. Which one you reach for depends on the room.`
+        : `${lead.name} leads, with ${support.name} close enough behind to show under pressure.`
 
   return { ranked, lead, support, shadow, gap, shape, summary }
 }

@@ -16,7 +16,7 @@
  * disagree side, with the midpoint neutral.
  */
 
-const ACCENT = '#04dfbf'
+const ACCENT = '#00dfbf'
 const INVERTED = '#ff391f'
 const NEUTRAL = '#26262640'
 

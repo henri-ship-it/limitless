@@ -68,15 +68,35 @@ export function SignInForm() {
      * them looking for a problem that is not there.
      */
     const wait = /after (\d+) seconds?/.exec(error.message)
+
+    /*
+     * No account for that address.
+     *
+     * `shouldCreateUser: false` above means Supabase refuses rather than
+     * quietly signing somebody up, and it says so as `otp_disabled` with a
+     * 422 and the message "Signups not allowed for otp". That is a different
+     * problem from a typo or a rate limit, and the old copy covered all three
+     * with one sentence about checking the spelling, which sends somebody
+     * hunting for a mistake they have not made.
+     */
+    const unknown =
+      error.code === 'otp_disabled' ||
+      error.status === 422 ||
+      /signups not allowed|user not found/i.test(error.message)
+
     if (wait || error.status === 429) {
       setMessage(
         wait
           ? `A link is already on its way. Check your inbox, or ask again in ${wait[1]} seconds.`
           : 'A link is already on its way. Check your inbox, including spam.',
       )
+    } else if (unknown) {
+      setMessage(
+        `There is no Limitless account for ${email.trim()}. If you joined with a different address, try that one. If you have just bought and have not been set up yet, reply to any email from Chris.`,
+      )
     } else {
       setMessage(
-        'We could not send a link to that address. Check the spelling, or reply to any email from Chris and he will sort it out.',
+        'We could not send a link just now. Try again in a minute, or reply to any email from Chris and he will sort it out.',
       )
     }
     setState('error')
