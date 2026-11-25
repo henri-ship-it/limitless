@@ -96,7 +96,19 @@ export async function updateSession(request: NextRequest) {
   const isExample =
     pathname.startsWith('/journey') && request.nextUrl.searchParams.has('preview')
 
-  const isPublic = isExample || PUBLIC_PATHS.some((p) => pathname.startsWith(p))
+  /*
+   * The bare short domain, which `next.config` rewrites to the holding page.
+   *
+   * Matched on the host rather than added to PUBLIC_PATHS, because that list
+   * is tested with `startsWith` and `/` is the prefix of every path on the
+   * platform. The hostname is written out here rather than shared with
+   * `next.config`, the same way the two printed slugs above are: that file is
+   * loaded before the path aliases exist, so the two cannot read one module.
+   */
+  const isHoldingPage =
+    pathname === '/' && request.headers.get('host') === 'unlock.lmntaryperformance.com'
+
+  const isPublic = isExample || isHoldingPage || PUBLIC_PATHS.some((p) => pathname.startsWith(p))
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone()

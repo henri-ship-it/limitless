@@ -28,11 +28,6 @@ const PRINTED = ['know-thyself', 'know-thyself-chapter-01', 'light-the-fire']
 const UNLOCK = 'unlock.lmntaryperformance.com'
 
 /**
- * Where the public site answers, for the one path that is not ours to serve.
- */
-const SITE = 'https://lmntaryperformance.com'
-
-/**
  * The two questionnaire paths that were ScoreApp pages and are now journeys.
  *
  * Neither is printed, so neither is in PRINTED, but both are in enrolment and
@@ -61,27 +56,6 @@ const config: NextConfig = {
         destination,
         permanent: true,
       })),
-      /*
-       * The bare short domain.
-       *
-       * It used to serve the Performance Playbook scorecard, because ScoreApp
-       * served its domain default at the root. Now that the domain is ours the
-       * root falls through to the platform, so anybody typing the address, or
-       * scanning a code that did not read cleanly, gets a sign-in box with no
-       * explanation of what they are signing in to. The public site is the
-       * honest answer to somebody who arrived here without a path.
-       *
-       * Temporary on purpose. The Playbook is being replaced by the capability
-       * assessment, and when that is live this root should point at it rather
-       * than at the home page. A permanent redirect would sit in browser
-       * caches and make that change look as though it had not worked.
-       */
-      {
-        source: '/',
-        has: [{ type: 'host' as const, value: UNLOCK }],
-        destination: SITE,
-        permanent: false,
-      },
     ]
   },
   async rewrites() {
@@ -91,6 +65,25 @@ const config: NextConfig = {
           source: `/:slug(${PRINTED.join('|')})`,
           has: [{ type: 'host', value: UNLOCK }],
           destination: '/assessment/:slug',
+        },
+        /*
+         * The bare short domain.
+         *
+         * It used to serve the Performance Playbook scorecard, because
+         * ScoreApp served its domain default at the root. That scorecard is
+         * being replaced by the capability assessment, so until that is live
+         * the root shows a holding page.
+         *
+         * A rewrite rather than a redirect, for the same reason the printed
+         * slugs are: the address bar keeps the short domain, so somebody who
+         * typed it is not quietly moved somewhere else. It also leaves the
+         * root free to serve the assessment itself later, by changing this one
+         * destination, with nothing cached in anybody's browser to undo.
+         */
+        {
+          source: '/',
+          has: [{ type: 'host', value: UNLOCK }],
+          destination: '/holding',
         },
       ],
       afterFiles: [],
