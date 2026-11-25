@@ -12,18 +12,17 @@
  * opposite of the usual. The stored value does not care: the left end is 100
  * either way, so a result from this reads the same as one from the slider.
  *
- * Colour runs from the accent on the agree side to its inversion on the
- * disagree side, with the midpoint neutral. The inversion is literal, the
- * accent subtracted from white.
+ * Colour runs from the accent on the agree side to its opposite on the
+ * disagree side, with the midpoint neutral.
  */
 
 const ACCENT = '#04dfbf'
-const INVERTED = '#fb2040'
+const INVERTED = '#ff391f'
 const NEUTRAL = '#26262640'
 
 /** Left to right, so the first is full agreement. */
 const STEPS = [100, 83, 67, 50, 33, 17, 0]
-const SIZES = [56, 46, 36, 28, 36, 46, 56]
+const SIZES = [52, 43, 34, 26, 34, 43, 52]
 
 function colourAt(index: number): string {
   if (index < 3) return ACCENT

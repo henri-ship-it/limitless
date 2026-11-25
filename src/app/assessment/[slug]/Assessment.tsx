@@ -156,7 +156,7 @@ export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: strin
   if (stage === 'questions') {
     const through = Math.round((at / spec.questions.length) * 100)
     return (
-      <Card fill>
+      <Card fill roomy={motivation}>
         <div className="flex items-baseline justify-between">
           <p className="label !tracking-[0.18em] !text-ink-40">
             {at + 1} of {spec.questions.length}
@@ -805,14 +805,29 @@ function Wide({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Card({ children, fill }: { children: React.ReactNode; fill?: boolean }) {
+function Card({
+  children,
+  fill,
+  /** Seven circles and two end labels need more width than a slider does. */
+  roomy,
+}: {
+  children: React.ReactNode
+  fill?: boolean
+  roomy?: boolean
+}) {
   return (
     <main
       className={`flex items-center justify-center bg-bg px-5 sm:px-6 ${
         fill ? 'min-h-[100dvh] py-5 sm:py-16' : 'min-h-[100dvh] py-10 sm:py-16'
       }`}
     >
-      <div className="w-full max-w-md border border-line bg-surface p-6 sm:p-8">{children}</div>
+      <div
+        className={`w-full border border-line bg-surface p-6 sm:p-8 ${
+          roomy ? 'max-w-xl' : 'max-w-md'
+        }`}
+      >
+        {children}
+      </div>
     </main>
   )
 }
