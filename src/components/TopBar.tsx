@@ -62,9 +62,19 @@ export function TopBar({
     }
   }, [open])
 
+  /*
+   * The rule spans the window, the row inside it does not.
+   *
+   * The bar used to run the full width with nothing but its own padding, so on
+   * anything wider than the container the mark sat against the edge of the
+   * window while the page below started a couple of hundred pixels in. Same
+   * container as the Shell now, and the `px-5` already matched the sidebar's,
+   * so the mark lines up with the first nav item and the account icon with the
+   * right hand rail. Below the container width this changes nothing.
+   */
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-surface/85 backdrop-blur">
-      <div className="flex h-14 items-center gap-3 px-4 sm:gap-6 sm:px-5">
+      <div className="mx-auto flex h-14 max-w-[var(--container)] items-center gap-3 px-4 sm:gap-6 sm:px-5">
         <Link
           href="/"
           data-tour="home"
