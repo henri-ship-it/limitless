@@ -16,6 +16,7 @@ import {
 } from '@/content/journey'
 import { painFor, testimonialsFor, type Testimonial } from '@/content/testimonials'
 import { Messages } from '@/components/Messages'
+import { DayCurve } from './DayCurve'
 
 /**
  * One run through the baseline or the reflection.
@@ -575,7 +576,7 @@ function Between({
   return (
     <div>
       <Eyebrow>{piece.frame}</Eyebrow>
-      <blockquote className="mt-6 bg-ink-3 p-6 text-[1.25rem] leading-relaxed text-ink">
+      <blockquote className="mt-6 font-serif text-[1.3125rem] leading-[1.55] text-ink italic">
         {said.trim()}
       </blockquote>
     </div>
@@ -640,6 +641,11 @@ function Result({
       {baseline && typeof answers.sharpest === 'string' && (
         <>
           <Section title="Your window" />
+          <DayCurve
+            sharpest={answers.sharpest as string}
+            energised={answers.energised as string}
+            drained={answers.drained as string}
+          />
           {/* Two windows or one. Somebody whose sharpest and most drained hours
               are the same gets one sentence, not a sentence about "the second"
               with nothing to point at. */}
@@ -661,7 +667,11 @@ function Result({
       {baseline && typeof answers.worth === 'string' && answers.worth.trim() && (
         <>
           <Section title="In your words" />
-          <blockquote className="mt-6 bg-ink-3 p-6 text-[1.25rem] leading-relaxed text-ink">
+          {/* Their sentence, set apart from ours. Serif and italic, because
+              the page is otherwise entirely sans, so the change of voice is
+              visible before a word is read. Not a script face: this has to be
+              as readable as everything round it. */}
+          <blockquote className="mt-6 font-serif text-[1.3125rem] leading-[1.55] text-ink italic">
             {answers.worth.trim()}
           </blockquote>
         </>
@@ -670,7 +680,7 @@ function Result({
       {!baseline && typeof answers.advice === 'string' && answers.advice.trim() && (
         <>
           <Section title="What you would tell them" />
-          <blockquote className="mt-6 bg-ink-3 p-6 text-[1.25rem] leading-relaxed text-ink">
+          <blockquote className="mt-6 font-serif text-[1.3125rem] leading-[1.55] text-ink italic">
             {answers.advice.trim()}
           </blockquote>
         </>
@@ -691,8 +701,7 @@ function Result({
             Book your welcome call
           </h2>
           <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-72">
-            Chris reads this before you speak. Thirty minutes on where you are starting from and
-            what the sixteen weeks are for.
+            Thirty minutes on where you are starting from and what the sixteen weeks are for.
           </p>
           <a href={welcomeCall} target="_blank" rel="noreferrer" className={`${button} inline-block`}>
             Pick a time

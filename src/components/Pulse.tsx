@@ -155,7 +155,7 @@ export function Pulse({ spec, firstName }: { spec: Spec; firstName: string | nul
               value={words}
               onChange={(event) => setWords(event.target.value)}
               rows={3}
-              placeholder={well ? 'The thing you would tell someone else' : 'What would have helped'}
+              placeholder={well ? 'Which part made the difference' : 'What would have helped'}
               className="mt-3 w-full resize-none border border-line bg-bg px-3 py-2.5 text-[0.9375rem] leading-relaxed outline-none focus:border-line-strong"
             />
 

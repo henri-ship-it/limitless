@@ -43,7 +43,7 @@ const SENDER = ['#1f7aec', '#c86dd7', '#e5610e', '#0a8a6f', '#9d5ce5']
  * not.
  */
 const WALLPAPER =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='84' viewBox='0 0 84 84'%3E%3Cg fill='none' stroke='%23e2d9cd' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M8 10h7M8 13h4'/%3E%3Ccircle cx='66' cy='12' r='3.2'/%3E%3Cpath d='M20 34l2.6 2.6 4.6-5'/%3E%3Cpath d='M48 28v6M45 31h6'/%3E%3Cpath d='M10 56c2-2.6 4.6-2.6 6.6 0'/%3E%3Ccircle cx='36' cy='66' r='2.6'/%3E%3Cpath d='M60 50h8M64 46v8'/%3E%3Cpath d='M70 72c-2 2-4.6 2-6.6 0'/%3E%3Cpath d='M26 10v6M23 13h6'/%3E%3Cpath d='M74 34l2 2 3-3.4'/%3E%3Cpath d='M44 76h7'/%3E%3Ccircle cx='14' cy='76' r='2.2'/%3E%3C/g%3E%3C/svg%3E\")"
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='84' height='84' viewBox='0 0 84 84'%3E%3Cg fill='none' stroke='%23e8e0d6' stroke-width='0.9' stroke-linecap='round'%3E%3Cpath d='M8 10h7M8 13h4'/%3E%3Ccircle cx='66' cy='12' r='3.2'/%3E%3Cpath d='M20 34l2.6 2.6 4.6-5'/%3E%3Cpath d='M48 28v6M45 31h6'/%3E%3Cpath d='M10 56c2-2.6 4.6-2.6 6.6 0'/%3E%3Ccircle cx='36' cy='66' r='2.6'/%3E%3Cpath d='M60 50h8M64 46v8'/%3E%3Cpath d='M70 72c-2 2-4.6 2-6.6 0'/%3E%3Cpath d='M26 10v6M23 13h6'/%3E%3Cpath d='M74 34l2 2 3-3.4'/%3E%3Cpath d='M44 76h7'/%3E%3Ccircle cx='14' cy='76' r='2.2'/%3E%3C/g%3E%3C/svg%3E\")"
 
 function Tail() {
   return (
@@ -63,7 +63,7 @@ const TIMES = ['07:42', '08:15', '12:31', '18:04', '21:17', '06:58']
 
 function Bubble({ message, index }: { message: Testimonial; index: number }) {
   return (
-    <figure className="relative mb-2 ml-2 w-fit max-w-[85%] sm:max-w-[72%]">
+    <figure className="relative mb-2 ml-2 w-fit max-w-[88%] sm:max-w-[78%]">
       <Tail />
       <div
         className="relative pt-[6px] pr-[7px] pb-[8px] pl-[9px]"
