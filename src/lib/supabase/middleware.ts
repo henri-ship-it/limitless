@@ -46,6 +46,15 @@ const PUBLIC_PATHS = [
 export async function updateSession(request: NextRequest) {
   if (!supabaseConfigured) return NextResponse.next({ request })
 
+  /*
+   * The path, forwarded to the server components as a header.
+   *
+   * A page cannot otherwise ask what URL it is rendering, and the onboarding
+   * gate in Shell needs to know, so somebody can read the privacy notice
+   * without being bounced back to their baseline.
+   */
+  request.headers.set('x-pathname', request.nextUrl.pathname)
+
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(

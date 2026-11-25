@@ -7,7 +7,7 @@ import { getMember } from '@/lib/member'
 import { closingEntry, isWritten, weekTick } from '@/lib/week-close'
 import { journalEntries } from '@/content/journal'
 import type { EntryData } from '@/content/journal-fields'
-import { CONSENT_SLOT, CONSENT_VERSION, type ConsentChoice } from '@/content/consent'
+import { TOUR_SLOT } from '@/lib/onboarding'
 
 async function requireMember() {
   if (!supabaseConfigured) return null
@@ -218,23 +218,15 @@ export async function setAltEmail(memberId: string, email: string) {
  */
 
 /**
- * Records whether somebody is happy to be quoted, and how.
+ * Marks the platform walkthrough as seen.
  *
- * Stored with the version of the wording they agreed to, not just the answer.
- * Consent is to a particular set of words, so if those words change in
- * substance the old answer no longer means what the new question is asking
- * and everybody is asked again. See content/consent.ts.
- *
- * Written into `profiles.assessment` beside the baseline and the check-ins,
- * so there is no migration and an admin reading a member already has it.
+ * Finishing it and closing it halfway both count. Somebody who shut it on the
+ * second stop has decided, and showing it to them again next time would be
+ * the platform not listening.
  */
-export async function setConsent(choice: ConsentChoice) {
+export async function finishTour() {
   const session = await requireMember()
   if (!session) return { error: 'Sign in first' }
-
-  if (choice !== 'named' && choice !== 'anonymous' && choice !== 'no') {
-    return { error: 'Unknown answer' }
-  }
 
   const { data } = await session.supabase
     .from('profiles')
@@ -246,20 +238,34 @@ export async function setConsent(choice: ConsentChoice) {
 
   const { error } = await session.supabase
     .from('profiles')
-    .update({
-      assessment: {
-        ...held,
-        [CONSENT_SLOT]: {
-          choice,
-          version: CONSENT_VERSION,
-          at: new Date().toISOString(),
-        },
-      },
-    })
+    .update({ assessment: { ...held, [TOUR_SLOT]: { at: new Date().toISOString() } } })
     .eq('id', session.userId)
 
   if (error) return { error: error.message }
+  revalidatePath('/')
+  return { error: null }
+}
 
+/** Puts the walkthrough back, from the account page. */
+export async function restartTour() {
+  const session = await requireMember()
+  if (!session) return { error: 'Sign in first' }
+
+  const { data } = await session.supabase
+    .from('profiles')
+    .select('assessment')
+    .eq('id', session.userId)
+    .maybeSingle()
+
+  const held = { ...((data?.assessment ?? {}) as Record<string, unknown>) }
+  delete held[TOUR_SLOT]
+
+  const { error } = await session.supabase
+    .from('profiles')
+    .update({ assessment: held })
+    .eq('id', session.userId)
+
+  if (error) return { error: error.message }
   revalidatePath('/')
   revalidatePath('/account')
   return { error: null }

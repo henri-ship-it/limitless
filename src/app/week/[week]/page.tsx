@@ -122,7 +122,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
    * cache does not bring it back.
    */
   const pulse =
-    member && isPulseWeek(n, tier) && !(await pulseAnswered(member.id, `w${n}`)) ? pulseFor(n) : undefined
+    member && isPulseWeek(n, tier, member.cohort) && !(await pulseAnswered(member.id, `w${n}`)) ? pulseFor(n) : undefined
 
   const close = member ? await getWeekClose(member.id, n) : null
   const lastClose = member && prev ? await getWeekClose(member.id, prev.number) : null
@@ -244,7 +244,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
       {n === 16 ? (
         <Section id="workshop" label="Finishing the programme">
           <p>
-            <a href={COHORT.postAssessmentUrl} target="_blank" rel="noreferrer">
+            <a href={COHORT.postAssessmentUrl}>
               Complete your post-programme assessment
             </a>
           </p>

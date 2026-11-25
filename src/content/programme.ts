@@ -54,6 +54,30 @@ export type TierInfo = {
   welcomeCall: boolean
 }
 
+/**
+ * The first cohort the rebuilt onboarding reaches.
+ *
+ * Cohort 4.0 is live and most of the way through: on 25 November 2026 they
+ * were in week 13 with three weeks left. Dropping a new onboarding gate, a
+ * platform walkthrough and a module check-in on people two weeks from
+ * finishing would be changing the thing under them for no benefit, so none of
+ * it applies to anybody already running.
+ *
+ * Checked by label rather than by date, because that is the thing a human
+ * sets when a cohort opens and the thing they will remember to change.
+ * Anything unparseable reads as an older cohort, which is the safe way round:
+ * a member who should have seen the new flow and does not is a smaller
+ * problem than one mid-programme who suddenly does.
+ */
+export const REBUILT_FROM_COHORT = '5.0'
+
+export function onRebuiltJourney(cohort: string): boolean {
+  const theirs = Number.parseFloat(cohort)
+  const from = Number.parseFloat(REBUILT_FROM_COHORT)
+  if (!Number.isFinite(theirs)) return false
+  return theirs >= from
+}
+
 /** Where the welcome call is booked. Chris's own calendar. */
 export const WELCOME_CALL = 'https://cal.com/chris-bodman/limitless-welcome'
 
@@ -186,7 +210,21 @@ export const COHORT = {
     when: 'in the three chapter weeks of each module',
   },
   assessmentUrl: '/assessment/know-thyself',
-  postAssessmentUrl: 'https://unlock.lmntaryperformance.com/post-assessment',
+  /*
+   * The post-programme questionnaire, which is now the reflection on this
+   * platform.
+   *
+   * It pointed at `unlock.lmntaryperformance.com/post-assessment` until the
+   * domain moved on 25 November 2026. That path was a ScoreApp page, and the
+   * rewrite in next.config only answers the three slugs printed in the
+   * journals, so the old link now bounces to the sign-in page. Cohort 4.0
+   * reaches week sixteen in about three weeks and would have found a dead
+   * link waiting for them.
+   *
+   * Relative rather than absolute: they are signed in when they click it, and
+   * the reflection files against their account.
+   */
+  postAssessmentUrl: '/journey/reflection',
 } as const
 
 export const modules: Module[] = [

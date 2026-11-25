@@ -52,6 +52,7 @@ export function Sidebar({
           />
           <TopLink
             href="/journal"
+            data-tour="journal"
             label="Journal"
             icon={<JournalIcon />}
             /* An open entry is still the journal, and the sidebar should say so. */
@@ -80,6 +81,7 @@ export function Sidebar({
             */}
           <TopLink
             href="/blueprint"
+            data-tour="blueprint"
             label={isPro || mode === 'elite' ? 'Blueprint' : "How you're wired"}
             icon={<BlueprintIcon />}
             active={pathname === '/blueprint'}
@@ -141,7 +143,7 @@ export function Sidebar({
           : null}
 
         {mode === 'elite' ? null : modules.map((m) => (
-          <div key={m.number} className="mb-7">
+          <div key={m.number} className="mb-7" data-tour={m.number === 1 ? 'modules' : undefined}>
             <Link
               href={`/module/${m.number}`}
               className={`label mb-2 block hover:!text-ink ${
@@ -169,6 +171,7 @@ export function Sidebar({
                     ) : (
                       <Link
                         href={`/week/${n}`}
+                        data-tour={active ? 'week' : undefined}
                         className={`${base} ${
                           active
                             ? 'border-ink font-medium text-ink'

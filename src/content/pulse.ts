@@ -1,4 +1,4 @@
-import { getModule, getWeek, weeks, type Tier } from './programme'
+import { getModule, getWeek, onRebuiltJourney, weeks, type Tier } from './programme'
 import { ELITE, eliteChapter } from './elite'
 
 /**
@@ -47,13 +47,15 @@ export const PULSE_WEEKS = [3, 7, 11, 15]
  */
 export const PULSE_CHAPTERS = [1, 4, 8, ELITE.chapters]
 
-export function isPulseWeek(week: number, tier: Tier): boolean {
+export function isPulseWeek(week: number, tier: Tier, cohort: string): boolean {
   if (tier !== 'core' && tier !== 'pro') return false
+  if (!onRebuiltJourney(cohort)) return false
   return PULSE_WEEKS.includes(week)
 }
 
-export function isPulseChapter(chapter: number, tier: Tier): boolean {
+export function isPulseChapter(chapter: number, tier: Tier, cohort: string): boolean {
   if (tier !== 'elite' && tier !== 'elevate' && tier !== 'threesixtyfive') return false
+  if (!onRebuiltJourney(cohort)) return false
   return PULSE_CHAPTERS.includes(chapter)
 }
 

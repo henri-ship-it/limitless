@@ -23,8 +23,6 @@ import {
   formatEliteChapter,
   weekInChapter,
 } from '@/content/elite'
-import { Consent } from '@/components/Consent'
-import { getConsent } from '@/lib/consent'
 import { getMember, getProgress, getStreak } from '@/lib/member'
 
 export const metadata = { title: 'Elite · Limitless' }
@@ -83,16 +81,8 @@ export default async function ElitePage() {
   // Chapters, not weeks: the year is counted in the twelve things it contains.
   const doneChapters = [...progress.completedWeeks]
 
-  /*
-   * The same one-time question the sixteen week front door asks. It lives on
-   * both, because the home page redirects the year long journal here before
-   * the gate there ever renders.
-   */
-  const { asks } = member ? await getConsent(member.id) : { asks: false }
-
   return (
     <Shell toc={TOC}>
-      {asks && <Consent firstName={member?.firstName ?? null} />}
       <PageHeader
         eyebrow={`Limitless ${product.label}`}
         title={member.firstName ? `Welcome, ${member.firstName}` : product.label}

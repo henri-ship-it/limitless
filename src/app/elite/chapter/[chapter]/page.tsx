@@ -62,7 +62,7 @@ export default async function EliteChapterPage({
    * rather than against the browser.
    */
   const pulse =
-    isPulseChapter(n, member.tier) && !(await pulseAnswered(member.id, `c${n}`))
+    isPulseChapter(n, member.tier, member.cohort) && !(await pulseAnswered(member.id, `c${n}`))
       ? elitePulseFor(n)
       : undefined
 
