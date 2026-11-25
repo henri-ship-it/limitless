@@ -245,41 +245,51 @@ const OBSTACLES = [
 
 export const BASELINE: Journey = {
   slug: 'baseline',
-  title: 'Your baseline',
+  /*
+   * Not "Your baseline".
+   *
+   * This is the first thing somebody does after paying, and the word baseline
+   * is ours, not theirs: it describes what we get out of it rather than what
+   * they get. The title is the sentence that is actually true, which is that
+   * the next sixteen weeks are about to be shaped around what they say here.
+   */
+  title: 'Tell us about you',
   slot: 'baseline',
-  lead: 'Fourteen questions, about six minutes. This is the line everything else gets measured against.',
+  lead: 'Fourteen questions, about six minutes. What you say here is what the next sixteen weeks get built around.',
   steps: [
     {
-      title: 'Answer honestly rather than well',
+      title: 'This shapes your programme',
       detail:
-        'Nobody is marking this. A flattering baseline only makes your own progress harder to see later.',
+        'Your answers set your starting point and decide what you get pushed on. The more real they are, the better the fit.',
     },
     {
-      title: 'You get it back straight away',
-      detail: 'Your profile, when you are at your best, and what you have said you are here for.',
+      title: 'Say it how it actually is',
+      detail:
+        'Nobody is marking you. A flattering answer only makes it harder to see later how far you have come.',
     },
     {
-      title: 'You do this again at the end',
-      detail: 'Same six statements, sixteen weeks apart. That is where the before and after comes from.',
+      title: 'You get it straight back',
+      detail:
+        'Where you stand, the hours you do your best work in, and what you have said you want out of this.',
     },
   ],
   rounds: [
     {
       key: 'standing',
       title: 'Where you stand',
-      lead: 'Six statements about the last month. Not your best month, the last one.',
+      lead: 'Six statements about the last month. Not a good month, the one you have just had.',
       questions: SPINE,
       interstitial: {
         kind: 'stat',
         figure: '43%',
         of: 'of people arrive here saying the same thing',
-        note: 'They push on while quietly doubting themselves. Whatever you have just scored, you are not the outlier you think you are.',
+        note: 'They push on while quietly doubting themselves. Whatever you have just scored, you are in better company than you think.',
       },
     },
     {
       key: 'rhythm',
       title: 'Your rhythm',
-      lead: 'Most people run the same day regardless of when they are any good. This finds your window.',
+      lead: 'Most of us plan the day without thinking about when we actually work well. Three questions to find your best hours.',
       questions: [
         {
           kind: 'choice',
@@ -309,13 +319,13 @@ export const BASELINE: Journey = {
     {
       key: 'ambition',
       title: 'What this is for',
-      lead: 'Three, in the order you would fix them. Everything looks important until you have to rank it.',
+      lead: 'Everything feels important until you have to choose. Pick the three that matter most and put them in order.',
       questions: [
         {
           kind: 'rank',
           id: 'priorities',
           text: 'Pick three and put them in order.',
-          help: 'Tap them in the order you would fix them. First one first.',
+          help: 'Tap them in order. The one you would fix first, first.',
           limit: 3,
           options: AMBITIONS,
         },
@@ -325,7 +335,7 @@ export const BASELINE: Journey = {
     {
       key: 'obstacle',
       title: 'What is in the way',
-      lead: 'The honest bit. This is the part Chris reads first.',
+      lead: 'The harder questions. This is the part Chris reads first.',
       questions: [
         {
           kind: 'multi',
@@ -339,7 +349,7 @@ export const BASELINE: Journey = {
           kind: 'text',
           id: 'pattern',
           text: 'Describe the thing that keeps happening.',
-          help: 'The loop you have noticed and not broken. A few lines is plenty.',
+          help: 'The thing you have spotted yourself doing and not managed to stop. A few lines is plenty.',
           placeholder: 'Every time I get close to the deadline I...',
           length: 'long',
         },
@@ -349,13 +359,13 @@ export const BASELINE: Journey = {
     {
       key: 'deal',
       title: 'The deal',
-      lead: 'What you can realistically give, and what you want back.',
+      lead: 'How much time you really have, and what you want to show for it.',
       questions: [
         {
           kind: 'choice',
           id: 'hours',
           text: 'How much time can you genuinely give this each week?',
-          help: 'Say the real number. The programme is built to work at the low end.',
+          help: 'Give the real number. The programme is built to work for people at the low end.',
           options: [
             'Under an hour',
             'One to two hours',
@@ -379,28 +389,29 @@ export const BASELINE: Journey = {
 
 export const REFLECTION: Journey = {
   slug: 'reflection',
-  title: 'Sixteen weeks on',
+  title: 'How did it go?',
   slot: 'reflection',
-  lead: 'The same six statements you answered at the start, and some room to say what happened.',
+  lead: 'The same six questions you answered in week one, and room to say what actually happened.',
   steps: [
     {
-      title: 'You see your own before and after',
-      detail: 'The six are word for word the ones from your baseline, so the movement is real.',
+      title: 'You see how far you have come',
+      detail:
+        'The six are word for word the ones you started with, so the difference between them is real.',
     },
     {
-      title: 'The writing matters more than the scores',
-      detail: 'Three prompts. What you put there is the most useful thing we get all year.',
+      title: 'What you write matters more than the scores',
+      detail: 'Three questions in the middle. Your answers are the most useful thing we get all year.',
     },
     {
-      title: 'Nothing is shared without you saying so',
-      detail: 'At the end you see exactly what we would quote, and you decide.',
+      title: 'It takes about five minutes',
+      detail: 'Longer if you want it to. Most people find they have more to say than they expected.',
     },
   ],
   rounds: [
     {
       key: 'standing',
       title: 'Where you stand now',
-      lead: 'Same six statements. Answer them for the last month, not for the whole sixteen weeks.',
+      lead: 'The same six. Answer for the last month, not for the whole sixteen weeks.',
       questions: SPINE,
       interstitial: {
         kind: 'readback',
@@ -420,7 +431,7 @@ export const REFLECTION: Journey = {
        */
       key: 'changed',
       title: 'What actually happened',
-      lead: 'Three questions. Take your time over these, they are the whole point of the exercise.',
+      lead: 'Three questions. Worth taking your time over, these are the ones that matter.',
       questions: [
         {
           kind: 'text',
@@ -456,7 +467,7 @@ export const REFLECTION: Journey = {
     {
       key: 'others',
       title: 'For the person behind you',
-      lead: 'Someone is about to start where you were in week one.',
+      lead: 'Someone is about to start exactly where you were in week one.',
       questions: [
         {
           kind: 'text',

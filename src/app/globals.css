@@ -395,9 +395,3 @@ summary {
  * lost and so is the place. Only under the mobile breakpoint, because a mouse
  * has no such problem and a short laptop window may still need to scroll.
  */
-@media (max-width: 767px) {
-  body.answering {
-    overflow: hidden;
-    overscroll-behavior: none;
-  }
-}

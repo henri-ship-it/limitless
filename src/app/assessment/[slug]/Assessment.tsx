@@ -55,19 +55,6 @@ export function Assessment({
   const [stored, setStored] = useState(false)
   const [emailed, setEmailed] = useState(false)
 
-  /*
-   * While a question is up, the page does not scroll on a phone.
-   *
-   * The card already fits the screen, so any scrolling is the page moving
-   * under a thumb that was trying to drag the scale, which loses the answer
-   * and the place at once. Locked only under the mobile breakpoint, in CSS,
-   * so a laptop behaves normally.
-   */
-  useEffect(() => {
-    if (stage !== 'questions') return
-    document.body.classList.add('answering')
-    return () => document.body.classList.remove('answering')
-  }, [stage])
 
   const question = spec.questions[at]
   const answer = answers[at] ?? MIDDLE
@@ -187,9 +174,18 @@ export function Assessment({
         </p>
 
         {motivation ? (
+          /*
+           * Tapping a point is the whole answer, so it moves on by itself.
+           * The slider below does not: a drag passes through every value on
+           * the way to the one somebody meant, and advancing on the first of
+           * them would answer the question for them.
+           */
           <Points
             value={answer}
-            onChange={record}
+            onChange={(value) => {
+              record(value)
+              window.setTimeout(next, 240)
+            }}
             low={spec.low}
             high={spec.high}
             label={question.text}
@@ -226,7 +222,11 @@ export function Assessment({
               Back
             </button>
           )}
-          <button type="button" onClick={next} className={`${button} !mt-0 flex-1`}>
+          <button
+            type="button"
+            onClick={next}
+            className={`${button} !mt-0 flex-1 ${motivation ? 'hidden' : ''}`}
+          >
             {at + 1 === spec.questions.length ? 'Finish' : 'Next'}
           </button>
         </div>

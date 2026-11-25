@@ -69,13 +69,6 @@ export function Journey({
 
   const total = useMemo(() => lengthOf(spec), [spec])
 
-  /* While a question is up the page does not scroll on a phone: the card fits,
-     so any scroll is a thumb that missed the control it was aiming for. */
-  useEffect(() => {
-    if (stage.at !== 'question') return
-    document.body.classList.add('answering')
-    return () => document.body.classList.remove('answering')
-  }, [stage])
 
   /** How many questions sit before the start of a round. */
   function offsetOf(round: number): number {
@@ -112,6 +105,14 @@ export function Journey({
       if (!on && picked.length >= limit) return held
       return { ...held, [id]: on ? picked.filter((p) => p !== option) : [...picked, option] }
     })
+  }
+
+  /** One question back, stepping into the round before when at its start. */
+  function back(round: number, index: number) {
+    if (index > 0) return setStage({ at: 'question', round, index: index - 1 })
+    if (round === 0) return setStage({ at: 'intro' })
+    const before = spec.rounds[round - 1]
+    setStage({ at: 'question', round: round - 1, index: before.questions.length - 1 })
   }
 
   function advance(round: number, index: number) {
@@ -223,17 +224,44 @@ export function Journey({
             value={answers[question.id]}
             onChange={(value) => set(question.id, value)}
             onToggle={(option, limit) => toggle(question.id, option, limit)}
+            /*
+             * A question with one answer moves on by itself.
+             *
+             * Tapping the answer and then tapping Next is the same decision
+             * twice, and on a fourteen question form that is thirteen taps
+             * nobody needed to make. The short pause is so the choice is seen
+             * to land before the screen changes; without it the tap feels
+             * like it went somewhere else.
+             *
+             * The questions that take several answers, or typing, keep their
+             * button, because there is no moment where the software can tell
+             * somebody is finished.
+             */
+            onAnswered={() => {
+              window.setTimeout(() => advance(stage.round, stage.index), 240)
+            }}
           />
         </div>
-        <div className="mt-10 flex items-center gap-4">
+        <div className="mt-10 flex items-center gap-5">
           <button
             type="button"
-            disabled={!answered(question)}
-            onClick={() => advance(stage.round, stage.index)}
-            className={button}
+            onClick={() => back(stage.round, stage.index)}
+            className="text-[0.875rem] text-ink-40 transition-colors hover:text-ink"
           >
-            {stage.index + 1 === round.questions.length ? 'Finish the round' : 'Next'}
+            Back
           </button>
+
+          {!SELF_ADVANCING.includes(question.kind) && (
+            <button
+              type="button"
+              disabled={!answered(question)}
+              onClick={() => advance(stage.round, stage.index)}
+              className={`${button} !mt-0`}
+            >
+              {stage.index + 1 === round.questions.length ? 'Finish the round' : 'Next'}
+            </button>
+          )}
+
           {question.kind === 'text' && question.optional && !answered(question) && (
             <button
               type="button"
@@ -287,18 +315,28 @@ export function Journey({
 
 /* ------------------------------------------------------------------ asking */
 
+/** The kinds that are finished the moment one thing is tapped. */
+const SELF_ADVANCING: Question['kind'][] = ['scale', 'choice', 'score']
+
 function Ask({
   question,
   value,
   onChange,
   onToggle,
+  onAnswered,
 }: {
   question: Question
   value: number | string | string[] | undefined
   onChange: (value: number | string | string[]) => void
   /** Adding or removing one pick, for the questions that take several. */
   onToggle: (option: string, limit: number) => void
+  /** Called when a one-answer question has its answer. */
+  onAnswered: () => void
 }) {
+  const take = (next: number | string) => {
+    onChange(next)
+    onAnswered()
+  }
   const heading = (
     <>
       <h2 className="text-[1.375rem] leading-snug font-medium tracking-[-0.015em]">
@@ -316,7 +354,7 @@ function Ask({
         {heading}
         <Points
           value={typeof value === 'number' ? value : null}
-          onChange={onChange}
+          onChange={take}
           low={question.low}
           high={question.high}
           label={question.text}
@@ -335,7 +373,7 @@ function Ask({
               key={option}
               label={option}
               picked={value === option}
-              onClick={() => onChange(option)}
+              onClick={() => take(option)}
             />
           ))}
         </div>
@@ -385,7 +423,7 @@ function Ask({
               type="button"
               role="radio"
               aria-checked={value === n}
-              onClick={() => onChange(n)}
+              onClick={() => take(n)}
               className={`h-11 w-11 border text-[0.9375rem] transition-colors ${
                 value === n
                   ? 'border-ink bg-ink text-surface'
