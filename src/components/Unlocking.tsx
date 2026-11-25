@@ -136,7 +136,16 @@ export function Unlocking({ label = 'Unlocking' }: { label?: string }) {
        * shadow, so it spreads well past the line and would be clipped square
        * at the edges without the margin.
        */}
-      <svg viewBox="-20 -20 176 104" className="loop w-[164px]" fill="none" aria-hidden>
+      {/*
+        * The viewBox is symmetric about the figure, not about the origin.
+        *
+        * The lemniscate runs x = 12 to 108, so its centre is 60. A box
+        * starting at -20 has its own centre at 68, which put the mark eight
+        * units left of the middle of its own element and so eight units left
+        * of the word underneath it. Starting at -28 centres the drawing, and
+        * leaves the same forty units of room either side for the bloom.
+        */}
+      <svg viewBox="-28 -20 176 104" className="loop w-[164px]" fill="none" aria-hidden>
         <defs>
           {/*
            * Laid across the loop in user space, not along the stroke, which

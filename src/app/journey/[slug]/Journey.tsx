@@ -14,7 +14,7 @@ import {
   type Movement,
   type Question,
 } from '@/content/journey'
-import { painFor, testimonialsFor, type Testimonial } from '@/content/testimonials'
+import { painFor, reviewsFor, testimonialsFor, type Testimonial } from '@/content/testimonials'
 import { Messages } from '@/components/Messages'
 import { DayCurve } from './DayCurve'
 
@@ -576,9 +576,7 @@ function Between({
   return (
     <div>
       <Eyebrow>{piece.frame}</Eyebrow>
-      <blockquote className="mt-6 font-serif text-[1.3125rem] leading-[1.55] text-ink italic">
-        {said.trim()}
-      </blockquote>
+      <Said>{said.trim()}</Said>
     </div>
   )
 }
@@ -604,20 +602,22 @@ function Result({
 
   const priorities = Array.isArray(answers.priorities) ? answers.priorities : []
   const obstacles = Array.isArray(answers.obstacles) ? answers.obstacles : []
-  const quotes = testimonialsFor(painFor(obstacles), 2)
+  const pain = painFor(obstacles)
+  const quotes = testimonialsFor(pain, 2)
+  const written = reviewsFor(pain, 1)
 
   return (
     <Wide>
       <h1 className="font-caption text-[2.75rem] leading-[0.9] font-bold tracking-[-0.01em] uppercase">
-        {baseline ? 'Where you are starting from' : moves.length ? 'What moved' : 'Where you are now'}
+        {baseline ? 'Your starting point' : moves.length ? 'What moved' : 'Where you are now'}
       </h1>
-      <p className="mt-5 text-[1.0625rem] leading-relaxed text-ink-72">
-        {baseline
-          ? 'You answer these same six questions again in week sixteen. The difference between the two is the thing worth looking at.'
-          : moves.length
+      {!baseline && (
+        <p className="mt-5 text-[1.0625rem] leading-relaxed text-ink-72">
+          {moves.length
             ? 'Your week one answers, against the ones you have just given.'
             : 'There is no week one on file to compare these against, so these are just where you are.'}
-      </p>
+        </p>
+      )}
 
       <Section title={baseline ? 'Where you are' : 'Week one to now'} />
       {moves.length ? <Moved moves={moves} /> : <Levels scores={scores} />}
@@ -667,22 +667,14 @@ function Result({
       {baseline && typeof answers.worth === 'string' && answers.worth.trim() && (
         <>
           <Section title="In your words" />
-          {/* Their sentence, set apart from ours. Serif and italic, because
-              the page is otherwise entirely sans, so the change of voice is
-              visible before a word is read. Not a script face: this has to be
-              as readable as everything round it. */}
-          <blockquote className="mt-6 font-serif text-[1.3125rem] leading-[1.55] text-ink italic">
-            {answers.worth.trim()}
-          </blockquote>
+          <Said>{answers.worth.trim()}</Said>
         </>
       )}
 
       {!baseline && typeof answers.advice === 'string' && answers.advice.trim() && (
         <>
           <Section title="What you would tell them" />
-          <blockquote className="mt-6 font-serif text-[1.3125rem] leading-[1.55] text-ink italic">
-            {answers.advice.trim()}
-          </blockquote>
+          <Said>{answers.advice.trim()}</Said>
         </>
       )}
 
@@ -692,6 +684,14 @@ function Result({
           <div className="mt-6">
             <Messages messages={quotes} />
           </div>
+          {written.map((one) => (
+            <figure key={one.quote}>
+              <Said>{one.quote}</Said>
+              <figcaption className="mt-2.5 pl-5 text-[0.8125rem] text-ink-40">
+                {one.who}, {one.where}
+              </figcaption>
+            </figure>
+          ))}
         </>
       )}
 
@@ -858,6 +858,21 @@ function Progress({ done, total }: { done: number; total: number }) {
         {done} of {total}
       </p>
     </div>
+  )
+}
+
+/**
+ * Something the member wrote, quoted back.
+ *
+ * The page's own face rather than a serif, set grey so it reads as reported
+ * speech rather than as the page talking, with a rule down the left and the
+ * text held off it. A quote that looks like body copy is not quoted at all.
+ */
+function Said({ children }: { children: React.ReactNode }) {
+  return (
+    <blockquote className="mt-6 border-l border-line-strong py-1 pl-5 text-[1.125rem] leading-[1.6] text-ink-56">
+      {children}
+    </blockquote>
   )
 }
 

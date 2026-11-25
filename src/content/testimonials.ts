@@ -207,6 +207,51 @@ export const TESTIMONIALS: Testimonial[] = [
     quote:
       'My biggest win is equanimity. Obstacles throw us off balance and the idea is to recover quickly. In the past it could take a few days to a week. Now I get back to that spot in one to three days, and sometimes hours.',
   },
+  /*
+   * The two Core replies from cohort 4.0.
+   *
+   * The Testimonial Bank held these unticked, because clause 6.3(b) of the
+   * terms says sending Chris an email is not in itself consent to publish.
+   * Henri confirmed on 25 November 2026 that Conal and Curtis have each since
+   * approved their own wording, which is the separate consent that clause
+   * asks for.
+   *
+   * They are emails rather than group messages, so they are not drawn in the
+   * thread. They read as what they are: somebody writing back part way
+   * through.
+   */
+  {
+    channel: 'review',
+    pain: 'pressure',
+    who: 'Curtis',
+    where: 'writing back in week eight',
+    quote:
+      'Going through a turbulent time professionally at the same time as being a first time dad, so the programme came at the perfect moment. It is helping me create a bit of space and distance between myself and my thoughts, which has let me manage them better.',
+  },
+  {
+    channel: 'review',
+    pain: 'pressure',
+    who: 'Conal',
+    where: 'writing back at halfway',
+    quote:
+      'The biggest shift has been recognising how much of my frustration comes from the way I respond to circumstances rather than the circumstances themselves.',
+  },
+  {
+    channel: 'review',
+    pain: 'clarity',
+    who: 'Conal',
+    where: 'writing back at halfway',
+    quote:
+      'I used to feel that work was taking away my free time. I am recognising how much of that time I lose through procrastination and putting things off.',
+  },
+  {
+    channel: 'review',
+    pain: 'doubt',
+    who: 'Conal',
+    where: 'writing back at halfway',
+    quote:
+      'The course has brought me to a realisation that I do not have to be the best at something, or feel ready, before actually doing it.',
+  },
 ]
 
 /**
@@ -244,6 +289,19 @@ export function painFor(obstacles: string[]): Testimonial['pain'] | undefined {
  * Falls back to the whole set rather than to nothing, because an unmatched
  * member should still see that other people have been here.
  */
+/**
+ * The ones that are not group messages, for showing under the thread.
+ *
+ * Kept apart because they are a different artefact: somebody writing back to
+ * Chris rather than typing into a group. Drawn as a quote with a name on it
+ * rather than as a bubble, which is what they are.
+ */
+export function reviewsFor(pain: Testimonial['pain'] | undefined, limit = 1): Testimonial[] {
+  const written = TESTIMONIALS.filter((t) => t.channel === 'review')
+  const matching = pain ? written.filter((t) => t.pain === pain) : []
+  return [...matching, ...written.filter((t) => !matching.includes(t))].slice(0, limit)
+}
+
 export function testimonialsFor(pain: Testimonial['pain'] | undefined, limit = 2): Testimonial[] {
   /*
    * Group messages only, for anything shown to a member.

@@ -61,13 +61,33 @@ export function DayCurve({
   const dip = drained ? BANDS[drained] : undefined
   if (peak === undefined) return null
 
-  const points: string[] = []
-  for (let hour = FROM; hour <= TO; hour += 0.25) {
+  /*
+   * Sampled fine, then joined as curves rather than as segments.
+   *
+   * A polyline through even a hundred points is a hundred straight lines, and
+   * at the peak and the trough, where the direction changes fastest, the
+   * corners show. Each span gets a cubic whose control points sit a third of
+   * the way along the slope either side, which is a Catmull-Rom spline written
+   * as beziers: it passes through every point and has no corners anywhere.
+   */
+  const pts: { x: number; y: number }[] = []
+  for (let hour = FROM; hour <= TO + 0.001; hour += 0.5) {
     let level = 34
     level += bump(hour, peak, 56)
     if (lift !== undefined) level += bump(hour, lift, lift === peak ? 6 : 26, 2.7)
     if (dip !== undefined) level -= bump(hour, dip, 30, 2.6)
-    points.push(`${x(hour).toFixed(1)},${y(Math.max(4, Math.min(100, level))).toFixed(1)}`)
+    pts.push({ x: x(hour), y: y(Math.max(4, Math.min(100, level))) })
+  }
+
+  let path = `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`
+  for (let i = 0; i < pts.length - 1; i++) {
+    const before = pts[i - 1] ?? pts[i]
+    const from = pts[i]
+    const to = pts[i + 1]
+    const after = pts[i + 2] ?? pts[i + 1]
+    const c1 = { x: from.x + (to.x - before.x) / 6, y: from.y + (to.y - before.y) / 6 }
+    const c2 = { x: to.x - (after.x - from.x) / 6, y: to.y - (after.y - from.y) / 6 }
+    path += ` C${c1.x.toFixed(1)},${c1.y.toFixed(1)} ${c2.x.toFixed(1)},${c2.y.toFixed(1)} ${to.x.toFixed(1)},${to.y.toFixed(1)}`
   }
 
   const label = (hour: number) =>
@@ -77,7 +97,7 @@ export function DayCurve({
 
   return (
     <figure className="mt-6">
-      <div className="border border-line bg-bg px-3 pt-2 pb-1">
+      <div className="rounded-[6px] border border-line bg-bg px-3 pt-2 pb-1">
         <svg
           viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
           className="block h-auto w-full"
@@ -120,8 +140,8 @@ export function DayCurve({
             strokeWidth="1"
           />
 
-          <polyline
-            points={points.join(' ')}
+          <path
+            d={path}
             fill="none"
             stroke="var(--color-accent)"
             strokeWidth="2.5"

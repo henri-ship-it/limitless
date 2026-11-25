@@ -81,8 +81,11 @@ export function Pulse({ spec, firstName }: { spec: Spec; firstName: string | nul
     <div className="fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-4 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:px-0 sm:pb-0">
       <div className="w-full max-w-sm border border-line bg-surface p-5 shadow-[0_8px_40px_rgba(0,0,0,0.12)]">
         <div className="flex items-start justify-between gap-4">
+          {/* Not "check-in 2 of 4". Somebody on week seven does not know
+              there are four, and counting them invites the question of which
+              one they missed. */}
           <p className="font-mono text-[0.6875rem] tracking-[0.1em] text-ink-40 uppercase">
-            Check-in {spec.nth} of 4
+            Feedback
           </p>
           <button
             type="button"
@@ -170,11 +173,11 @@ export function Pulse({ spec, firstName }: { spec: Spec; firstName: string | nul
           </>
         )}
 
+        {/* No count on the way out either. "Two to go" reads as a commitment
+            they did not make. */}
         {stage === 'done' && (
           <p className="mt-3 text-[1.0625rem] leading-snug font-medium">
-            {spec.nth === 4
-              ? `That is all four${firstName ? `, ${firstName}` : ''}. Chris reads every one.`
-              : `Got it${firstName ? `, ${firstName}` : ''}. ${4 - spec.nth} to go.`}
+            Thanks{firstName ? `, ${firstName}` : ''}. That is genuinely useful.
           </p>
         )}
       </div>
