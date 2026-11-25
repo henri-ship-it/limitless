@@ -27,7 +27,18 @@
  * public site is a separate decision and a separate permission.
  */
 
+/**
+ * Where a message was written, which decides how it is drawn.
+ *
+ * Only the ones that genuinely came from the cohort WhatsApp group are shown
+ * in a WhatsApp frame. Dressing an Instagram comment or an email up as a group
+ * message would be inventing a thing that did not happen, which is a line
+ * worth not crossing even when nobody would notice.
+ */
+export type Channel = 'whatsapp' | 'instagram' | 'review'
+
 export type Testimonial = {
+  channel: Channel
   /**
    * Which problem this answers. Matched to the obstacle a member has just
    * named, so nobody is shown a quote about focus when they said they cannot
@@ -45,6 +56,7 @@ export type Testimonial = {
 
 export const TESTIMONIALS: Testimonial[] = [
   {
+    channel: 'whatsapp',
     pain: 'doubt',
     who: 'A member',
     where: 'cohort WhatsApp, at the end',
@@ -52,6 +64,7 @@ export const TESTIMONIALS: Testimonial[] = [
       'I was in a bad place before I started. I felt lost and did not know who I was as a person. You have helped guide me to find my purpose and what I stand for. It has given me structure in my life that I did not think I was capable of.',
   },
   {
+    channel: 'review',
     pain: 'doubt',
     who: 'Tim',
     where: 'end of programme feedback',
@@ -59,6 +72,7 @@ export const TESTIMONIALS: Testimonial[] = [
       'I talked to myself negatively and got stuck in cycles. The biggest change has been self acceptance.',
   },
   {
+    channel: 'whatsapp',
     pain: 'overthinking',
     who: 'Adele',
     where: 'cohort WhatsApp, week one',
@@ -66,12 +80,14 @@ export const TESTIMONIALS: Testimonial[] = [
       'I spend a lot of time, energy and mental fatigue worrying about the minor details of what could go wrong. My cautiousness often holds me back from making important decisions. So this week I decided to change that. Bit the bullet and challenged myself with what if. Booked onto my first half ironman.',
   },
   {
+    channel: 'review',
     pain: 'overthinking',
     who: 'Duncan',
     where: 'Elevate, month one',
     quote: 'I am catching harmful behaviours sooner, sometimes before they have happened.',
   },
   {
+    channel: 'review',
     pain: 'overthinking',
     who: 'Natalie',
     where: 'Elevate, month one',
@@ -79,6 +95,7 @@ export const TESTIMONIALS: Testimonial[] = [
       'Not overthinking my natural style in the moment, but backing myself more to follow my gut instinct.',
   },
   {
+    channel: 'whatsapp',
     pain: 'clarity',
     who: 'A member',
     where: 'cohort WhatsApp',
@@ -86,6 +103,7 @@ export const TESTIMONIALS: Testimonial[] = [
       'I came on this course to find constant peak performance. I thought that was the goal. Instead it is showing me the patterns of thought I did not even know I was trapped in, and giving me new ways of thinking.',
   },
   {
+    channel: 'whatsapp',
     pain: 'clarity',
     who: 'A member',
     where: 'cohort WhatsApp',
@@ -93,12 +111,14 @@ export const TESTIMONIALS: Testimonial[] = [
       'The value alignment piece has brought a lot of clarity towards what I want to do. I will be moving on from my role at the end of the year to rebuild my own business.',
   },
   {
+    channel: 'review',
     pain: 'clarity',
     who: 'Tom',
     where: 'end of programme feedback',
     quote: 'You do not know what you do not know.',
   },
   {
+    channel: 'whatsapp',
     pain: 'systems',
     who: 'Iain',
     where: 'cohort WhatsApp',
@@ -106,6 +126,7 @@ export const TESTIMONIALS: Testimonial[] = [
       'The breakthrough was around intentions and actions. It is not a failure of a day if I did not tick off my to-do list, but rather were my intentions met that day, even if the action was not quite finished.',
   },
   {
+    channel: 'review',
     pain: 'systems',
     who: 'An Instagram comment',
     where: 'on the journal',
@@ -113,6 +134,7 @@ export const TESTIMONIALS: Testimonial[] = [
       'The journal has been a god send. I used to buy a new journal at least once a month and never got round to doing it. I have stuck to this one daily all year.',
   },
   {
+    channel: 'review',
     pain: 'systems',
     who: 'Tom S',
     where: 'Elevate, month one',
@@ -120,6 +142,7 @@ export const TESTIMONIALS: Testimonial[] = [
       'The discipline of journalling. When I did not do it, it tended to lead to worse outcomes.',
   },
   {
+    channel: 'instagram',
     pain: 'focus',
     who: 'Chris B',
     where: 'Instagram, a day after one talk',
@@ -127,6 +150,7 @@ export const TESTIMONIALS: Testimonial[] = [
       'The action I have taken in the last 24 hours to improve my focus and recovery has given me a complete mindset shift towards how I structure my week and my day to day.',
   },
   {
+    channel: 'whatsapp',
     pain: 'focus',
     who: 'Steve',
     where: 'cohort WhatsApp',
@@ -134,6 +158,7 @@ export const TESTIMONIALS: Testimonial[] = [
       'Using the journal on Sunday really set the tone for the week ahead. I felt a million times more relaxed and focused.',
   },
   {
+    channel: 'review',
     pain: 'focus',
     who: 'Natalie',
     where: 'Elevate, month one',
@@ -141,6 +166,7 @@ export const TESTIMONIALS: Testimonial[] = [
       'A new rhythm to my work days. Stacking regular meetings in the morning and using afternoons for focused work and reflection, with fewer meetings.',
   },
   {
+    channel: 'whatsapp',
     pain: 'alone',
     who: 'Alex',
     where: 'cohort WhatsApp',
@@ -148,6 +174,7 @@ export const TESTIMONIALS: Testimonial[] = [
       'Biggest win. Reaching out for the tangible support I have been putting off for too long. I hope it will help me feel more balanced in myself and be less of a bottleneck at work.',
   },
   {
+    channel: 'whatsapp',
     pain: 'alone',
     who: 'A member',
     where: 'cohort WhatsApp, halfway',
@@ -155,6 +182,7 @@ export const TESTIMONIALS: Testimonial[] = [
       'The pace and information has not come on too quick. I like that the journalling prompts are spaced apart, it gives time for reflection. The group calls have given that extra bit of sauce. Really enjoying it and glad I invested in the course.',
   },
   {
+    channel: 'whatsapp',
     pain: 'alone',
     who: 'Simon',
     where: 'cohort WhatsApp, mid programme',
@@ -162,6 +190,7 @@ export const TESTIMONIALS: Testimonial[] = [
       'Leaning into the rhythm of seeking connection early on ideas, and bringing insights in to elevate my thinking instead of forging ahead alone.',
   },
   {
+    channel: 'review',
     pain: 'pressure',
     who: 'Nathan',
     where: 'Elite, month one review',
@@ -171,6 +200,7 @@ export const TESTIMONIALS: Testimonial[] = [
       'From a private email to Chris rather than a group screenshot. Fine inside the platform; get Nathan to sign it off before it goes on the site.',
   },
   {
+    channel: 'whatsapp',
     pain: 'pressure',
     who: 'Ajdin',
     where: 'cohort WhatsApp, halfway',
@@ -217,5 +247,12 @@ export function painFor(obstacles: string[]): Testimonial['pain'] | undefined {
 export function testimonialsFor(pain: Testimonial['pain'] | undefined, limit = 2): Testimonial[] {
   const matching = pain ? TESTIMONIALS.filter((t) => t.pain === pain) : []
   const pool = matching.length ? matching : TESTIMONIALS
-  return pool.slice(0, limit)
+  /*
+   * Group messages first. They are drawn as the thread they were written in,
+   * which reads as a person rather than as a pull quote, so a pain with one of
+   * each should lead on the one from the group.
+   */
+  return [...pool]
+    .sort((a, b) => Number(b.channel === 'whatsapp') - Number(a.channel === 'whatsapp'))
+    .slice(0, limit)
 }

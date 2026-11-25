@@ -15,6 +15,7 @@ import {
   type Question,
 } from '@/content/journey'
 import { painFor, testimonialsFor, type Testimonial } from '@/content/testimonials'
+import { Messages } from '@/components/Messages'
 
 /**
  * One run through the baseline or the reflection.
@@ -527,18 +528,11 @@ function Between({
     const quotes = testimonialsFor(pain, 2)
     return (
       <div>
-        <Eyebrow>People who were here</Eyebrow>
-        <div className="mt-6 space-y-8">
-          {quotes.map((quote) => (
-            <figure key={quote.quote}>
-              <blockquote className="bg-ink-3 p-5 text-[1.0625rem] leading-relaxed text-ink-72">
-                {quote.quote}
-              </blockquote>
-              <figcaption className="mt-3 text-[0.8125rem] text-ink-40">
-                {quote.who}, {quote.where}
-              </figcaption>
-            </figure>
-          ))}
+        <h2 className="font-caption text-[1.5rem] leading-[1] font-bold uppercase">
+          Others who were here
+        </h2>
+        <div className="mt-5">
+          <Messages messages={quotes} />
         </div>
       </div>
     )
@@ -684,18 +678,9 @@ function Result({
 
       {baseline && quotes.length > 0 && (
         <>
-          <Section title="Where this goes" />
-          <div className="mt-6 space-y-8">
-            {quotes.map((quote) => (
-              <figure key={quote.quote}>
-                <blockquote className="bg-ink-3 p-5 text-[1.0625rem] leading-relaxed text-ink-72">
-                  {quote.quote}
-                </blockquote>
-                <figcaption className="mt-3 text-[0.8125rem] text-ink-40">
-                  {quote.who}, {quote.where}
-                </figcaption>
-              </figure>
-            ))}
+          <Section title="What others got out of it" />
+          <div className="mt-6">
+            <Messages messages={quotes} />
           </div>
         </>
       )}
@@ -706,7 +691,7 @@ function Result({
             Book your welcome call
           </h2>
           <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-72">
-            Chris reads this before you speak. Forty five minutes on where you are starting from and
+            Chris reads this before you speak. Thirty minutes on where you are starting from and
             what the sixteen weeks are for.
           </p>
           <a href={welcomeCall} target="_blank" rel="noreferrer" className={`${button} inline-block`}>
