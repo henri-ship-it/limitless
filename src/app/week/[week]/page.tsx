@@ -13,10 +13,13 @@ import { LastWeek } from '@/components/LastWeek'
 import { ProgrammeProgress } from '@/components/ProgrammeProgress'
 import { LockIcon } from '@/components/icons'
 import type { TocItem } from '@/components/OnThisPage'
-import { getWeek, moduleForWeek, weeks, COHORT } from '@/content/programme'
+import { getWeek, moduleForWeek, weeks } from '@/content/programme'
 import { getDigest } from '@/content/digests'
 import { leadStyle } from '@/content/know-thyself'
 import { Pulse } from '@/components/Pulse'
+import { ReflectionAsk } from '@/components/ReflectionAsk'
+import { REFLECTION_WEEK, reflectionGate } from '@/content/reflection'
+import { journeyDone } from '@/lib/journey'
 import { isPulseWeek, pulseFor } from '@/content/pulse'
 import { pulseAnswered } from '@/lib/pulse'
 import { entriesForWeek } from '@/content/journal'
@@ -124,18 +127,56 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
   const pulse =
     member && isPulseWeek(n, tier, member.cohort) && !(await pulseAnswered(member.id, `w${n}`)) ? pulseFor(n) : undefined
 
+  /*
+   * The closing reflection, which leads the final week and holds it back.
+   *
+   * Read only on week sixteen, so no other week pays for the round trip. With
+   * no member there is nothing to look up and nothing to hold: the middleware
+   * does not let a signed out visitor this far anyway.
+   */
+  const { ask, hold } = reflectionGate({
+    week: n,
+    done: member && n === REFLECTION_WEEK ? await journeyDone(member.id, 'reflection') : true,
+    isAdmin,
+  })
+
+  if (hold) {
+    return (
+      <Shell toc={[{ id: 'reflection', label: 'Before you start' }]}>
+        <PageHeader
+          eyebrow={`Module ${String(module.number).padStart(2, '0')} · ${module.name}`}
+          title={week.title}
+          pills={
+            <>
+              <span className="pill">Week {String(n).padStart(2, '0')} of 16</span>
+              <span className="pill">{formatWeekStart(n, clock)}</span>
+            </>
+          }
+        />
+        <ReflectionAsk held />
+        {prev ? (
+          <div className="flex flex-wrap items-center justify-end gap-4 px-6 py-8 sm:px-10">
+            <Link href={`/week/${prev.number}`} className="label hover:!text-ink">
+              ← {prev.title}
+            </Link>
+          </div>
+        ) : null}
+      </Shell>
+    )
+  }
+
   const close = member ? await getWeekClose(member.id, n) : null
   const lastClose = member && prev ? await getWeekClose(member.id, prev.number) : null
   // Only the week in hand has a day to be on.
   const today = n === currentWeek(new Date(), clock) ? entryForToday(n, new Date(), clock) : undefined
 
   const toc: TocItem[] = [
+    ...(ask ? [{ id: 'reflection', label: 'Before you start' }] : []),
     { id: 'overview', label: 'Overview' },
     ...(week.type === 'deload' && week.recap ? [{ id: 'why', label: 'Why this matters' }] : []),
     ...(week.type === 'deload' ? [] : [{ id: 'masterclass', label: 'Video masterclass' }]),
     { id: 'digest', label: 'Weekly digest' },
     ...(quote ? [{ id: 'journal', label: 'To close' }] : []),
-    ...(n === 16 ? [{ id: 'workshop', label: 'Finishing the programme' }] : []),
   ]
 
   return (
@@ -154,6 +195,10 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
           </>
         }
       />
+
+      {/* First, because it is the only thing on the platform worth
+        * interrupting somebody for. */}
+      {ask ? <ReflectionAsk held={false} /> : null}
 
       {/* Where they are, then the week just gone. Both before the chapter
         * itself, because both are about arriving rather than reading. */}
@@ -238,16 +283,6 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
       {quote ? (
         <Section id="journal" label="To close">
           <Quote lines={quote.lines} author={quote.author} />
-        </Section>
-      ) : null}
-
-      {n === 16 ? (
-        <Section id="workshop" label="Finishing the programme">
-          <p>
-            <a href={COHORT.postAssessmentUrl}>
-              Complete your post-programme assessment
-            </a>
-          </p>
         </Section>
       ) : null}
 
