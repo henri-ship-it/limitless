@@ -77,6 +77,7 @@ export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: strin
   async function send(address: string) {
     setSending(true)
     setStage('sending')
+    const startedAt = Date.now()
     setProblem(null)
     try {
       const response = await fetch(`/api/assessment/${spec.slug}`, {
@@ -90,6 +91,14 @@ export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: strin
       // belongs to a member. Saying otherwise would be a lie on the page.
       setStored(payload?.status === 'stored')
       setEmailed(payload?.emailed === 'sent')
+      /*
+       * The work is usually done in well under a second, which lands the
+       * result before anybody has registered that they finished. Hold the
+       * working screen until its last step has had a moment, and never cut it
+       * short: the wait is doing something, it is just quick.
+       */
+      const held = Date.now() - startedAt
+      if (held < WORKING_MS) await new Promise((done) => setTimeout(done, WORKING_MS - held))
       setStage('done')
     } catch (error) {
       setProblem(error instanceof Error ? error.message : 'That did not send')
@@ -192,8 +201,8 @@ export function Assessment({ spec, signedInAs }: { spec: Spec; signedInAs: strin
 
   if (stage === 'sending') {
     return (
-      <Card>
-        <p className="text-[0.9375rem] text-ink-56">Working out your result.</p>
+      <Card fill>
+        <Working count={motivation ? FIRE_BASE : NORM_BASE} />
       </Card>
     )
   }
@@ -501,6 +510,82 @@ function Motivation({
   )
 }
 
+
+/** How long the working screen runs before the result is allowed through. */
+const WORKING_MS = 3200
+
+/**
+ * The pause between the last answer and the result.
+ *
+ * Every step here is a real one: the answers are scored, the scores are set
+ * against the group, the result is assembled and a copy is sent. None of it
+ * takes three seconds, but showing somebody a blank moment after thirty six
+ * questions wastes the only point where they are actually curious. So the
+ * steps are named and paced, and the result waits for them rather than the
+ * other way round.
+ */
+function Working({ count }: { count: number }) {
+  const steps = useMemo(
+    () => [
+      'Scoring your answers',
+      `Comparing with ${count.toLocaleString('en-GB')} others`,
+      'Reading the shape of it',
+      'Writing your result',
+    ],
+    [count],
+  )
+  const [at, setAt] = useState(0)
+
+  useEffect(() => {
+    const id = setInterval(
+      () => setAt((step) => Math.min(step + 1, steps.length - 1)),
+      WORKING_MS / steps.length,
+    )
+    return () => clearInterval(id)
+  }, [steps.length])
+
+  const through = Math.round(((at + 1) / steps.length) * 100)
+
+  return (
+    <div>
+      <h1 className="font-caption text-[1.75rem] leading-[1] font-bold uppercase">
+        Working it out
+      </h1>
+
+      <div className="mt-6 h-px w-full bg-line">
+        <div
+          className="h-px bg-accent transition-[width] duration-500 ease-out"
+          style={{ width: `${through}%` }}
+        />
+      </div>
+
+      <ol className="mt-8 space-y-4" aria-live="polite">
+        {steps.map((step, index) => {
+          const done = index < at
+          const now = index === at
+          return (
+            <li key={step} className="flex items-center gap-3">
+              <span
+                aria-hidden
+                className={`inline-block h-2 w-2 shrink-0 ${
+                  done ? 'bg-ink' : now ? 'animate-pulse bg-accent' : 'bg-ink-12'
+                }`}
+              />
+              <span
+                className={`text-[0.9375rem] transition-colors ${
+                  done ? 'text-ink-40' : now ? 'text-ink' : 'text-ink-20'
+                }`}
+              >
+                {step}
+              </span>
+            </li>
+          )
+        })}
+      </ol>
+    </div>
+  )
+}
+
 /** A plain section heading. */
 function Section({ title }: { title: string }) {
   return (
@@ -667,7 +752,7 @@ function Wide({ children }: { children: React.ReactNode }) {
     <main className="flex min-h-[100dvh] items-start justify-center bg-bg px-5 py-10 sm:px-6 sm:py-16">
       <div
         className="w-full max-w-xl border border-line bg-surface p-6 sm:p-10"
-        style={{ backgroundImage: "url('/know-thyself/paper.png')", backgroundSize: '160px 160px' }}
+        style={{ backgroundImage: "url('/know-thyself/paper.png')", backgroundSize: '256px 256px' }}
       >
         {children}
       </div>
