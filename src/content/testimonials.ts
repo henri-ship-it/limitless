@@ -245,14 +245,25 @@ export function painFor(obstacles: string[]): Testimonial['pain'] | undefined {
  * member should still see that other people have been here.
  */
 export function testimonialsFor(pain: Testimonial['pain'] | undefined, limit = 2): Testimonial[] {
-  const matching = pain ? TESTIMONIALS.filter((t) => t.pain === pain) : []
-  const pool = matching.length ? matching : TESTIMONIALS
   /*
-   * Group messages first. They are drawn as the thread they were written in,
-   * which reads as a person rather than as a pull quote, so a pain with one of
-   * each should lead on the one from the group.
+   * Group messages only, for anything shown to a member.
+   *
+   * They are drawn as the thread they were written in, and the rest cannot be:
+   * an Instagram comment or an emailed Elite review is not a message in the
+   * cohort group, and saying "Elevate, month one" under a quote means nothing
+   * to somebody who has never heard of Elevate. They stay in the file because
+   * they are real and useful elsewhere, such as on the public site.
+   *
+   * Falls back to any group message rather than to nothing, so an unmatched
+   * member still sees that other people have been where they are.
    */
-  return [...pool]
-    .sort((a, b) => Number(b.channel === 'whatsapp') - Number(a.channel === 'whatsapp'))
-    .slice(0, limit)
+  const group = TESTIMONIALS.filter((t) => t.channel === 'whatsapp')
+  const matching = pain ? group.filter((t) => t.pain === pain) : []
+  /*
+   * Topped up from the rest of the group when the match is thin. One bubble on
+   * its own does not read as a conversation, and most pains have only one or
+   * two messages behind them. The matched ones stay first.
+   */
+  const pool = [...matching, ...group.filter((t) => !matching.includes(t))]
+  return pool.slice(0, limit)
 }

@@ -15,6 +15,7 @@ import {
   PreAssessment,
   type AssessmentData,
 } from '@/components/admin/Assessments'
+import { WriteBlueprint } from '@/components/admin/WriteBlueprint'
 import { MemberTabs } from '@/components/admin/MemberTabs'
 import { Conversations } from '@/components/admin/Conversations'
 import { ChatLines } from '@/components/admin/ChatLines'
@@ -115,6 +116,7 @@ export default async function MemberPage({ params }: { params: Promise<{ member:
                     filled={(profile.assessment as Record<string, unknown>)?.[BLUEPRINT_SLOT]}
                     tier={profile.tier}
                   />
+                  <WriteBlueprint memberId={profile.id} tier={profile.tier} />
                 </>
               ),
             },
