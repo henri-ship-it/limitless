@@ -44,7 +44,13 @@ export function generateStaticParams() {
  */
 const STYLES_WEEK = 1
 
-export default async function WeekPage({ params }: { params: Promise<{ week: string }> }) {
+export default async function WeekPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ week: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   const { week: weekParam } = await params
   const n = Number(weekParam)
   const week = getWeek(n)
@@ -128,17 +134,37 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
     member && isPulseWeek(n, tier, member.cohort) && !(await pulseAnswered(member.id, `w${n}`)) ? pulseFor(n) : undefined
 
   /*
+   * `?preview=held` and `?preview=ask` force the final week's two states.
+   *
+   * Admin only, and the only way either can be looked at before a cohort
+   * reaches week sixteen. An admin is never held, so opening the real page
+   * shows the ask and never the week waiting behind it, and the state that
+   * interrupts every member finishing the programme was the one state nobody
+   * could see. Both run through the same gate as a member rather than setting
+   * the flags directly, so what is reviewed is the behaviour under test in
+   * scripts/check-reflection and not a second copy of it.
+   */
+  const wanted = (await searchParams).preview
+  const previewing =
+    isAdmin && n === REFLECTION_WEEK
+      ? ((Array.isArray(wanted) ? wanted[0] : wanted) as 'held' | 'ask' | undefined)
+      : undefined
+
+  /*
    * The closing reflection, which leads the final week and holds it back.
    *
    * Read only on week sixteen, so no other week pays for the round trip. With
    * no member there is nothing to look up and nothing to hold: the middleware
    * does not let a signed out visitor this far anyway.
    */
-  const { ask, hold } = reflectionGate({
-    week: n,
-    done: member && n === REFLECTION_WEEK ? await journeyDone(member.id, 'reflection') : true,
-    isAdmin,
-  })
+  const { ask, hold } =
+    previewing === 'held' || previewing === 'ask'
+      ? reflectionGate({ week: n, done: false, isAdmin: previewing === 'ask' })
+      : reflectionGate({
+          week: n,
+          done: member && n === REFLECTION_WEEK ? await journeyDone(member.id, 'reflection') : true,
+          isAdmin,
+        })
 
   if (hold) {
     return (

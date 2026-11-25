@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Shell } from '@/components/Shell'
 import { PageHeader } from '@/components/PageHeader'
@@ -17,6 +18,7 @@ const TOC = [
   { id: 'recording', label: 'Call recording' },
   { id: 'group', label: 'Group message' },
   { id: 'members', label: 'Members' },
+  { id: 'review', label: 'Review' },
 ]
 
 export default async function AdminPage() {
@@ -71,6 +73,40 @@ export default async function AdminPage() {
 
       <Section id="members" label="Members">
         <CohortTable members={cohort.members} />
+      </Section>
+
+      {/*
+        * The states that cannot be reached by browsing.
+        *
+        * Each of these was a URL somebody had to remember, which in practice
+        * meant none of them was ever looked at. The check-in preview has sat
+        * unlinked since the day it was built.
+        */}
+      <Section id="review" label="Review">
+        <p>
+          What a member sees in the places you cannot get to from here. Each one renders the real
+          page rather than a mock-up of it.
+        </p>
+        <ul>
+          <li>
+            <Link href="/week/16?preview=held">The final week, held back</Link> until the
+            reflection is answered. Only a member ever sees this: an admin is asked but never
+            held, so the real page will not show it to you.
+          </li>
+          <li>
+            <Link href="/week/16?preview=ask">The final week with the ask on top</Link>, which is
+            how it reads once they have answered and the week has opened.
+          </li>
+          <li>
+            <Link href="/journey/baseline?preview">The baseline</Link> and{' '}
+            <Link href="/journey/reflection?preview">the reflection</Link>, each on a finished
+            result. Use <code>?preview=walk</code> on either to sit it from the first question.
+          </li>
+          <li>
+            <Link href="/journey/check-in?preview=w3">The module check-ins</Link>, all eight of
+            them. They appear once and cannot be reopened, so this is the only way to read one.
+          </li>
+        </ul>
       </Section>
     </Shell>
   )
