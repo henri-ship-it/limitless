@@ -12,6 +12,7 @@ const TOC = [
   { id: 'nudges', label: 'Nudges and AI' },
   { id: 'why', label: 'Why we hold it' },
   { id: 'who-else', label: 'Who else sees it' },
+  { id: 'quoting', label: 'Quoting you' },
   { id: 'how-long', label: 'How long' },
   { id: 'rights', label: 'Your rights' },
   { id: 'cookies', label: 'Cookies' },
@@ -149,6 +150,27 @@ export default function PrivacyPage() {
         <p>
           Some of these operate outside the UK. Where they do, transfers are covered by the
           safeguards in their own terms, such as standard contractual clauses.
+        </p>
+      </Section>
+
+      <Section id="quoting" label="Quoting you">
+        <p>
+          Members write things here that turn out to be the clearest description anyone has given
+          of what the programme does: in the baseline, in the journal, in the check-in at the end
+          of a module. We sometimes want to use one, on the website, in an email, or to show
+          somebody deciding whether to join.
+        </p>
+        <p>
+          When we do, we use your first name or no name at all. We never publish your surname,
+          your employer, your job title or a photograph of you alongside something you wrote, and
+          we never publish anything you have written about a health condition or about another
+          person, unless we have come to you and asked about that specific thing first.
+        </p>
+        <p className="!mb-0">
+          If you would rather we did not quote you at all, say so and we will not. Tell Chris, or
+          email{' '}
+          <a href="mailto:chris@lmntaryperformance.com">chris@lmntaryperformance.com</a>. It takes
+          effect from the moment you ask, and anything already published comes down.
         </p>
       </Section>
 

@@ -34,8 +34,10 @@ export const checklist: ChecklistItem[] = [
   },
   {
     key: 'pre-assessment',
-    label: 'Complete your pre-programme assessment',
-    detail: 'The link is sent by email after the onboarding call.',
+    label: 'Set your baseline',
+    detail:
+      'Fourteen questions, about six minutes. It is the line the whole sixteen weeks gets measured against, and you answer the same six again at the end.',
+    link: { label: 'Start your baseline', href: '/journey/baseline' },
   },
   {
     key: 'whatsapp',
@@ -72,8 +74,9 @@ export const eliteChecklist: ChecklistItem[] = [
   },
   {
     key: 'elite-assessment',
-    label: 'Complete your pre-programme assessment',
-    detail: 'It sets the baseline your blueprint is built from. The link comes by email.',
+    label: 'Set your baseline',
+    detail: 'It sets the baseline your blueprint is built from, and the one your year is measured against.',
+    link: { label: 'Start your baseline', href: '/journey/baseline' },
   },
   {
     key: 'elite-whatsapp',

@@ -67,6 +67,7 @@ export function TopBar({
       <div className="flex h-14 items-center gap-3 px-4 sm:gap-6 sm:px-5">
         <Link
           href="/"
+          data-tour="home"
           className="font-mono text-[0.8125rem] font-medium tracking-[0.16em] uppercase"
         >
           Limitless
@@ -226,6 +227,7 @@ export function TopBar({
           {isAdmin ? <ViewAs viewing={viewing} /> : null}
           <Link
             href="/account"
+            data-tour="account"
             /*
              * A person rather than the word "admin", which read as a warning
              * about where you were rather than a way to your own account.

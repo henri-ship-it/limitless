@@ -1,4 +1,9 @@
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
+
 import { getMember, getProgress, getStreak } from '@/lib/member'
+import { getSetup, isOpen } from '@/lib/onboarding'
+import { Tour } from './Tour'
 import { supabaseConfigured } from '@/lib/env'
 import { clockFor, currentWeek, unlockedThrough } from '@/lib/cohort'
 import { viewingAs } from '@/lib/programme-mode'
@@ -55,8 +60,33 @@ export async function Shell({
       ? currentEliteChapter(member.eliteStartDate)
       : 0
 
+  /*
+   * Setting up, which gates the whole platform for a new member.
+   *
+   * Somebody who has not set a baseline is sent to set one rather than shown
+   * a programme they have no starting point for, and the blueprint, the
+   * nudges and the check-ins all read from it. Only members on the rebuilt
+   * journey: nobody mid-cohort is locked out of a platform they have been
+   * using for three months.
+   *
+   * The path comes from the middleware as a header, because a server
+   * component cannot otherwise ask what it is rendering. Without it the gate
+   * would bounce somebody off the privacy notice and out of their own
+   * account.
+   */
+  const setup = member ? await getSetup(member.id, member.cohort) : null
+  const path = (await headers()).get('x-pathname') ?? ''
+
+  if (setup?.applies && !setup.hasBaseline && !isOpen(path)) {
+    redirect('/journey/baseline')
+  }
+
   return (
     <div className="min-h-screen bg-bg">
+      {/* Shown once, after the baseline and before anything else. */}
+      {setup?.applies && setup.hasBaseline && !setup.toured && (
+        <Tour firstName={member?.firstName ?? null} />
+      )}
       {/* Preview mode has a stub member but no client to report to. */}
       {member && supabaseConfigured ? <TimeOnPage /> : null}
       <TopBar

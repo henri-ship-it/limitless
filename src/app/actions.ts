@@ -7,6 +7,7 @@ import { getMember } from '@/lib/member'
 import { closingEntry, isWritten, weekTick } from '@/lib/week-close'
 import { journalEntries } from '@/content/journal'
 import type { EntryData } from '@/content/journal-fields'
+import { TOUR_SLOT } from '@/lib/onboarding'
 
 async function requireMember() {
   if (!supabaseConfigured) return null
@@ -215,3 +216,57 @@ export async function setAltEmail(memberId: string, email: string) {
  * around once they have looked. Admin only, checked here rather than trusted
  * from the button, since a cookie anybody can set is not a permission.
  */
+
+/**
+ * Marks the platform walkthrough as seen.
+ *
+ * Finishing it and closing it halfway both count. Somebody who shut it on the
+ * second stop has decided, and showing it to them again next time would be
+ * the platform not listening.
+ */
+export async function finishTour() {
+  const session = await requireMember()
+  if (!session) return { error: 'Sign in first' }
+
+  const { data } = await session.supabase
+    .from('profiles')
+    .select('assessment')
+    .eq('id', session.userId)
+    .maybeSingle()
+
+  const held = (data?.assessment ?? {}) as Record<string, unknown>
+
+  const { error } = await session.supabase
+    .from('profiles')
+    .update({ assessment: { ...held, [TOUR_SLOT]: { at: new Date().toISOString() } } })
+    .eq('id', session.userId)
+
+  if (error) return { error: error.message }
+  revalidatePath('/')
+  return { error: null }
+}
+
+/** Puts the walkthrough back, from the account page. */
+export async function restartTour() {
+  const session = await requireMember()
+  if (!session) return { error: 'Sign in first' }
+
+  const { data } = await session.supabase
+    .from('profiles')
+    .select('assessment')
+    .eq('id', session.userId)
+    .maybeSingle()
+
+  const held = { ...((data?.assessment ?? {}) as Record<string, unknown>) }
+  delete held[TOUR_SLOT]
+
+  const { error } = await session.supabase
+    .from('profiles')
+    .update({ assessment: held })
+    .eq('id', session.userId)
+
+  if (error) return { error: error.message }
+  revalidatePath('/')
+  revalidatePath('/account')
+  return { error: null }
+}

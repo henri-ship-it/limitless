@@ -12,14 +12,19 @@ import { isBlueprint, type Blueprint } from '@/content/blueprint'
  * them rather than an empty frame promising something that is not coming.
  */
 export function TheirBlueprint({ filled, tier }: { filled: unknown; tier: string }) {
-  if (tier !== 'pro') return null
+  /*
+   * Pro and Elite. This read `tier !== 'pro'` and so returned nothing for
+   * Elite, which meant the members who buy the most of Chris's time were the
+   * ones whose blueprint he could not see from their record.
+   */
+  if (tier !== 'pro' && tier !== 'elite') return null
 
   if (!isBlueprint(filled)) {
     return (
       <div className="mt-8 border-t border-line pt-6">
         <p className="label !mb-2">Their blueprint</p>
         <p className="!mb-0 text-[0.9375rem] !text-ink-56">
-          Not written yet. It comes out of the welcome call.
+          Not written yet. It is drafted from their baseline after the welcome call.
         </p>
       </div>
     )

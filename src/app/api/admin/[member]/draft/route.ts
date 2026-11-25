@@ -5,6 +5,7 @@ import { since } from "@/lib/format";
 import { currentWeek } from "@/lib/cohort";
 import { getWeek, weeks } from "@/content/programme";
 import { leadStyle } from "@/content/know-thyself";
+import { BASELINE, questionsOf } from "@/content/journey";
 import { coreValues, exerciseAnswers } from "@/lib/entry-text";
 import { resolveEntry } from "@/lib/entry";
 import type { EntryData } from "@/content/journal-fields";
@@ -131,6 +132,10 @@ function brief(
       scores?: Record<string, number>;
       notes?: Record<string, string>;
     };
+    baseline?: {
+      scores?: Record<string, number>;
+      answers?: Record<string, number | string | string[]>;
+    };
   };
 
   const style = leadStyle(assessment.scorecard?.scores ?? {});
@@ -149,10 +154,55 @@ function brief(
   }
 
   /*
-   * The pre-assessment runs to fifty-odd answers, most of them a word or a
-   * number. What they wrote at length is the part worth putting in front of a
-   * draft; the importance ratings go in as a ranked line rather than a list.
+   * The baseline, which is where a pre-programme answer lands now.
+   *
+   * ScoreApp used to post its pre-assessment to `preAssessment` and that slot
+   * still holds every member who filled one in before November 2026, so both
+   * are read. Anybody who joins from here on has a `baseline` and no
+   * `preAssessment` at all, and this brief would have quietly gone blank for
+   * them.
+   *
+   * The two are different shapes. The old one was a flat bag of question text
+   * to answer text; the new one is keyed by question id, so the wording is
+   * looked up from the journey rather than stored with every result.
    */
+  const baseline = assessment.baseline?.answers ?? {};
+  const asked = new Map(
+    questionsOf(BASELINE).map((question) => [question.id, question.text]),
+  );
+
+  const baselineWritten: [string, string][] = [];
+  const baselinePicked: string[] = [];
+  for (const [id, value] of Object.entries(baseline)) {
+    const question = asked.get(id);
+    if (!question) continue;
+    if (typeof value === "string" && value.trim().length > 40) {
+      baselineWritten.push([question, value.trim()]);
+    } else if (Array.isArray(value) && value.length) {
+      baselinePicked.push(`${question} ${value.join("; ")}`);
+    }
+  }
+
+  if (baselineWritten.length) {
+    lines.push("", "What they wrote in their baseline, in their own words:");
+    for (const [question, answer] of baselineWritten)
+      lines.push(`- ${question} ${answer}`);
+  }
+  if (baselinePicked.length) {
+    lines.push("", `What they chose: ${baselinePicked.join(". ")}.`);
+  }
+
+  const spine = Object.entries(assessment.baseline?.scores ?? {})
+    .sort((a, b) => a[1] - b[1])
+    .map(([domain, value]) => `${domain} ${value}`)
+    .join(", ");
+  if (spine) {
+    lines.push(
+      "",
+      `Their baseline, lowest first: ${spine}. The lowest two are where the programme has the most to give them.`,
+    );
+  }
+
   const preNotes = Object.entries(assessment.preAssessment?.notes ?? {});
   const written = preNotes.filter(([, answer]) => answer.length > 60);
   const ratings = preNotes

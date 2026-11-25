@@ -114,7 +114,7 @@ function Marker({
 }) {
   const tone =
     state === 'done'
-      ? 'border-accent bg-accent-soft text-accent-ink'
+      ? 'border-accent bg-accent-soft text-ink'
       : state === 'now'
         ? 'border-ink bg-ink text-white'
         : state === 'locked'

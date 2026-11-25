@@ -88,7 +88,7 @@ export default async function ModulePage({ params }: { params: Promise<{ module:
                     </span>
                     <span className="shrink-0">
                       {done ? (
-                        <span className="pill !text-accent-ink">
+                        <span className="pill">
                           <TickIcon /> Done
                         </span>
                       ) : c.n === open ? (
@@ -143,7 +143,7 @@ export default async function ModulePage({ params }: { params: Promise<{ module:
                 </span>
                 <span className="shrink-0">
                   {done ? (
-                    <span className="pill !text-accent-ink">
+                    <span className="pill">
                       <TickIcon /> Done
                     </span>
                   ) : unlocked ? (

@@ -16,6 +16,9 @@ import type { TocItem } from '@/components/OnThisPage'
 import { getWeek, moduleForWeek, weeks, COHORT } from '@/content/programme'
 import { getDigest } from '@/content/digests'
 import { leadStyle } from '@/content/know-thyself'
+import { Pulse } from '@/components/Pulse'
+import { isPulseWeek, pulseFor } from '@/content/pulse'
+import { pulseAnswered } from '@/lib/pulse'
 import { entriesForWeek } from '@/content/journal'
 import { getMember, getMyScores, getProgress } from '@/lib/member'
 import {
@@ -111,6 +114,16 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
    * out together. The week before is only read when there is one: nobody has a
    * last week in week one.
    */
+  /*
+   * The module check-in, on the last chapter week of each module.
+   *
+   * Only shown once: a member who has scored it or closed it does not see it
+   * again, which is read here rather than kept in the browser so clearing a
+   * cache does not bring it back.
+   */
+  const pulse =
+    member && isPulseWeek(n, tier, member.cohort) && !(await pulseAnswered(member.id, `w${n}`)) ? pulseFor(n) : undefined
+
   const close = member ? await getWeekClose(member.id, n) : null
   const lastClose = member && prev ? await getWeekClose(member.id, prev.number) : null
   // Only the week in hand has a day to be on.
@@ -231,7 +244,7 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
       {n === 16 ? (
         <Section id="workshop" label="Finishing the programme">
           <p>
-            <a href={COHORT.postAssessmentUrl} target="_blank" rel="noreferrer">
+            <a href={COHORT.postAssessmentUrl}>
               Complete your post-programme assessment
             </a>
           </p>
@@ -252,6 +265,8 @@ export default async function WeekPage({ params }: { params: Promise<{ week: str
           ) : null}
         </div>
       </div>
+
+      {pulse && <Pulse spec={pulse} firstName={member?.firstName ?? null} />}
     </Shell>
   )
 }

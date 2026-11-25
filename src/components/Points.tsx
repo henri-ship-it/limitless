@@ -16,13 +16,13 @@
  * disagree side, with the midpoint neutral.
  */
 
-const ACCENT = '#04dfbf'
+const ACCENT = '#00dfbf'
 const INVERTED = '#ff391f'
 const NEUTRAL = '#26262640'
 
 /** Left to right, so the first is full agreement. */
 const STEPS = [100, 83, 67, 50, 33, 17, 0]
-const SIZES = [52, 43, 34, 26, 34, 43, 52]
+const SIZES = [48, 40, 32, 25, 32, 40, 48]
 
 function colourAt(index: number): string {
   if (index < 3) return ACCENT
@@ -48,14 +48,19 @@ export function Points({
 }) {
   return (
     <div className="mt-10">
+      {/*
+        * The ends are named underneath, at every width.
+        *
+        * They used to sit either side of the circles on anything wider than a
+        * phone, and at that size the row came to more than the card is wide,
+        * so the disagree end hung off the edge. Underneath it fits whatever
+        * the card is, and the circles get the full width to breathe in.
+        */}
       <div
         role="radiogroup"
         aria-label={label}
-        className="flex items-center justify-between gap-1.5 sm:gap-3"
+        className="flex items-center justify-between gap-1.5 sm:gap-2.5"
       >
-        <span className="hidden shrink-0 text-[0.8125rem] font-medium sm:block" style={{ color: ACCENT }}>
-          {high}
-        </span>
 
         {STEPS.map((step, index) => {
           const size = SIZES[index]
@@ -86,16 +91,9 @@ export function Points({
           )
         })}
 
-        <span
-          className="hidden shrink-0 text-[0.8125rem] font-medium sm:block"
-          style={{ color: INVERTED }}
-        >
-          {low}
-        </span>
       </div>
 
-      {/* the ends move under the circles where there is no room beside them */}
-      <div className="mt-3 flex justify-between text-[0.8125rem] font-medium sm:hidden">
+      <div className="mt-3.5 flex justify-between text-[0.8125rem] font-medium">
         <span style={{ color: ACCENT }}>{high}</span>
         <span style={{ color: INVERTED }}>{low}</span>
       </div>

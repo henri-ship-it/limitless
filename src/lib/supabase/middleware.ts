@@ -46,6 +46,15 @@ const PUBLIC_PATHS = [
 export async function updateSession(request: NextRequest) {
   if (!supabaseConfigured) return NextResponse.next({ request })
 
+  /*
+   * The path, forwarded to the server components as a header.
+   *
+   * A page cannot otherwise ask what URL it is rendering, and the onboarding
+   * gate in Shell needs to know, so somebody can read the privacy notice
+   * without being bounced back to their baseline.
+   */
+  request.headers.set('x-pathname', request.nextUrl.pathname)
+
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -76,7 +85,18 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
-  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p))
+  /*
+   * The baseline and the reflection are members' own work and stay behind the
+   * sign-in. Their `?preview` is not: it renders a finished result from
+   * made-up answers and touches no profile, so it is the same kind of thing as
+   * the preview on the printed assessments, which is public already. It exists
+   * so the pages can be reviewed or shown to a room without anybody filling
+   * one in.
+   */
+  const isExample =
+    pathname.startsWith('/journey') && request.nextUrl.searchParams.has('preview')
+
+  const isPublic = isExample || PUBLIC_PATHS.some((p) => pathname.startsWith(p))
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone()

@@ -44,9 +44,11 @@ export default async function BlueprintPage() {
   const label = elite ? 'Limitless Elite' : 'Limitless Pro'
 
   /*
-   * Core gets the half of this that is theirs: their own scorecard and what
-   * the four styles mean. The blueprint itself is written from a welcome call
-   * they have not had, so none of it reaches their HTML.
+   * Core does not get a blueprint, and this is where that is enforced. It is
+   * written from a welcome call Core does not buy, so there is nothing to
+   * write one from. None of it reaches their HTML rather than being hidden in
+   * the browser. What they get instead is the part that is genuinely theirs:
+   * their own scorecard and what the four styles mean.
    */
   if (!elite && member.tier !== 'pro') return <HowYoureWired scores={scores} />
 
@@ -59,7 +61,7 @@ export default async function BlueprintPage() {
       <PageHeader
         eyebrow={label}
         title="Your blueprint"
-        lede="Written from your pre-assessment and your welcome call. It is a read on how you are wired to perform, and where the programme will ask something different of you."
+        lede="Written from your baseline and your welcome call. What the programme will ask of you, and where it will push."
         pills={
           <>
             <span className="tier-tag" data-tier={tier}>
@@ -81,8 +83,6 @@ export default async function BlueprintPage() {
           </>
         }
       />
-
-      <StyleBand scores={scores} />
 
       <Section id="territory" label="Mapping your territory">
         <div className="!mb-0 grid gap-5 sm:grid-cols-2">
@@ -215,7 +215,7 @@ function NotYet({ label, tier }: { label: string; tier: 'pro' | 'elite' }) {
       <PageHeader
         eyebrow={label}
         title="Your blueprint"
-        lede="Yours is written after your welcome call, from that conversation and your pre-assessment."
+        lede="Yours is written after your welcome call, from that conversation and your baseline."
         pills={
           <span className="tier-tag" data-tier={tier}>
             {tier}
@@ -236,9 +236,12 @@ function NotYet({ label, tier }: { label: string; tier: 'pro' | 'elite' }) {
 /**
  * The four Know Thyself scores, highest first.
  *
- * Not decoration: it is the same read the blueprint is written from, in the
- * same icons the journal prints, so the two say the same thing. Left out
- * entirely for anybody who has not taken the scorecard.
+ * Only on the page Core gets, which is about the scorecard. It used to open
+ * the blueprint too, under the heading "How you're wired", and it does not
+ * belong there: how somebody is wired is their behavioural style, a separate
+ * instrument with a result page of its own. The blueprint is written from the
+ * baseline and the welcome call and says what the programme will ask of them,
+ * which is a different question with a different answer.
  */
 function StyleBand({ scores }: { scores: Record<string, number> }) {
   const lead = leadStyle(scores)
@@ -305,7 +308,7 @@ function Arrow({ className = '' }: { className?: string }) {
       strokeWidth={1.7}
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={{ color: 'var(--color-accent-ink)' }}
+      style={{ color: 'var(--color-ink)' }}
       aria-hidden
     >
       <path d="M3.5 8.5 8.5 3.5M4.5 3.5h4v4" />
