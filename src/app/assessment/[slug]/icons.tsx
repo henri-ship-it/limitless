@@ -162,3 +162,27 @@ export function ScalesIcon({ className }: Props) {
     </svg>
   )
 }
+
+/**
+ * An eye, for "how you show up".
+ *
+ * The mirror it replaced was read as furniture at heading size. This is the
+ * plainer idea: what other people see.
+ */
+export function ViewIcon({ className }: Props) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={className}
+    >
+      <path d="M21.544 11.045C21.848 11.471 22 11.684 22 12C22 12.316 21.848 12.529 21.544 12.955C20.178 14.871 16.689 19 12 19C7.312 19 3.822 14.871 2.456 12.955C2.152 12.529 2 12.316 2 12C2 11.684 2.152 11.471 2.456 11.045C3.822 9.129 7.312 5 12 5C16.689 5 20.178 9.129 21.544 11.045Z" />
+      <path d="M15 12C15 13.657 13.657 15 12 15C10.343 15 9 13.657 9 12C9 10.343 10.343 9 12 9C13.657 9 15 10.343 15 12Z" />
+    </svg>
+  )
+}

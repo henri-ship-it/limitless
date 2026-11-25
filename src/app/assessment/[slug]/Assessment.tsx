@@ -7,10 +7,9 @@ import { scoreAssessment } from '@/content/assessments'
 import { STYLES, styleFor } from '@/content/know-thyself'
 import { DISCLAIMER, RESULT_INTRO, STEPS, STYLE_COPY } from '@/content/know-thyself-copy'
 import { reportFor } from '@/content/know-thyself-report'
-import { NORMS, NORM_BASE, NORM_RANGE } from '@/content/know-thyself-norms'
+import { NORMS, NORM_RANGE } from '@/content/know-thyself-norms'
 import {
   COMPONENTS,
-  FIRE_BASE,
   FIRE_INTRO,
   FIRE_NORMS,
   FIRE_RANGE,
@@ -23,8 +22,8 @@ import {
   AlertIcon,
   CheckmarkIcon,
   CompassIcon,
-  MirrorIcon,
   RouteIcon,
+  ViewIcon,
 } from './icons'
 import { profileFrom } from '@/lib/style-profile'
 import type { Preview } from '@/content/assessment-previews'
@@ -238,7 +237,7 @@ export function Assessment({
   if (stage === 'sending') {
     return (
       <Card fill>
-        <Working count={motivation ? FIRE_BASE : NORM_BASE} />
+        <Working />
       </Card>
     )
   }
@@ -327,8 +326,12 @@ export function Assessment({
           </figure>
 
           <div className="mt-9">
-            <p className="text-[0.9375rem] text-ink-56">You lead with</p>
-            <h1 className="font-caption text-[2.75rem] leading-[0.9] font-bold tracking-[-0.01em] uppercase">
+            {/* The style's own mark, the one printed in the journal and drawn
+                on the radar below, so the three are recognisably the same
+                thing before a word is read. */}
+            <StyleMark styleKey={profile.lead.key} name={profile.lead.name} />
+            <p className="mt-6 text-[0.9375rem] text-ink-56">You lead with</p>
+            <h1 className="mt-2.5 font-caption text-[2.75rem] leading-[0.9] font-bold tracking-[-0.01em] uppercase">
               {profile.lead.name}
             </h1>
             <p className="mt-5 text-[1.0625rem] leading-relaxed text-ink-72">{profile.summary}</p>
@@ -353,9 +356,9 @@ export function Assessment({
             <p className="mt-6 flex items-center gap-2 text-[0.8125rem] leading-relaxed text-ink-40">
               <span aria-hidden className="inline-block h-3 w-0.5 shrink-0 bg-ink" />
               <span>
-                The tick is the middle score of {NORM_BASE.toLocaleString('en-GB')} people who have
-                taken this, and the shaded stretch is where the middle half of them landed. The
-                figure in brackets is how far you sit from the tick.
+                The tick is the middle score of everybody who has taken this, and the shaded
+                stretch is where the middle half of them landed. The figure in brackets is how far
+                you sit from the tick.
               </span>
             </p>
           )}
@@ -366,7 +369,12 @@ export function Assessment({
             <Radar
               scores={scores}
               lead={profile.lead.name}
-              axes={STYLES.map((style) => style.name)}
+              /*
+               * Corner order, clockwise from the top right, which is how the
+               * figure is drawn in the journal. Fixed rather than ranked, so
+               * two people's radars can be laid side by side.
+               */
+              axes={['Dynamo', 'Analyst', 'Caretaker', 'Energiser']}
             />
           )}
 
@@ -446,7 +454,7 @@ function Deep({ styleKey, name }: { styleKey: string; name: string }) {
         </p>
       ))}
 
-      <Heading icon={<MirrorIcon className="h-[1.1rem] w-[1.1rem]" />}>How you show up</Heading>
+      <Heading icon={<ViewIcon className="h-[1.05rem] w-[1.05rem]" />}>How you show up</Heading>
       <dl className="mt-4 space-y-4">
         {report.showUp.map((trait) => (
           <div key={trait.name}>
@@ -456,10 +464,10 @@ function Deep({ styleKey, name }: { styleKey: string; name: string }) {
         ))}
       </dl>
 
-      <Heading icon={<CheckmarkIcon className="h-[1.1rem] w-[1.1rem]" />}>When it works</Heading>
+      <Heading icon={<CheckmarkIcon className="h-[1.05rem] w-[1.05rem]" />}>When it works</Heading>
       <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink-72">{report.whenItWorks}</p>
 
-      <Heading icon={<AlertIcon className="h-[1.1rem] w-[1.1rem]" />}>When overplayed</Heading>
+      <Heading icon={<AlertIcon className="h-[1.05rem] w-[1.05rem]" />}>When overplayed</Heading>
       <dl className="mt-4 space-y-4">
         {report.overplayed.map((trait) => (
           <div key={trait.name}>
@@ -469,7 +477,7 @@ function Deep({ styleKey, name }: { styleKey: string; name: string }) {
         ))}
       </dl>
 
-      <Heading icon={<CompassIcon className="h-[1.1rem] w-[1.1rem]" />}>Perspective checks</Heading>
+      <Heading icon={<CompassIcon className="h-[1.05rem] w-[1.05rem]" />}>Perspective checks</Heading>
       <dl className="mt-4 space-y-4">
         {report.checks.map((check) => (
           <div key={check.question}>
@@ -479,7 +487,7 @@ function Deep({ styleKey, name }: { styleKey: string; name: string }) {
         ))}
       </dl>
 
-      <Heading icon={<RouteIcon className="h-[1.1rem] w-[1.1rem]" />}>Growth moves</Heading>
+      <Heading icon={<RouteIcon className="h-[1.05rem] w-[1.05rem]" />}>Growth moves</Heading>
       <dl className="mt-4 space-y-4">
         {report.growth.map((move) => (
           <div key={move.name}>
@@ -547,9 +555,9 @@ function Motivation({
       <p className="mt-6 flex items-center gap-2 text-[0.8125rem] leading-relaxed text-ink-40">
         <span aria-hidden className="inline-block h-3 w-0.5 shrink-0 bg-ink" />
         <span>
-          The tick is the middle score of {FIRE_BASE} people who have taken this, and the shaded
-          stretch is where the middle half of them landed. They score motivation high across all
-          three, so most people sit above sixty.
+          The tick is the middle score of everybody who has taken this, and the shaded stretch is
+          where the middle half of them landed. Motivation runs high across all three, so most
+          sittings land above sixty.
         </span>
       </p>
 
@@ -601,15 +609,15 @@ const WORKING_MS = 3200
  * steps are named and paced, and the result waits for them rather than the
  * other way round.
  */
-function Working({ count }: { count: number }) {
+function Working() {
   const steps = useMemo(
     () => [
       'Scoring your answers',
-      `Comparing with ${count.toLocaleString('en-GB')} others`,
+      'Comparing with everybody else',
       'Reading the shape of it',
       'Writing your result',
     ],
-    [count],
+    [],
   )
   const [at, setAt] = useState(0)
 
@@ -671,12 +679,50 @@ function Working({ count }: { count: number }) {
  * that should be loud, the style name and its strapline, and spending it again
  * here is what flattened everything into one shout.
  */
+/**
+ * The heading of one block inside a style's longer writing.
+ *
+ * Five of these run down the page one after another. At text weight they read
+ * as one continuous list, because nothing separates a heading from the
+ * sentences under it, so each one is set as a filled pill: inverted, the
+ * display face, letterspaced. The eye finds the next block without reading.
+ */
 function Heading({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <h3 className="mt-10 flex items-center gap-2.5 text-[1rem] leading-none font-medium text-ink">
-      <span className="text-ink-40">{icon}</span>
-      {children}
+    <h3 className="mt-11 mb-4 flex">
+      <span className="inline-flex items-center gap-2.5 bg-ink px-3.5 py-2.5 font-caption text-[0.8125rem] leading-none font-bold tracking-[0.08em] text-surface uppercase">
+        <span className="text-accent">{icon}</span>
+        {children}
+      </span>
     </h3>
+  )
+}
+
+/**
+ * A behavioural style's mark, as printed.
+ *
+ * Hosted SVG rather than inlined, because these four are artwork from the
+ * journal rather than interface icons, and they are used at a few sizes.
+ */
+function StyleMark({
+  styleKey,
+  name,
+  size = 44,
+}: {
+  styleKey: string
+  name: string
+  size?: number
+}) {
+  return (
+    /* eslint-disable-next-line @next/next/no-img-element */
+    <img
+      src={`/know-thyself/${styleKey}.svg`}
+      alt={`The ${name} mark`}
+      width={size}
+      height={size}
+      style={{ width: size, height: size }}
+      className="block"
+    />
   )
 }
 

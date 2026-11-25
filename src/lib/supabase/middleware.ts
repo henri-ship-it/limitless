@@ -32,6 +32,15 @@ const PUBLIC_PATHS = [
    */
   '/assessment',
   '/api/assessment',
+  /*
+   * The same assessments as they are printed, on the short domain the QR
+   * codes carry. Middleware runs before the host rewrite in next.config, so
+   * what arrives here is the bare `/know-thyself`, not the route it is about
+   * to be served from. Without these the rewrite would land on the sign-in
+   * page instead.
+   */
+  '/know-thyself',
+  '/light-the-fire',
 ]
 
 export async function updateSession(request: NextRequest) {
