@@ -76,7 +76,18 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
-  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p))
+  /*
+   * The baseline and the reflection are members' own work and stay behind the
+   * sign-in. Their `?preview` is not: it renders a finished result from
+   * made-up answers and touches no profile, so it is the same kind of thing as
+   * the preview on the printed assessments, which is public already. It exists
+   * so the pages can be reviewed or shown to a room without anybody filling
+   * one in.
+   */
+  const isExample =
+    pathname.startsWith('/journey') && request.nextUrl.searchParams.has('preview')
+
+  const isPublic = isExample || PUBLIC_PATHS.some((p) => pathname.startsWith(p))
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone()

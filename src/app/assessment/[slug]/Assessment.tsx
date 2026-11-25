@@ -16,7 +16,7 @@ import {
   componentFor,
   lowestOf,
 } from '@/content/light-the-fire-copy'
-import { Points } from './Points'
+import { Points } from '@/components/Points'
 import { Radar } from './Radar'
 import {
   AlertIcon,
