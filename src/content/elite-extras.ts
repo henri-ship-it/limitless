@@ -21,17 +21,17 @@ import type { CustomExercise } from './entry-extras'
 export const eliteLinks: Record<number, { label: string; url: string }> = {
   1: {
     label: 'Take the Know Thyself assessment',
-    url: 'https://unlock.lmntaryperformance.com/know-thyself',
+    url: '/assessment/know-thyself',
   },
   // The motivation check-in, taken twice so the second can be read against the
   // first. Same assessment both times.
   113: {
     label: 'Take the Light the Fire assessment',
-    url: 'https://unlock.lmntaryperformance.com/light-the-fire',
+    url: '/assessment/light-the-fire',
   },
   137: {
     label: 'Take the Light the Fire assessment',
-    url: 'https://unlock.lmntaryperformance.com/light-the-fire',
+    url: '/assessment/light-the-fire',
   },
 }
 

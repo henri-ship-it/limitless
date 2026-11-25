@@ -331,3 +331,71 @@ summary {
     animation: none;
   }
 }
+
+/*
+ * The answer scale on the assessments.
+ *
+ * The native control paints its own track, which comes out dark on the unused
+ * side and reads as a filled bar rather than something to move. This draws it
+ * instead: the part behind the handle warms from a pale accent at one end to
+ * the full accent at the other, and everything ahead of it stays light.
+ *
+ * The filled width is set inline from the current answer, because it is the
+ * one thing that changes per render.
+ */
+.scale {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-ink-8);
+  outline: none;
+}
+
+.scale::-webkit-slider-runnable-track,
+.scale::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.scale::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -8px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 2px solid var(--color-ink);
+  cursor: pointer;
+}
+
+.scale::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--color-ink);
+  border-radius: 50%;
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.scale:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+/*
+ * The page holds still while a question is on screen.
+ *
+ * The assessment card already fits a phone, so any scroll during a question is
+ * the page sliding under a thumb that meant to drag the scale: the answer is
+ * lost and so is the place. Only under the mobile breakpoint, because a mouse
+ * has no such problem and a short laptop window may still need to scroll.
+ */
+@media (max-width: 767px) {
+  body.answering {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+}

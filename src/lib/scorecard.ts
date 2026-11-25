@@ -218,6 +218,50 @@ export async function receiveScorecard(request: Request, asked: string) {
     return NextResponse.json({ status: 'no email yet', event: (body as ScoreApp).event_name })
   }
 
+  const outcome = await fileAssessment(email, slot, filed)
+  if (!outcome.ok) {
+    if (outcome.status === 500) {
+      return NextResponse.json({ error: outcome.reason }, { status: 500 })
+    }
+    // Answered with a different address than they enrolled with, or a lead who
+    // is not on the programme at all. Worth a 200 so the sender stops retrying.
+    return NextResponse.json({ status: outcome.reason, email })
+  }
+
+  const { scores, notes } = outcome
+
+  return NextResponse.json({
+    status: 'stored',
+    type: asked,
+    event: (body as ScoreApp).event_name,
+    email,
+    scores: Object.keys(scores).length,
+    notes: Object.keys(notes).length,
+  })
+}
+
+
+/**
+ * Files a finished assessment against the member it belongs to.
+ *
+ * Split out of the webhook so the assessments rebuilt in the platform file
+ * exactly the way ScoreApp's did: same slot, same shape, same merge. Nothing
+ * reading a profile needs to know which of the two a result came through.
+ */
+export async function fileAssessment(
+  email: string,
+  slot: string,
+  filed: Filed,
+): Promise<
+  | {
+      ok: true
+      scores: Record<string, number>
+      notes: Record<string, string>
+      /** For anything written back to the member, such as a result email. */
+      firstName: string | null
+    }
+  | { ok: false; reason: string; status: number }
+> {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -231,24 +275,20 @@ export async function receiveScorecard(request: Request, asked: string) {
    */
   let { data: profile } = await supabase
     .from('profiles')
-    .select('id, assessment')
+    .select('id, assessment, first_name')
     .eq('email', email)
     .maybeSingle()
 
   if (!profile) {
     const { data: byAlt } = await supabase
       .from('profiles')
-      .select('id, assessment')
+      .select('id, assessment, first_name')
       .ilike('alt_email', email)
       .maybeSingle()
     profile = byAlt
   }
 
-  if (!profile) {
-    // Answered with a different address than they enrolled with, or a lead who
-    // is not on the programme at all. Worth a 200 so the sender stops retrying.
-    return NextResponse.json({ status: 'no matching member', email })
-  }
+  if (!profile) return { ok: false, reason: 'no matching member', status: 200 }
 
   const existing = (profile.assessment as Record<string, Filed & { receivedAt?: string }>) ?? {}
   const held = existing[slot]
@@ -267,14 +307,12 @@ export async function receiveScorecard(request: Request, asked: string) {
   }
 
   const { error } = await supabase.from('profiles').update({ assessment }).eq('id', profile.id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return { ok: false, reason: error.message, status: 500 }
 
-  return NextResponse.json({
-    status: 'stored',
-    type: asked,
-    event: (body as ScoreApp).event_name,
-    email,
-    scores: Object.keys(scores).length,
-    notes: Object.keys(notes).length,
-  })
+  return {
+    ok: true,
+    scores,
+    notes,
+    firstName: (profile as { first_name?: string | null }).first_name ?? null,
+  }
 }

@@ -167,7 +167,7 @@ export const COHORT = {
     short: 'Wednesdays, 11:30 BST',
     when: 'in the three chapter weeks of each module',
   },
-  assessmentUrl: 'https://unlock.lmntaryperformance.com/know-thyself',
+  assessmentUrl: '/assessment/know-thyself',
   postAssessmentUrl: 'https://unlock.lmntaryperformance.com/post-assessment',
 } as const
 

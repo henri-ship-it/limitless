@@ -24,6 +24,23 @@ const PUBLIC_PATHS = [
   '/api/cron/',
   // Webhooks carry a shared secret rather than a member session.
   '/api/webhooks',
+  /*
+   * The assessments are scanned off a printed page, often by somebody who has
+   * never signed in and sometimes by somebody who is not a member at all. A
+   * sign-in wall here would break every QR code in every journal already in
+   * circulation, which is the one thing this rebuild exists to avoid.
+   */
+  '/assessment',
+  '/api/assessment',
+  /*
+   * The same assessments as they are printed, on the short domain the QR
+   * codes carry. Middleware runs before the host rewrite in next.config, so
+   * what arrives here is the bare `/know-thyself`, not the route it is about
+   * to be served from. Without these the rewrite would land on the sign-in
+   * page instead.
+   */
+  '/know-thyself',
+  '/light-the-fire',
 ]
 
 export async function updateSession(request: NextRequest) {
